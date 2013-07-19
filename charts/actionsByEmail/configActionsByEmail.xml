@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm type="xmlform" name="" width="550" height="300" enabletemplate="1" mode="edit" labelWidth="150">
+<IFORM type="hidden"/>
+<INDEX type="hidden"/>
+<ABE_UID type="hidden"/>
+<PRO_UID type="hidden"/>
+<TAS_UID type="hidden"/>
+<SYS_LANG type="hidden"/>
+<ABE_EMAIL_FIELD_VALUE type="hidden"/>
+<ABE_ACTION_FIELD_VALUE type="hidden"/>
+<ABE_TYPE type="dropdown" required="0" defaultValue="text">
+  <en>Type
+    <option name="">- None -</option>
+    <option name="LINK">Link to fill a form</option>
+    <option name="FIELD">Use a field to generate actions links</option>
+  </en>
+</ABE_TYPE>
+<ABE_TEMPLATE type="dropdown" required="1" sqlconnection="dbarray" colWidth="30" titleAlign="left">
+  SELECT FILE, NAME FROM ABE_TEMPLATES
+  <en>Template
+    <option name=""> - Selec a Template - </option>
+  </en>
+</ABE_TEMPLATE>
+<EDIT type="link" colWidth="40" value="@G::LoadTranslation(ID_EDIT)" link="#" onclick="editTemplateABE();"/>
+<DYN_UID type="dropdown" required="1" readonly="0" mode="edit" btn_cancel="Cancel">
+  <![CDATA[SELECT DYN_UID, C.CON_VALUE AS DYN_TITLE FROM DYNAFORM LEFT JOIN CONTENT AS C ON (DYN_UID = C.CON_ID AND C.CON_CATEGORY='DYN_TITLE' AND C.CON_LANG = '@#SYS_LANG') WHERE PRO_UID = '@#PRO_UID' AND DYN_TYPE = 'xmlform' ORDER BY DYN_TITLE ASC]]>
+  <en>Dynaform
+    <option name="">- Select a Dynaform -</option>
+  </en>
+</DYN_UID>
+<ABE_EMAIL_FIELD type="dropdown" required="0">
+  <en>Field with the email
+    <option name="">- Send to the email of the assigned user to the task -</option>
+  </en>
+</ABE_EMAIL_FIELD>
+<ABE_ACTION_FIELD type="dropdown" required="0">
+  <en>Field to Send in the Email
+    <option name=""> - Select a Field - </option>
+  </en>
+</ABE_ACTION_FIELD>
+<ABE_CASE_NOTE_IN_RESPONSE type="checkbox" value="1" falsevalue="0" defaultvalue="0" readonly="0" labelonright="1" enablehtml="0" btn_cancel="Cancel" hint="" required="0" savelabel="0">
+  <en>Register a Case Note when the recipient submits the Response</en>
+</ABE_CASE_NOTE_IN_RESPONSE>
+<APPLY_CHANGES type="button" onclick="saveConfigurationABE();" >
+  <en>Apply Changes</en>
+</APPLY_CHANGES>
+<JS type="javascript">
+<![CDATA[
+var loadFieldsABE = function() {
+  var rpc = new leimnud.module.rpc.xmlhttp({
+    url: '../actionsByEmail/actionsByEmailAjax',
+    args: 'action=loadFields&PRO_UID=' + Pm.options.uid + '&DYN_UID=' + getField('DYN_UID').value
+  });
+  rpc.callback = function(rpc) {
+     var response = rpc.xmlhttp.responseText.parseJSON();
+     var ABE_EMAIL_FIELD = getField('ABE_EMAIL_FIELD');
+     ABE_EMAIL_FIELD.options.length = 0;
+     ABE_EMAIL_FIELD.options.add(new Option('- Send to the email of the assigned user to the task -', ''));
+     ABE_EMAIL_FIELD.selectedIndex = 0;
+     for (i = 0; i < response.emailFields.length; i++) {
+       ABE_EMAIL_FIELD.options.add(new Option(response.emailFields[i].label, response.emailFields[i].value));
+     }
+     ABE_EMAIL_FIELD.value = getField('ABE_EMAIL_FIELD_VALUE').value;
+     var ABE_ACTION_FIELD = getField('ABE_ACTION_FIELD');
+     ABE_ACTION_FIELD.options.length = 0;
+     ABE_ACTION_FIELD.options.add(new Option('- Select a Field -', ''));
+     ABE_ACTION_FIELD.selectedIndex = 0;
+     for (i = 0; i < response.actionFields.length; i++) {
+       ABE_ACTION_FIELD.options.add(new Option(response.actionFields[i].label, response.actionFields[i].value));
+     }
+     ABE_ACTION_FIELD.value = getField('ABE_ACTION_FIELD_VALUE').value;
+  };
+  rpc.make();
+};
+
+var editTemplateABE = function() {
+  if(getField('ABE_TEMPLATE').value == '') {
+    setFocus(getField('ABE_TEMPLATE'));
+    alert('Select a Template');
+    return false;
+  }
+
+  oPanel = new leimnud.module.panel;
+  oPanel.options = {
+    limit   : true,
+    size    : {w: 800, h: 600},
+    position: {x: 50, y: 50, center: true},
+    title   : '',
+    control : {close: true, resize: false},
+    fx      : {shadow: true, modal: true}
+  };
+  oPanel.make();
+  var oRPC = new leimnud.module.rpc.xmlhttp({
+    url: '../actionsByEmail/actionsByEmailAjax',
+    args: 'action=editTemplate&PRO_UID=' + Pm.options.uid + '&TEMPLATE=' + getField('ABE_TEMPLATE').value
+  });
+  oPanel.loader.show();
+  oRPC.callback = function (rpc) {
+    oPanel.loader.hide();
+    oPanel.addContent(rpc.xmlhttp.responseText);
+    var scs = rpc.xmlhttp.responseText.extractScript();scs.evalScript();
+  }.extend(this);
+  oRPC.make();
+};
+
+var saveConfigurationABE = function() {
+  if(getField('ABE_TYPE').value != '') {
+    if(getField('ABE_TEMPLATE').value == '') {
+      setFocus(getField('ABE_TEMPLATE'));
+      alert('Select a Template');
+      return false;
+    }
+    if(getField('DYN_UID').value == '') {
+      setFocus(getField('DYN_UID'));
+      alert('Select a DynaForm');
+      return false;
+    }
+    if(getField('ABE_TYPE').value == 'FIELD') {
+      if(getField('ABE_ACTION_FIELD').value == '') {
+        setFocus(getField('ABE_ACTION_FIELD'));
+        alert('Select the field to Send in the Email');
+        return false;
+      }
+    }
+  }
+  var rpc = new leimnud.module.rpc.xmlhttp({
+     url: '../actionsByEmail/actionsByEmailAjax',
+     args: 'action=saveConfiguration' +
+           '&ABE_UID=' + getField('ABE_UID').value +
+           '&PRO_UID=' + Pm.options.uid +
+           '&TAS_UID=' + getField('TAS_UID').value +
+           '&ABE_TYPE=' + getField('ABE_TYPE').value +
+           '&ABE_TEMPLATE=' + getField('ABE_TEMPLATE').value +
+           '&DYN_UID=' + getField('DYN_UID').value +
+           '&ABE_EMAIL_FIELD=' + getField('ABE_EMAIL_FIELD').value +
+           '&ABE_ACTION_FIELD=' + getField('ABE_ACTION_FIELD').value +
+           '&ABE_CASE_NOTE_IN_RESPONSE=' + (getField('ABE_CASE_NOTE_IN_RESPONSE').checked ? 1 : 0)
+  });
+  rpc.callback = function(rpc) {
+  var response = rpc.xmlhttp.responseText.parseJSON();
+    if (response.status == 'OK') {
+      getField('ABE_UID').value = response.ABE_UID;
+      alert('Changes saved.');
+    }
+    else {
+      alert(response.message);
+    }
+  };
+  rpc.make();
+};
+
+leimnud.event.add(getField('ABE_TYPE'), 'change', function() {
+  switch (getField('ABE_TYPE').value) {
+    case '':
+      hideRowById('ABE_TEMPLATE');
+      hideRowById('DYN_UID');
+      hideRowById('ABE_EMAIL_FIELD');
+      hideRowById('ABE_ACTION_FIELD');
+      hideRowById('ABE_CASE_NOTE_IN_RESPONSE');
+    break;
+    case 'LINK':
+      showRowById('ABE_TEMPLATE');
+      showRowById('DYN_UID');
+      showRowById('ABE_EMAIL_FIELD');
+      hideRowById('ABE_ACTION_FIELD');
+      showRowById('ABE_CASE_NOTE_IN_RESPONSE');
+    break;
+    case 'FIELD':
+      showRowById('ABE_TEMPLATE');
+      showRowById('DYN_UID');
+      showRowById('ABE_EMAIL_FIELD');
+      showRowById('ABE_ACTION_FIELD');
+      showRowById('ABE_CASE_NOTE_IN_RESPONSE');
+    break;
+  }
+});
+
+leimnud.event.add(getField('DYN_UID'), 'change', function() {
+  loadFieldsABE();
+});
+
+switch (getField('ABE_TYPE').value) {
+  case '':
+    hideRowById('ABE_TEMPLATE');
+    hideRowById('DYN_UID');
+    hideRowById('ABE_EMAIL_FIELD');
+    hideRowById('ABE_ACTION_FIELD');
+    hideRowById('ABE_CASE_NOTE_IN_RESPONSE');
+  break;
+  case 'LINK':
+    showRowById('ABE_TEMPLATE');
+    showRowById('DYN_UID');
+    showRowById('ABE_EMAIL_FIELD');
+    hideRowById('ABE_ACTION_FIELD');
+    showRowById('ABE_CASE_NOTE_IN_RESPONSE');
+  break;
+  case 'FIELD':
+    showRowById('ABE_TEMPLATE');
+    showRowById('DYN_UID');
+    showRowById('ABE_EMAIL_FIELD');
+    showRowById('ABE_ACTION_FIELD');
+    showRowById('ABE_CASE_NOTE_IN_RESPONSE');
+  break;
+}
+
+if (getField('DYN_UID').value != '') {
+  loadFieldsABE();
+}
+]]>
+</JS>
+</dynaForm>

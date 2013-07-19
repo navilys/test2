@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="ElockUsers" width="100%" type="pagedtable"
+  sql="SELECT * from ELOCK_USERS "
+  sqlConnection=""
+  menu = "elock/elockUsersOptions"
+>
+
+<USR_PASSWORD type="text" colWidth='120'  >
+  <en>Password</en>
+</USR_PASSWORD>
+
+
+<LINK type="link" colWidth="60" titleAlign="left" align="left" link='elockUsersEdit?id=@!USR_USERNAME' >
+  <en>Edit</en>
+</LINK >
+
+<LINK2 type="link" colWidth="60" titleAlign="left" align="left" link='elockUsersDelete?id=@!USR_USERNAME' >
+  <en>Delete</en>
+</LINK2 >
+
+</dynaForm>

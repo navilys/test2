@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm type="xmlform" name="5883583404ba7f03e4218a6034836732/9315840114bd5baf1cdd204054157594" width="600" enabletemplate="0" mode="edit">  
+    <TITLE type="title" enablehtml="0" btn_cancel="Cancel">
+        <en>Commercial KT Plugin Setup Page (@@SYS_SYS)</en>
+    </TITLE>
+    <SUBTITLE type="subtitle" enablehtml="1" btn_cancel="Cancel">
+        <en><![CDATA[This plugin creates a direct connection to a KnowledgeTree server/instance and presents the key Knowledgetree Document Management functionality inside the ProcessMake user Interface in a new user tab called Document Management. KnowledgeTree is a leading open source Document Managemet Software (DMS).<hr>]]></en>
+    </SUBTITLE>
+    <SUBTITLE_WS type="subtitle" enablehtml="1" btn_cancel="Cancel">
+        <en><![CDATA[<b>Webservice Information</b>]]></en>
+    </SUBTITLE_WS>
+    <KTWebService_WSDL type="text" maxlength="255" size="60" >
+        <en>KT WebService WSDL</en>
+    </KTWebService_WSDL>
+    <KTUpload_URL type="text" maxlength="255" size="60">
+        <en>KT Upload URL</en>
+    </KTUpload_URL>
+    <KTDefaultUser type="hidden" maxlength="28" size="20">
+        <en>KT User</en>
+    </KTDefaultUser>
+    <KTDefaultPass type="hidden" maxlength="28" size="45">
+        <en>KT Password</en>
+    </KTDefaultPass>
+    <SUB_AUTH type="subtitle" enablehtml="1" btn_cancel="Cancel">
+        <en><![CDATA[<b>Preferences</b>]]></en>
+    </SUB_AUTH>
+    <KT_WIN type="checkbox" group="1">
+        <en>Open the document administrator on a popup (for classic skin)</en>
+    </KT_WIN>
+<SUBMIT type="submit" btn_cancel="Cancel">
+  <en>Save</en>
+</SUBMIT>
+</dynaForm>

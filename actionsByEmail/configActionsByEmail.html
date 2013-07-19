@@ -1,0 +1,52 @@
+  <form id="{$form_id}" name="" action="{$form_action}" class="{$form_className}" method="post" encType="multipart/form-data" style="margin:0px;" onsubmit="return validateForm('{$form_objectRequiredFields}');">  <div class="borderForm" style="width:{$form_width}; padding-left:0; padding-right:0; border-width:{$form_border};">
+    <div class="boxTop"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <div class="content" style="height:{$form_height};" >
+    <table width="99%">
+      <tr>
+        <td valign='top'>
+          <input type="hidden" class="notValidateThisFields" name="__notValidateThisFields__" id="__notValidateThisFields__" value="{$form_objectRequiredFields}" />
+          <input type="hidden" name="DynaformRequiredFields" id="DynaformRequiredFields" value="{$form_objectRequiredFields}" />
+          <table cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr style="display: none">
+              <td colspan="2">{$form.IFORM}{$form.INDEX}{$form.ABE_UID}{$form.PRO_UID}{$form.TAS_UID}{$form.SYS_LANG}{$form.ABE_EMAIL_FIELD_VALUE}{$form.ABE_ACTION_FIELD_VALUE}</td>
+            </tr>
+            <tr>
+              <td class='FormLabel' width="{$form_labelWidth}">{$ABE_TYPE}</td>
+              <td class='FormFieldContent' width='{$form_fieldContentWidth}' >{$form.ABE_TYPE}</td>
+            </tr>
+            <tr>
+              <td class='FormLabel' width="{$form_labelWidth}"><font color="red">*  </font>{$ABE_TEMPLATE}</td>
+              <td class='FormFieldContent' width='{$form_fieldContentWidth}' >{$form.ABE_TEMPLATE} {$form.EDIT}</td>
+            </tr>
+            <tr>
+              <td class='FormLabel' width="{$form_labelWidth}"><font color="red">*  </font>{$DYN_UID}</td>
+              <td class='FormFieldContent' width='{$form_fieldContentWidth}' >{$form.DYN_UID}</td>
+            </tr>
+            <tr>
+              <td class='FormLabel' width="{$form_labelWidth}">{$ABE_EMAIL_FIELD}</td>
+              <td class='FormFieldContent' width='{$form_fieldContentWidth}' >{$form.ABE_EMAIL_FIELD}</td>
+            </tr>
+            <tr style="display: none;">
+              <td class='FormLabel' width="{$form_labelWidth}"><font color="red">*  </font>{$ABE_ACTION_FIELD}</td>
+              <td class='FormFieldContent' width='{$form_fieldContentWidth}' >{$form.ABE_ACTION_FIELD}</td>
+            </tr>
+            <tr>
+              <td class='FormLabel' width="{$form_labelWidth}"></td>
+              <td>{$form.ABE_CASE_NOTE_IN_RESPONSE}</td>
+            </tr>
+            <tr>
+              <td class='FormButton' colspan="2" align="center">{$form.APPLY_CHANGES}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <div class="FormRequiredTextMessage"><font color="red">*  </font>Required Field</div>       </div>
+       <div class="boxBottom"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+       </div>
+
+           <script type="text/javascript">
+             {$form.JS}
+           </script>
+                  </form>
+

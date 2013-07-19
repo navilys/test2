@@ -1,0 +1,47 @@
+      <script src="js/parameters.js" type="text/javascript"></script>
+            
+      <script>
+        function clickOnProcess(value) {
+          oCase = "null";         
+          Dashboards.fireChange('process',value);         
+        
+        }
+        
+                 
+       </script>
+          
+      <script>
+        var process = "null";
+        var oCase = "null";
+        
+              ProcessBarChart = {
+                    name: "ProcessBarChart",
+                    type: "xaction",
+                    solution: "{SOLUTION}",
+                    path: "reports_content/report_2",
+                    action: "process_bars_chart.waqr.xaction",
+                    listeners:[],
+                    parameters: [],
+                    htmlObject: "ProcessBarChartObject",
+                    executeAtStart: true
+              }
+              
+              
+              // The intial dashboard load function definition
+              var components = [ProcessBarChart];
+              function load(){
+	             Dashboards.init(components);
+	             //alert("alert");
+              }
+
+// The intial dashboard load function execution
+              load();  
+      </script>
+      <table> 
+        <tr>
+            <td><div id="ProcessBarChartObject"></div></td>
+            <td><div id="CasesBarChartObject"></div><td>
+        </tr>
+        
+      </table>
+

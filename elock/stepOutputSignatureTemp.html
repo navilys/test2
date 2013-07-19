@@ -1,0 +1,214 @@
+<form id="form" name="form" class="formDefault" method="post" action="#">
+<DIV id="Signatures" style=" margin:0px;" align="center">
+<div class="borderForm" style="width:650px; padding-left:0; padding-right:0; border-width:1;">
+<div class="boxTop"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+  <div class="content"  style="height:100%;" >
+    <table width="99%" >
+    <tr>
+      <td valign='top'>
+      <table cellspacing="0" cellpadding="0" border="0" width="100%" >
+        <tr>
+          <td class="FormTitle" align="" colspan="2">
+          <span >Sign document <u>{docTitle}</u></span>
+          </td>
+        </tr>
+        
+        <!-- Here the Block if the Doc is not signed -->
+        <!-- START BLOCK : TOBESIGNED -->
+
+        <tr>
+          <td colspan="2">
+            <table cellspacing="15" cellpadding="15" border="0" width="100%" id="divDocumentNotSigned" style="display:block;">
+            <tr >
+       
+              <td class="FormContent" align="" width="50%">
+                <span id='label1'><b>File Name: </b></span>{docName}.pdf&nbsp;&nbsp;<a href="{urlShowDoc}" class="link">[View]</a><br />
+                <span id='label1'><b>Version: </b></span>{docVersion} <br />
+                <span id='label1'><b>Update Date: </b></span>{docCreateDate}<br />
+                
+               <input id='btnRegenerate' type='button' value= 'Regenerate' onclick="regenerateOutputDocument('{stepUidObj}', '{stpid}', '{appUid}');" width="90px">
+                
+              </td>
+              <td>
+              <fieldset title="Digital Signature">
+					<legend><b><image src="/plugin/elock/images/E-Lock_logo.jpg" valign="middle" height="30">Digital Signature</b></legend>
+					<label for="elock[REASON]">Reason:</label>
+					<input type="text" value="" id="elock[REASON]" name="elock[REASON]"> 
+					
+					<br>
+					<label for="elock[PASSWORD]">Password:</label>
+					<input type="password" value="" id="elock[PASSWORD]" name="elock[PASSWORD]"> 
+					<div  style="color:blue; border:1px dashed blue; margin:5px">{newUser}</div>
+					<div id="elockMessage" name="elockMessage" style="color:red"></div>
+					<br>
+					<a href="#" onclick="uploadSignature();">[Upload Signature]</a>
+					<br />
+					<input type="hidden" id="action" name="action" value="signOutputDocument">
+					
+					<input type="hidden" id="form[stepUidObj]" name="form[stepUidObj]" value="{stepUidObj}">
+					<input type="hidden" id="form[stepUid]" name="form[stepUid]" value="{stpid}">
+					<input type="hidden" id="form[appUid]" name="form[appUid]" value="{appUid}">
+					<input type="hidden" id="form[aAppDocUid]" name="form[aAppDocUid]" value="{aAppDocUid}">
+					<input type="hidden" id="form[aDocVersion]" name="form[aDocVersion]" value="{aDocVersion}">
+					<center><input type="button" id="btnSign" onClick="signOutputDocument(this.form);" value="Sign and Save"></center>
+				</fieldset>		
+
+              </td>
+              
+            </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- END BLOCK : TOBESIGNED -->
+
+        <!-- Here the Block if the Doc is not signed -->
+        <!-- START BLOCK : SIGNED -->
+
+        <tr>
+          <td colspan="2">
+            <table cellspacing="15" cellpadding="15" border="0" width="100%" id="divDocumentNotSigned" style="display:block;">
+            <tr >
+              <td class="FormContent" align="" width="50%">
+                <span id='label1'><b>File Name: </b></span>{docName}.pdf&nbsp;&nbsp;<a href="{urlShowDoc}" class="link">[View]</a><br />
+                <span id='label1'><b>Version: </b></span>{docVersion} <br />
+                <span id='label1'><b>Update Date: </b></span>{docCreateDate}<br />
+                
+                
+               
+                 
+                
+                <input id='btnRegenerate' type='button' value= 'Regenerate' onclick="regenerateOutputDocument('{stepUidObj}', '{stpid}', '{appUid}');" width="90px">
+              </td>
+              <td>
+              <fieldset title="Digital Signature">
+					<legend><b><image src="/plugin/elock/images/E-Lock_logo.jpg" valign="middle" height="30">Digital Signature</b></legend>
+					<span id='label1'><b>Signed By: </b></span>{signUser} <br />
+					<span id='label1'><b>Sign Date: </b></span>{signDate}<br /><br />
+					
+					<center><input type="button" onClick="this.form.action='{nextStep}';this.form.submit();" value="Continue"></center>
+				</fieldset>		
+
+              </td>
+              
+            </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- END BLOCK : SIGNED -->
+        
+        
+     </table>
+      </td>
+    </tr>
+
+      </div>
+
+      </td>
+    </tr>
+    </table>
+    </div>
+  <div class="boxBottom"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+ </div>
+</DIV>
+<!-- START IGNORE -->
+<script language="javascript">
+
+function uploadSignature(){
+   
+        var oPanel;
+        oPanel = new leimnud.module.panel();
+	oPanel.options={
+		limit	   : true,
+		size	   : {w:470,h:180},
+		position : {x:50,y:50,center:true},
+		title	   : '',
+		control	 : {close:true,resize:false},fx:{modal:true},
+		fx	     : {shadow:true,modal:true}
+	};
+        
+	oPanel.make();
+	oIFrame = window.document.createElement('iframe');
+	oIFrame.style.border = '0';
+	oIFrame.style.width  = '100%';
+	oIFrame.style.height = '100%';
+	oIFrame.src          = '../elock/uploadSignature';
+	oPanel.addContent(oIFrame);
+
+      oRPC.callback = function(oRPC) {
+        r = oRPC.xmlhttp.responseText;
+        //document.getElementById('divDocument').style.display = 'block';
+        //document.getElementById('divSigners').style.display = 'none';
+        //alert ( r );
+        window.location = window.location;
+      }.extend(this);
+      oRPC.make();
+        
+
+        
+}
+
+   
+
+</script>
+<!-- END IGNORE -->
+<script language="javascript">
+function enableOptions(){
+	document.getElementById('btnRegenerate').disabled=false;
+    document.getElementById('btnRegenerate').value="Regenerate";
+    document.getElementById('btnSign').disabled=false;
+    document.getElementById('btnSign').value="Sign and Save";
+}
+function disableOptions(){
+	document.getElementById('btnRegenerate').disabled=true;
+    document.getElementById('btnRegenerate').value="Signing Document...";
+    document.getElementById('btnSign').disabled=true;
+    document.getElementById('btnSign').value="Signing Document...";
+}
+  function signOutputDocument(form){
+    
+	  disableOptions();
+      
+	  ajax_post('../elock/elockAjax',form,'POST',function(response){
+		  eObj=eval(response);
+		  //console.log(eObj);
+		  if(eObj.status){
+			  if(eObj.status=="ERROR"){
+				  document.getElementById('elockMessage').innerHTML=eObj.message;
+				  enableOptions();
+			  }else{
+				  enableOptions();
+				  window.location = window.location;
+			  }
+			  
+		  }
+	  
+	  }
+	  );
+  }
+  function regenerateOutputDocument(stepUidObj, stepUid, appUid){
+    var oRPC = new leimnud.module.rpc.xmlhttp({
+        url:  '../elock/elockAjax?action=regenerateOutputDocument&stepUidObj='  + stepUidObj+'&stepUid='+ stepUid+'&appUid='+ appUid,
+        args: ''
+      });
+      if(document.getElementById('btnSign')){
+        document.getElementById('btnSign').disabled=true;
+      }
+      document.getElementById('btnRegenerate').disabled=true;
+      document.getElementById('btnRegenerate').value="Generating...";
+      oRPC.callback = function(oRPC) {
+        r = oRPC.xmlhttp.responseText;
+        //document.getElementById('divDocument').style.display = 'block';
+        //document.getElementById('divSigners').style.display = 'none';
+        //alert ( r );
+        window.location = window.location;
+      }.extend(this);
+      oRPC.make();
+  }
+
+  function cancel(){
+   // window.location = 'languages';
+   popup_window.close ();
+  }  
+  
+
+</script>

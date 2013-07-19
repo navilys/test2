@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm type="xmlmenu">
+
+  <elockDynaformNew type="private" defaultValue="../elockDynaform/elockDynaformNew"/>
+  
+  <MNU_NEW type="link" label="New" value='' link="@G::encryptLink(@#elockDynaformNew)" colAlign="left" colWidth="85"></MNU_NEW>
+
+</dynaForm>

@@ -1,0 +1,149 @@
+.easyselector, 
+.easyselector-list,
+.easyselector-settings {
+  border: 1px solid #cfcfcf;
+}
+
+.easyselector {
+  text-align: left;
+  position: relative;
+  display: inline-block;
+  width: 'auto';
+  padding: 0px;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f8f8f8), color-stop(100%, #dddddd));
+  background-image: -webkit-linear-gradient(top, #f8f8f8 0%, #dddddd 100%);
+  background-image: -moz-linear-gradient(top, #f8f8f8 0%, #dddddd 100%);
+  background-image: -o-linear-gradient(top, #f8f8f8 0%, #dddddd 100%);
+  background-image: linear-gradient(top, #f8f8f8 0%, #dddddd 100%);
+}
+
+.easyselector input, 
+.easyselector-conf, 
+.easyselector-arrow {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  padding: 0.3em;
+  display: inline-block;
+}
+
+.easyselector-conf, 
+.easyselector-arrow {
+  position: absolute;
+  top: 0px;
+  padding-bottom: 0px;
+  padding-top: 0px;
+  height: 1.7em;
+}
+
+.easyselector-conf div, 
+.easyselector-arrow div {
+  height: inherit;
+}
+
+.easyselector-conf {
+  display: inline;
+  right: 0px;
+}
+
+.easyselector-arrow {
+  right: 28px;
+  background: inherit;
+}
+
+.easyselector input[type="text"]{
+  width: 70%;
+  margin: 0px;
+  background: none;
+  outline: none;
+  text-overflow: ellipsis;
+  padding-right: 0px; 
+}
+
+.easyselector a,
+.easyselector-settings a,
+.easyselector-list a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.easyselector-arrow div {
+  background-image: url(images/easyselector-sprite.png);
+  background-position:  left top;
+  width: 9px;
+  display: inline-block;
+  padding: 0px;
+}
+
+.easyselector-settings {
+  right: -1px;
+  position: absolute;
+  width: 5em;
+  left: auto;
+}
+
+.easyselector-settings li.selected, 
+.easyselector-settings li.selected:hover {
+  background: #555;
+  color: #ddd;
+}
+
+.easyselector.expanded {
+  background: #fff;
+}
+
+.easyselector.expanded .easyselector-arrow div {
+  background-position: 34px 0px;
+}
+
+.easyselector-list,
+.easyselector-settings {
+  position: absolute;
+  display: none;
+  list-style: none;
+  padding: 0px;
+  margin: 0px;
+  background: #efefef;
+  overflow-y: auto;
+}
+
+.easyselector-list {
+  left: -1px;
+  position: absolute;
+} 
+
+.easyselector-list li {
+  display: list-item;
+}
+
+.easyselector-list li:hover,
+.easyselector-settings li:hover {
+  background: #cfcfcf
+}
+
+.easyselector-list li.message {
+  font-weight: bold;
+  font-size: 0.8em;
+  padding: 0.2em;
+}
+
+.easyselector-list li a,
+.easyselector-settings li a {
+  display: block;
+  padding: 0.3em;
+  padding-left: 1em;
+}
+
+.easyselector.expanded .easyselector-list {
+  display: block;
+}
+
+.easyselector-conf {
+  background: #dfdfdf;
+  display: inline-block;
+}
+
+.easyselector-conf div {
+  width: 18px;
+  background: url('images/gear.png') center no-repeat;
+}

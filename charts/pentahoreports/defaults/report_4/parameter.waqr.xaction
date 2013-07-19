@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<action-sequence> 
+  <name>parameter.waqr.xaction</name>
+  <title>parameter</title>
+  <version>1</version>
+  <logging-level>warn</logging-level>
+  <documentation> 
+    <author>Colosa</author>  
+    <description/>  
+    <icon>PentahoReporting.png</icon>  
+    <help/>  
+    <result-type>report</result-type> 
+  </documentation>
+
+  <inputs> 
+    <output-type type="string"> 
+      <default-value>html</default-value>  
+      <sources> 
+        <request>type</request> 
+      </sources> 
+    </output-type>  
+    <PROCESS type="string"> 
+      <default-value/>  
+      <sources> 
+        <request>PROCESS</request> 
+      </sources> 
+    </PROCESS>  
+    <PROCESS_VALUES type="string-list"> 
+      <sources> 
+        <request>PROCESS_VALUES</request> 
+      </sources>  
+      <default-value type="string-list"/> 
+    </PROCESS_VALUES> 
+  </inputs>
+
+  <outputs>
+    <PROCESS_VALUES type="string-list"/>
+  </outputs>
+
+  <resources/>
+  
+  <actions> 
+    <action-definition> 
+      <component-name>SQLLookupRule</component-name>
+      <action-type>rule</action-type>
+      <action-outputs> 
+        <query-result type="result-set" mapping="PROCESS_VALUES"/> 
+      </action-outputs>
+      <component-definition> 
+        <jndi><![CDATA[{JNDI_SOLUTION}]]></jndi>  
+        <query><![CDATA[select distinct(APP_PRO_TITLE) from APP_CACHE_VIEW]]></query>  
+        <live><![CDATA[false]]></live> 
+      </component-definition> 
+    </action-definition>
+ 
+  </actions> 
+</action-sequence>

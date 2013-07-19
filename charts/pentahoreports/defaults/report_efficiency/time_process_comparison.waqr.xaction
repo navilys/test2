@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<action-sequence> 
+  <name>app_cache_temp.waqr.xaction</name>
+  <title>app_cache_temp_pie</title>
+  <version>1</version>
+  <logging-level>warn</logging-level>
+  <documentation> 
+    <author>Colosa</author>  
+    <description/>  
+    <icon>PentahoReporting.png</icon>  
+    <help/>  
+    <result-type>report</result-type> 
+  </documentation>
+
+  <inputs> 
+    <PROCESS type="string"> 
+      <sources> 
+        <request>PROCESS</request> 
+      </sources> 
+    </PROCESS>  
+    <USER type="string"> 
+      <sources> 
+        <request>USER</request> 
+      </sources> 
+    </USER> 
+  </inputs>
+
+  <outputs> 
+    <image-tag type="string"/> 
+  </outputs>
+
+  <resources> 
+    <catalog> 
+      <solution-file> 
+        <location>/processmaker.mondrian.xml</location>  
+        <mime-type>text/plain</mime-type> 
+      </solution-file> 
+    </catalog> 
+  </resources>
+  
+  <actions> 
+    <action-definition> 
+      <component-name>MDXLookupRule</component-name>
+      <action-type>ProcessMaker OLAP</action-type>
+      <action-inputs> 
+        <PROCESS type="string"/>  
+        <USER type="string"/> 
+      </action-inputs>
+      <action-resources> 
+        <catalog type="resource"/> 
+      </action-resources>
+      <action-outputs> 
+        <query-results type="result-set" mapping="reportData"/> 
+      </action-outputs>
+      <component-definition> 
+        <location><![CDATA[mondrian]]></location>  
+        <jndi><![CDATA[{JNDI_SOLUTION}]]></jndi>
+        <!-- START IGNORE -->
+        <query><![CDATA[with set [Routings Cases] as 'Filter([Routing].Members, NOT ([Routing].CurrentMember IN {[Routing].[All Routings]}))'
+  member [Measures].[Min Time] as 'Min([Routings Cases], [Measures].[Duration])'
+  member [Measures].[Max Time] as 'Max([Routings Cases], [Measures].[Duration])'
+  member [Measures].[Avg Time] as 'Avg([Routings Cases], [Measures].[Duration])'
+select NON EMPTY {[Measures].[Max Time], [Measures].[Min Time], [Measures].[Avg Time]} ON COLUMNS,
+  NON EMPTY {[Task].[All Tasks].Children} ON ROWS
+from [cubo]
+where  ([Process].[All Processes].[{PROCESS}], [Current User Id].[All Users Ids].[{USER}])]]></query> 
+        <!-- END IGNORE -->
+      </component-definition> 
+    </action-definition>
+  
+    <action-definition> 
+      <component-name>ChartComponent</component-name>
+      <action-type>Bar Chart Process</action-type>
+      <action-inputs> 
+        <chart-data type="result-set" mapping="reportData"/>  
+        <PROCESS type="string"/> 
+      </action-inputs>
+      <action-outputs> 
+        <image-tag type="string"/> 
+      </action-outputs>
+      <!-- START IGNORE -->
+      <component-definition> 
+        <chart-attributes> 
+          <is-3D>true</is-3D>  
+          <domain-title>Tasks</domain-title>  
+          <range-title>Days</range-title>  
+          <url-template><![CDATA[javascript:clickOnTime('{task}')]]></url-template>  
+          <paramName>task</paramName>  
+          <domain-label-rotation>.7</domain-label-rotation>  
+          <chart-type>BarChart</chart-type>  
+          <url-template/>  
+          <paramName>process</paramName> 
+        </chart-attributes>  
+        <by-row><![CDATA[false]]></by-row>  
+        <width><![CDATA[500]]></width>  
+        <height><![CDATA[300]]></height>  
+        <title><![CDATA[Your Time Comparison for Process {PROCESS}]]></title> 
+      </component-definition>
+      <!-- END IGNORE -->     
+    </action-definition>
+ 
+  </actions> 
+</action-sequence>

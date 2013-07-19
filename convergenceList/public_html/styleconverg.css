@@ -1,0 +1,6 @@
+.cvrgl_reset {background-image: url("/plugin/convergenceList/clear1.png") !important;background-position:0 center !important;background-repeat: no-repeat;display: inline;height: 18px !important;padding-left: 18px !important;}
+.converg_search{background-position: 0 -9793px !important;}
+.converg_blur{background-color:#FFF;font-weight: normal;color: #000;border: 1px solid #AAA;border-radius: 4px;}
+.converg_focus{background-color:#000000;color: #000000;font-weight: bold !important;border: 1px solid #660000;border-radius: 4px;}
+.cvrgl_reset {background-image: url("/plugin/convergenceList/reset.png") !important;background-position:0 center !important;background-repeat: no-repeat;display: inline;height: 18px !important;padding-left: 18px !important;}
+.cvrgl_configCSV {background-image: url("/plugin/convergenceList/configurationCSV.png") !important;background-position:0 center !important;background-repeat: no-repeat;display: inline;height: 18px !important;padding-left: 18px !important;}

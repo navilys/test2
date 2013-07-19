@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="KtDocType" width="300" mode="edit" enableTemplate="0" border="0">
+
+<PRO_UID type="hidden" colWidth='250'  >
+  <en>Uid</en>
+</PRO_UID>
+
+<DOC_KT_TYPE_ID type="hidden" colWidth='250'  >
+  <en>Uid</en>
+</DOC_KT_TYPE_ID>
+
+
+<DOC_UID type="dropdown" sqlconnection="dbarray">
+SELECT DOC_UID, DOC_NAME FROM documentsArray
+<en>Processmaker Document</en>
+<es>Document Processmaker</es>
+</DOC_UID>
+
+
+<BTN_SUBMIT type="button" onclick="assignDocumentSave(@@DOC_KT_TYPE_ID,getField('DOC_UID')[getField('DOC_UID').selectedIndex].value);">
+  <en>Assign</en>
+</BTN_SUBMIT>
+
+</dynaForm>

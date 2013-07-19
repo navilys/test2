@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Workspace Management</title>
+        <link href="{stylePath}jquery.dataTables2.css" rel="stylesheet" type="text/css">
+        <link href="{stylePath}jquery-ui.min.css" rel="stylesheet" type="text/css">
+        <link href="{stylePath}workspaceManagement.css" rel="stylesheet" type="text/css">
+        <script src="{scriptPath}jquery.min.js" type="text/javascript"></script>
+        <script src="{scriptPath}jquery-ui.min.js" type="text/javascript"></script>
+        <script src="{scriptPath}jquery.dataTables.min.js" type="text/javascript"></script>
+        <script src="{scriptPath}workspace-list.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <h1>Workspace Management</h1>
+        <div id="header">
+            <ul class="button-toolbar">
+                <li><a href="{newWksPath}" id="new-workspace-button">New Workspace</a></li>
+                <li><a href="#" id="backup-workspace-button">Backup Workspace</a></li>
+                <li><a href="#" id="restore-workspace-button">Restore Workspace</a></li>
+                <li><a href="#" id="clone-workspace-button">Clone Workspace</a></li>
+                <li><a href="#" id="delete-workspace-button">Delete Workspace</a></li>
+                <li style="display: none"><a href="#" id="enable-workspace-button">Enable Workspace</a></li>
+                <li><a href="#" id="disable-workspace-button">Disable Workspace</a></li>
+				<li><a href="#" id="refresh-workspace-stats">Refresh Information</a></li>
+            </ul>
+        </div>
+        <div id="workspace-list">
+            <table border="0" class="display" id="workspace-table">
+	            <thead>
+		            <tr>
+                        
+			            <th class="workspace-header">Workspace</th>
+			            <th class="cases-header">Cases</th>
+			            <th class="disk-usage-header">Disk Usage</th>
+                        <th class="tables-header">Tables</th>
+			            <th class="statistics-header">Statistics</th>
+			            <th class="configuration-header">Configuration</th>
+		            </tr>
+	            </thead>
+	            <tbody>
+		            <tr>
+			            <td colspan="5" class="dataTables_empty">Loading data from server...</td>
+		            </tr>
+	            </tbody>
+	            <tfoot>
+		            <tr>
+                        
+			            <th>Workspace</th>
+			            <th>Cases</th>
+			            <th>Disk Usage</th>
+                        <th>Tables</th>
+			            <th>Statistics</th>
+			            <th>Configuration</th>
+		            </tr>
+	            </tfoot>
+            </table>
+        </div>
+        <div id="footer"></div>
+        <div id="backup-workspace-dialog" style="display: none">
+            <p>Backup workspace:<span id="backup-workspace-name"></span></p>
+            <p>Please enter a short description for the backup:</p>
+            <input id="backup-name" maxlength="20" type="text" name="backup-name" value="" />
+        </div>
+        <div id="restore-workspace-dialog" style="display: none">
+            <p>Backup workspace:<span id="restore-workspace-name"></span></p>
+            <p>Choose the backup you want to restore from:</p>
+            <select id="restore-backup-list"></select>
+        </div>
+        <div id="clone-workspace-dialog" style="display: none">
+            <p>Source Workspace:<h4><span id="clone-workspace-name"></span></h4></p>
+            <p>Create clone from:</p><select id="clone-backup-list"></select>
+            <p>Target workspace:</p><select id="clone-target-list"></select>
+            <div id="clone-new-workspace">
+                <p>New workspace name:</p>
+                <input type="text" maxlength="13" id="clone-new-workspace-name" value="" />
+                <div id="clone-new-wks-warning" class="warning-msg" style="display: none">Invalid workspace name</div>
+            </div>
+        </div>
+        <div id="delete-workspace-dialog" style="display: none">
+            <p>Are you sure you want to delete the workspace:<span id="delete-workspace-name"></span> ?</p>
+        </div>
+        <div id="disable-workspace-dialog" title="Change Status" style="display: none">
+            <p>Are you sure you want to change the status of the workspace:<span id="disable-workspace-name"></span> ?</p>
+        </div>
+        <div id="no-backups-found-dialog" style="display: none" title="No backups found">
+            <p>No backups are available for this workspace. It cannot be restored.</p>
+        </div>
+        <div id="disable-workspace-ok-dialog" title="Success" style="display: none">
+            <p>Workspace status changed successfully</p>
+        </div>
+        <div id="disable-workspace-failed-dialog" style="display: none">f
+            <p>Failed to change status of workspace</p>
+        </div>
+        <div id="loading-dialog" style="display: none">
+            <p>Please wait while the operation completes...</p>
+            <img src="{imagePath}ajax-loader.gif" alt="loading..." />
+        </div>
+        <div id="needs-to-select-wks-dialog" style="display: none">
+            <p>Please select a workspace first.</p>
+        </div>
+        <div id="operation-completed-dialog" style="display: none">
+            <p id="operation-was-successful">Operation completed successfully!</p>
+            <p id="operation-was-not-successful">Operation failed. Please check the error log</p>
+            <div id="log-accordion">
+                <h3>Operation Log</h3>
+                <div class="log-entry" id="operation-log-input"></div>
+            </div>
+        </div>
+        <div id="refresh-warning-dialog" title="Refresh information" style="display: none">
+            <p>Refreshing the information may take a while. Are you sure?</p>
+        </div>
+    </body>
+</html>

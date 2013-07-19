@@ -1,0 +1,882 @@
+<?php
+/**
+ * class.colosaExample.pmFunctions.php
+ *
+ * ProcessMaker Open Source Edition
+ * Copyright (C) 2004 - 2008 Colosa Inc.
+ * *
+ */
+
+////////////////////////////////////////////////////
+// colosaExample PM Functions
+//
+// Copyright (C) 2007 COLOSA
+//
+// License: LGPL, see LICENSE
+////////////////////////////////////////////////////
+
+
+function colosaExample_getMyCurrentDate()
+{
+	return G::CurDate('Y-m-d');
+}
+
+function colosaExample_getMyCurrentTime()
+{
+	return G::CurDate('H:i:s');
+}
+
+function  getUserInfoPlugin($username){
+    $res = "";
+    $query = "SELECT USR_FIRSTNAME, USR_LASTNAME FROM USERS where USR_USERNAME = '$username' ";
+    $result = executeQuery($query);
+    if(isset($result))
+        $res = $result[1]['USR_FIRSTNAME']." ". $result[1]['USR_LASTNAME'];
+
+    return $res;
+}
+
+function  insertHistoryLogPlugin($APP_UID,$USR_UID,$CURRENTDATETIME,$VERSION,$NEWAPP_UID,$ACTION){
+    
+    $Insertdata="INSERT INTO PMT_HISTORY_LOG (
+                          HLOG_UID ,
+                          HLOG_APP_UID ,
+                          HLOG_USER_UID ,
+                          HLOG_DATECREATED ,
+                          HLOG_VERSION ,                          
+                          HLOG_CHILD_APP_UID,
+                          HLOG_ACTION
+                        )
+                        VALUES (
+                        NULL , '$APP_UID', '$USR_UID', '$CURRENTDATETIME', '$VERSION','$NEWAPP_UID','$ACTION'
+                        ); 
+              ";                
+    $resultInsData=executeQuery($Insertdata);
+}
+
+function FredirectTypo3($APP_UID){
+    
+    $caseInstance = new Cases();
+    $caseFields = $caseInstance->loadCase( $APP_UID );
+    $DATA = $caseFields['APP_DATA'];
+    if(isset($DATA['FLAGTYPO3']) && $DATA['FLAGTYPO3'] == 'On'){
+    $hostPort = 'http://'.$_SERVER['HTTP_HOST'].':8081';
+    echo "<script language='javascript'> parent.parent.location.href = '".$hostPort."/mon-compte/list-of-my-request/';</script>";
+    die();
+    }
+    else{
+        if(isset($DATA['FLAG_ACTION'])){
+            
+            if($DATA['FLAG_ACTION'] == 'actionCreateCase'){     
+                echo "<script language='javascript'> 
+                parent.Ext.getCmp('gridNewTab').store.reload();
+                parent.Ext.getCmp('win2').hide();
+                </script>";
+                die();  
+            }
+            if($DATA['FLAG_ACTION'] == 'editForms'){
+                $DYN_UID = $DATA['DYN_UID'];
+                $CURRENTDATETIME = $DATA['CURRENTDATETIME'];
+                $APP_UID = $DATA['APPLICATION'];
+                $PRO_UID = $DATA['PROCESS'];
+                $url = '../convergenceList/casesHistoryDynaformPage_Ajax.php?ACTIONTYPE=edit&actionAjax=historyDynaformGridPreview&DYN_UID='.$DYN_UID.'&APP_UID='.$APP_UID.'&PRO_UID='.$PRO_UID.'&CURRENTDATETIME='.$CURRENTDATETIME;
+                echo "<script language='javascript'> location.href = '".$url."';</script>";
+                die();
+            }
+            if($DATA['FLAG_ACTION'] == 'actionAjaxRestartCases'){
+                $_SESSION['USER_LOGGED'] = $DATA['FLG_INITUSERUID'];
+                $_SESSION['USR_USERNAME'] = $DATA['FLG_INITUSERNAME'];                
+                header ( "Content-Type: text/plain" );
+                $paging = array ('success' => true, 'messageinfo' => 'Operation Completed');
+                echo G::json_encode ( $paging );
+                die();                
+            }       
+        }
+        else{
+            header("Location:http://".$_SERVER['HTTP_HOST']."/sys".$DATA['SYS_SYS']."/".$DATA['SYS_LANG']."/".$DATA['SYS_SKIN']."/cases/casesListExtJsRedirector.php");
+            die();      
+        }   
+    }
+}
+
+// fonction pour creer un fe_user Typo3 a la confirmation de creation de compte dans PM
+function  userSettingsPlugin($groupId){
+    $res = "";
+    if (isset($_GET['ER_REQ_UID'])) {
+
+	//set_include_path(PATH_PLUGINS . 'externalRegistration' . PATH_SEPARATOR . get_include_path());
+	require_once PATH_PLUGINS.'externalRegistration/classes/model/ErConfiguration.php';
+	require_once PATH_PLUGINS.'externalRegistration/classes/model/ErRequests.php';
+	require_once PATH_PLUGINS.'externalRegistration/classes/class.ExternalRegistrationUtils.php';
+
+	$erReqUid = G::decrypt($_GET['ER_REQ_UID'], URL_KEY);
+	// Load request
+	 $erRequestsInstance = new ErRequests();
+	 $request = $erRequestsInstance->load($erReqUid);
+	  
+	$data = $request['ER_REQ_DATA'];  
+	ini_set("soap.wsdl_cache_enabled", "0");
+	$pfServer = new SoapClient('http://172.17.20.29:8081/typo3conf/ext/pm_webservices/serveur.php?wsdl');
+	$key = rand();
+	$ret = $pfServer->createAccount(array(
+	    'username' => $data['__USR_USERNAME__'],
+	    'password' => md5($data['__PASSWORD__']),
+	    'email' => $data['__USR_EMAIL__'],
+	    'lastname' => $data['__USR_LASTNAME__'],
+	    'firstname' => $data['__USR_FIRSTNAME__'],
+	    'key' => $key,
+	    'pmid' => $data['USR_UID'],
+	    'usergroup' => $groupId,
+	    'cHash' => md5($data['__USR_USERNAME__'].'*'.$data['__USR_LASTNAME__'].'*'.$data['__USR_FIRSTNAME__'].'*'.$key)));
+
+    // Get the group name
+    $query = "SELECT CON_VALUE FROM CONTENT WHERE CON_ID = '$groupId' AND CON_CATEGORY='GRP_TITLE' ";
+    $result = executeQuery($query);
+    $roleName='';
+    if(isset($result))
+        $roleName = $result[1]['CON_VALUE'];
+    // End Get the group name
+    
+    // Change the role    
+    if($roleName != ''){
+        $updateRole = "UPDATE USERS SET USR_ROLE ='$roleName' WHERE USR_UID='".$data['USR_UID']."'";
+        $updateRQuery = executeQuery($updateRole);    
+    }    
+    // End Change the role
+
+    }
+    
+    return $res;
+}
+
+
+function convergence_getAllAppData($app_id) {
+    
+    G::LoadClass('case');
+    $oCase = new Cases();
+    $fields = $oCase->loadCase( $app_id );
+    
+    return $fields['APP_DATA'];
+    
+}
+
+function testCkeck($arrayFields,$value = 1){
+    $check = true;
+    foreach($arrayFields as $key => $val){
+        if(intval($val) != $value) $check = false;
+    }
+    return $check;
+}
+
+function testCompletion($fields){
+    $check = true;
+    foreach($arrayFields as $key => $val){
+        if('' == $val || null == $val) $check = false;
+    }
+    return $check;
+}
+
+function testEligibiliteRemboursement($app_id) {
+
+    //recuperation des variable du formulaire
+    $fields = convergence_getAllAppData($app_id);   
+    $eligible = 1;
+    $key_check = array('bordereauConforme','bordereauPresent','chqpresent','chqtamponne','client_check','facturepresente','prestataire_check','signature');
+   // if(testCompletion($fields)) $eligible = 0;
+    if(testCkeck($key_check)) $eligible = 0;
+    if($fields['refus'] == 1) $eligible = 0;
+    $dateReception = strtotime($fields['dateReception']);
+    $dateFacture = strtotime($fields['dateFacture']);
+    $dateFin = strtotime($fields['dateFin']);
+    $dateEmission = strtotime($fields['dateEmission']);
+    //$lastmonth = mktime(0, 0, 0, date("m")-1, date("d"),   date("Y"));
+    $explodeDateFacture = explode('-', $fields['dateFacture']);   
+    $dateLimite = mktime(0, 0, 0, $explodeDateFacture[1]+3, $explodeDateFacture[2], $explodeDateFacture[0]);      
+    
+    if(strtotime($fields['dateFin']) < strtotime($fields['dateFacture']) || strtotime($fields['dateFacture']) < strtotime($fields['dateEmission'])) $eligible = 0;  
+    if(($dateReception < $dateFacture) || ($dateReception > $dateLimite)) $eligible = 0;    
+    return $eligible;    
+}
+
+function testEligibiliteDemande($app_id) {
+
+    //recuperation des variable du formulaire
+    $fields = convergence_getAllAppData($app_id);
+
+    $eligible = 1;
+
+    
+
+    if ($fields['devisPresent'] == '0' || $fields['devisConforme'] == '0' || $fields['avisImpotPresent'] == '0' || $fields['avisImpotConforme'] == '0' 
+            || $fields['attestationPresent'] =='0' || $fields['attestationConforme'] == '0' || $fields['proprietaire'] == '0' 
+            || $fields['justifPresent'] == '0' || $fields['justifConforme'] == '0' || $fields['occupant'] == '0')
+            $eligible=0;
+
+
+    
+    $query = 'SELECT ZIP FROM PMT_VILLE WHERE UID ='.$fields['codePostal'];
+    $result = executeQuery($query);
+    if ( !isset($result) || !in_array(substr($result[1]['ZIP'],0,2),array('24','33','40','47','64'))) {
+            $eligible = 0;
+    }
+
+
+    if ($fields['maisonIndividuelle'] == '0')
+            $eligible = 0;
+
+
+    if (strtotime(str_replace('/','-',$fields['construite'])) >= mktime(0,0,0,1,1,2000))
+            $eligible = 0;
+
+
+    if ($fields['travauxEligible'] == '0')
+            $eligible = 0;
+
+
+    if (strtotime(str_replace('/','-',$fields['dateSignature'])) < mktime(0,0,0,11,5,2012))
+            $eligible = 0;
+
+
+    if (strtotime(str_replace('/','-',$fields['dateDebutTravaux'])) < time())
+            $eligible = 0;
+
+
+    switch($fields['nbPers']) {
+            case '1' : if ($fields['sommeRevenu'] > 23688) $eligible = 0; break;
+            case '2' : if ($fields['sommeRevenu'] > 31588) $eligible = 0; break;
+            case '3' : if ($fields['sommeRevenu'] > 36538) $eligible = 0; break;
+            case '4' : if ($fields['sommeRevenu'] > 40488) $eligible = 0; break;
+            case '5' : if ($fields['sommeRevenu'] > 44425) $eligible = 0; break;
+
+    }
+    
+    return $eligible;
+
+}
+
+function calculMontantEligible($eligible,$thematique,$bio) {
+
+    if ($eligible == 1) {
+
+            switch($thematique) {
+                    case '1' : $montant = 800; break;
+                    case '2' : $montant = 1600; break;
+                    case '3' : $montant = 500; break;
+            }
+
+            if ($bio == '1')
+                    $montant += 200;
+
+    }
+
+    return $montant;
+
+}
+
+function convergence_getUserOfDemande($app_id) {
+    
+    $query = 'SELECT ID_USER FROM PMT_DEMANDES WHERE APP_UID = "'.$app_id.'"';
+    $result = executeQuery($query);
+    if(isset($result)) {
+        return $result[1]['ID_USER'];
+    }
+    else
+        return 0;
+}
+
+function convergence_phonex( $sIn ) /// SOUNDEX 2 V FRANCAISE
+{
+    /// Si il n'y a pas de mot, on sort immédiatement
+    if ( $sIn === '' ) return ' ';
+    /// On met tout en minuscule
+    $sIn = strtoupper( $sIn );
+    /// On supprime les accents
+    $sIn = strtr( $sIn, 'ÂÄÀÇÈÉÊËŒÎÏÔÖÙÛÜ', 'AAASEEEEEIIOOUUU' );
+    /// On supprime tout ce qui n'est pas une lettre
+    $sIn = preg_replace( '`[^A-Z]`', '', $sIn );
+    /// Si la chaîne ne fait qu'un seul caractère, on sort avec.
+    if ( strlen( $sIn ) === 1 ) return $sIn . ' ';
+    /// on remplace les consonnances primaires
+    $convIn = array( 'GUI', 'GUE', 'GA', 'GO', 'GU', 'CA', 'CO', 'CU', 'Q', 'CC', 'CK' );
+    $convOut = array( 'KI', 'KE', 'KA', 'KO', 'K', 'KA', 'KO', 'KU', 'K','K', 'K' );
+    $sIn = str_replace( $convIn, $convOut, $sIn );
+    /// on remplace les voyelles sauf le Y et sauf la première par A
+    $sIn = preg_replace( '`(?<!^)[EIOU]`', 'A', $sIn );
+    /// on remplace les préfixes puis on conserve la première lettre
+    /// et on fait les remplacements complémentaires
+    $convIn = array( '`^KN`', '`^(PH|PF)`', '`^MAC`', '`^SCH`', '`^ASA`', '`(?<!^)KN`', '`(?<!^)(PH|PF)`', '`(?<!^)MAC`',
+    '`(?<!^)SCH`','`(?<!^)ASA`' );
+    $convOut = array( 'NN', 'FF', 'MCC', 'SSS', 'AZA', 'NN', 'FF', 'MCC', 'SSS', 'AZA' );
+    $sIn = preg_replace( $convIn, $convOut, $sIn );
+    /// suppression des H sauf CH ou SH
+    $sIn = preg_replace( '`(?<![CS])H`', '', $sIn );
+    /// suppression des Y sauf précédés d'un A
+    $sIn = preg_replace( '`(?<!A)Y`', '', $sIn );
+    /// on supprime les terminaisons A, T, D, S
+    $sIn = preg_replace( '`[ATDS]$`', '', $sIn );
+    /// suppression de tous les A sauf en tête
+    $sIn = preg_replace( '`(?!^)A`', '', $sIn );
+    /// on supprime les lettres répétitives
+    $sIn = preg_replace( '`(.)\1`', '$1', $sIn );
+    /// on ne retient que 4 caractères ou on complète avec des blancs
+    return substr( $sIn . ' ', 0, 4);
+}
+
+function make_dedoublonage($process,$app_id,$debug = 0) {
+    
+    //recuperation des variable du formulaire
+    $fields = convergence_getAllAppData($app_id);
+    
+    $where = $whereLev = $whereSound = 'APP_UID !="'.$app_id.'"';
+    
+    $getTableName = 'SELECT * FROM ADDITIONAL_TABLES WHERE PRO_UID="'.$process.'"';
+    $table = executeQuery($getTableName);
+    if(isset($table) && count($table) > 0) {
+        $table = $table[1]['ADD_TAB_NAME'];
+    }
+
+    $getFieldsQuery = 'SELECT * FROM PMT_CONFIG_DEDOUBLONAGE WHERE CD_PROCESS_UID="'.$process.'"';
+    $config = executeQuery($getFieldsQuery);
+    if(isset($config) && count($config) > 0) {
+        
+        foreach ($config as $data) {
+        
+            $where .= ' AND '.strtoupper($data['CD_FIELDNAME']).' = "'.$fields[$data['CD_FIELDNAME']].'"';
+            
+            $whereLev .= ' AND levenshtein_ratio("'.$fields[$data['CD_FIELDNAME']].'",'.strtoupper($data['CD_FIELDNAME']).') >= '.$data['CD_RATIO'];
+            
+            $whereSound .= ' AND SOUNDEX("'.$fields[$data['CD_FIELDNAME']].'") = SOUNDEX('.strtoupper($data['CD_FIELDNAME']).')';
+        
+        }
+        
+    }
+    
+    $requete = 'SELECT * FROM '.$table.' WHERE '.$where;
+    $result = executeQuery($requete);
+    
+    $requeteLev = 'SELECT * FROM '.$table.' WHERE '.$whereLev;
+    $resultLev = executeQuery($requeteLev);
+    
+    $requeteSound = 'SELECT * FROM '.$table.' WHERE '.$whereSound;
+    $resultSound = executeQuery($requeteSound);
+    
+    G::pr('SANS LEVENSHTEIN');
+    G::pr($requete);
+    G::pr($result);
+    
+    G::pr('AVEC LEVENSHTEIN');
+    G::pr($requeteLev);
+    G::pr($resultLev);
+    
+    G::pr('AVEC SOUNDEX');
+    G::pr($requeteSound);
+    G::pr($resultSound);
+    
+    die;
+    
+    $userId = convergence_getUserOfDemande($app_cur);
+    
+    $doublon = 0;
+    
+    if ($cp != '') {
+        
+        $query = 'SELECT count(*) as NB FROM PMT_DEMANDES WHERE APP_UID != "'.$app_cur.'" 
+                AND THEMATIQUE='.$thematique.' 
+                AND (
+                    LOWER(NOM) LIKE "%'.strtolower($nom).'%" 
+                    AND CODEPOSTAL='.intval($cp).' 
+                    AND LOWER(NOMVOIE) LIKE "%'.strtolower($adresse).'%" 
+                    AND NUMVOIE="'.$numvoie.'" 
+                    AND TYPEVOIE="'.$typevoie.'"
+                )';
+        
+        if ($debug != 0)
+            G::pr($query);
+        
+        $result = executeQuery($query);
+        if(isset($result) && $result[1]['NB'] > 0) {
+                $doublon = 1;
+        }
+        
+        if ($debug != 0) {
+            G::pr('Result : '.$result[1]['NB']);
+            G::pr('Doublon : '.$doublon);
+        }
+    }
+    
+    
+    // si rien d'exact, on recherche le phonétique
+    if ($doublon == 0) {
+
+        $sql_pho = 'SELECT NOM,levenshtein_ratio("'.$nom.'",NOM), NOMVOIE, levenshtein_ratio("'.$adresse.'",NOMVOIE)  FROM PMT_DEMANDES WHERE APP_UID != "'.$app_cur.'" 
+                AND THEMATIQUE='.$thematique.' 
+                AND ( 
+                    levenshtein_ratio("'.$nom.'",NOM) > 80
+                    OR levenshtein_ratio("'.$adresse.'",NOMVOIE) > 80
+                )';
+
+        if ($debug != 0)
+            G::pr($sql_pho);
+        
+        $result = executeQuery($sql_pho);
+        
+        if ($debug != 0)
+            G::pr($result);
+        
+        if(isset($result) && count($result) > 0) {
+                $doublon = 1;
+        }
+        
+        if ($debug != 0) {
+            G::pr('Result : '.$result[1]['NB']);
+            G::pr('Doublon : '.$doublon);
+        }
+        
+    }
+
+    return $doublon;
+}
+
+function convergence_changeStatut($app_uid, $statut) {
+    
+    try {
+        $query = 'UPDATE PMT_DEMANDES SET STATUT = '.$statut.' WHERE APP_UID = "'.$app_uid.'"';
+        $result = executeQuery($query);
+    }
+    catch (Exception $e) {
+        var_dump($e);
+        die();
+    }
+    
+}
+
+function convergence_updateDemande($app_uid, $data) {
+    
+    $set = '';
+    try {
+        if (is_array($data) && count($data)>0) {
+            
+            foreach($data as $k => $v) {
+                if ($set == '')
+                    $set = $k.'="'.$v.'"';
+                else
+                    $set .= ', '.$k.'="'.$v.'"';
+            }
+            
+            $query = 'UPDATE PMT_DEMANDES SET '.$set.' WHERE APP_UID = "'.$app_uid.'"';
+            $result = executeQuery($query);
+        }
+    }
+    catch (Exception $e) {
+        var_dump($e);
+        die();
+    }
+}
+
+function convergence_getMsgErreur($app_id) {
+    
+   $fields = convergence_getAllAppData($app_id);
+   
+   $errors = array();
+   
+   if ($fields['proprietaire'] == '0')
+       $error[] = 'Vous n\'êtes pas propriétaire.';
+   
+   if ($fields['occupant'] == '0')
+       $error[] = 'Vous n\'occupez pas l\'habitation.';
+
+   $query = 'SELECT ZIP FROM PMT_VILLE WHERE UID ='.$fields['codePostal'];
+    $result = executeQuery($query);
+    if ( !isset($result) || !in_array(substr($result[1]['ZIP'],0,2),array('24','33','40','47','64'))) {
+            $error[] = 'Votre adresse n\'est pas dans la région Aquitaine.';
+    }
+
+    if ($fields['maisonIndividuelle'] == '0')
+       $error[] = 'Le type de logement n\'est pas une maison individuelle.';
+
+    if (strtotime(str_replace('/','-',$fields['construite'])) >= mktime(0,0,0,1,1,2000))
+       $error[] = 'La date de construction n\'est pas postérieure au 1er javier 2000.';
+
+    if ($fields['travauxEligible'] == '0')
+       $error[] = 'Le contrôle de l\'EIE n\'est pas favorable.';
+
+    if (strtotime(str_replace('/','-',$fields['dateSignature'])) < mktime(0,0,0,11,5,2012))
+       $error[] = 'La date de demande est antérieure au 5 Novembre 2012.';
+
+    //todo c'est pas time() a utiliser
+    if (strtotime(str_replace('/','-',$fields['dateDebutTravaux'])) < time())
+       $error[] = 'La date de prévision des travaux est déjà passé.';
+
+    $iserror = 0;
+    switch($fields['nbPers']) {
+            case '1' : if ($fields['sommeRevenu'] > 23688) $iserror = 1; break;
+            case '2' : if ($fields['sommeRevenu'] > 31588) $iserror = 1; break;
+            case '3' : if ($fields['sommeRevenu'] > 36538) $iserror = 1; break;
+            case '4' : if ($fields['sommeRevenu'] > 40488) $iserror = 1; break;
+            case '5' : if ($fields['sommeRevenu'] > 44425) $iserror = 1; break;
+    }
+    
+    if ($iserror == 1)
+       $error[] = 'Vos conditions de ressources sont trop importantes pour le nombre de personnes dans le foyer.';
+    
+    return $error;
+    
+}
+
+function convergence_getIncompletErreur($app_id) {
+    
+    $fields = convergence_getAllAppData($app_id);
+    
+    $incomplet = array();
+    
+    if ($fields['devisPresent'] == '0' || $fields['devisConforme'] == '0')
+        $incomplet[] = 'une photocopie de votre devis.'; 
+         
+    if ($fields['avisImpotPresent'] == '0' || $fields['avisImpotConforme'] == '0')
+        $incomplet[] = 'une photocopie de votre avis d\'imposition.'; 
+        
+    if ($fields['attestationPresent'] =='0' || $fields['attestationConforme'] == '0')
+        $incomplet[] = 'une photocopie de votre acte de propriété.'; 
+        
+    if ($fields['justifPresent'] == '0' || $fields['justifConforme'] == '0')
+        $incomplet[] = 'une justificatif de domicile.'; 
+    
+    if (convergence_testPresta($fields['numPresta']) == false)
+        $incomplet[] = 'le choix de votre prestataire.'; 
+    
+    return $incomplet; 
+}
+
+function convergence_testPresta($uid) {
+    
+    if ($uid == '')
+        return false;
+    else {
+        $query = 'SELECT count(*) as NB FROM PMT_PARTENAIRE WHERE NUM_PRESTA = '.$uid;
+        $result = executeQuery($query);
+        if(isset($result) && $result[1]['NB'] > 0) 
+            return true;
+        else
+            return false;
+    }
+    
+}
+
+//obsolete a priori car dans les variable on a les champs _label pour les valeurs
+function convergence_getRelationBdd($table,$uid,$returnField) {
+    
+    if ($uid == '')
+        return '';
+    else {
+        $query = 'SELECT '.$returnField.' FROM '.$table.' WHERE UID = '.$uid;        
+        $result = executeQuery($query);
+        if(isset($result)) 
+            return $result[1][$returnField];
+        else
+            return '';
+    }
+    
+}
+
+function convergence_getFrenchDate()
+{
+	return date('d/m/Y');
+}
+
+function convergence_getOutputDocument($app_id,$doc_id) {
+    
+    $aAttachFiles = array();
+    
+    $outDocQuery = 'SELECT AD.APP_DOC_UID, AD.DOC_VERSION, C.CON_VALUE AS FILENAME 
+    FROM APP_DOCUMENT AD, CONTENT C 
+    WHERE AD.APP_UID="'.$app_id.'" AND AD.DOC_UID="'.$doc_id.'" AND 
+    AD.APP_DOC_STATUS="ACTIVE" AND AD.DOC_VERSION = (
+    SELECT MAX(DOC_VERSION) FROM APP_DOCUMENT WHERE APP_UID="'.$app_id.'" AND 
+    DOC_UID="'.$doc_id.'" AND APP_DOC_STATUS="ACTIVE")
+    AND AD.APP_DOC_UID = C.CON_ID AND C.CON_CATEGORY = "APP_DOC_FILENAME"';
+    
+    $outDoc = executeQuery($outDocQuery);
+    if (is_array($outDoc) and count($outDoc) > 0) {
+        $path = PATH_DOCUMENT . $app_id . PATH_SEP . 'outdocs' . PATH_SEP . 
+                $outDoc[1]['APP_DOC_UID'] . '_' . $outDoc[1]['DOC_VERSION'];
+        $filename = $outDoc[1]['FILENAME'];
+        $aAttachFiles[$filename . '.pdf'] = $path . '.pdf';
+        $aAttachFiles[$filename . '.doc'] = $path . '.doc';
+    }
+    
+    return $aAttachFiles;
+    
+}
+
+function convergence_makeChequeProduction() {
+    
+    $csv = array();
+    $entete = array('Id','nom','prenom','voie','type voie','rue','code postal','ville','montant');
+    
+    $query = 'SELECT APP_UID,NOM,PRENOM,NUMVOIE,TYPEVOIE,NOMVOIE,CODEPOSTAL,VILLE,MONTANT FROM PMT_DEMANDES WHERE STATUT = 2';        
+    $result = executeQuery($query);
+    if(isset($result)) {
+        $fp = fopen('file.csv', 'w');
+        fputcsv($fp, $entete);
+        foreach ($result as $demande) {
+            fputcsv($fp, $demande);
+        }
+        fclose($fp);
+    }
+    
+    //var_dump($csv);
+    
+}
+
+function convergence_importNumeroCheque($app_id) {
+    
+    $query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
+   WHERE AD.APP_UID="'.$app_id.'" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
+       AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';
+    
+    $result = executeQuery($query);
+    if (is_array($result) and count($result) > 0) {
+
+        $filePath = PATH_DOCUMENT.$app_id.'/'.$result[1]['CON_ID'].'_'.$result[1]['DOC_VERSION'].'.'.pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
+        $row = 0;
+        if (($handle = fopen($filePath, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                if ($row > 0) {
+                    if ($data[9] != '') {
+                        $query2 = 'INSERT INTO PMT_CHEQUES (UID,NUM,ANNULE,ID_DEMANDE) VALUES ("'.G::generateUniqueID().'","'.$data[9].'",0,"'.$data[0].'")';
+                        $result2 = executeQuery($query2);
+                        convergence_changeStatut($data[0],6);
+                    }
+                }
+                $row++;
+            }
+            fclose($handle);
+        }
+    }
+
+}
+
+function convergence_getNameUser($userID) {
+    
+    $user = userInfo($userID);
+    return $user['firstname'].' '.$user['lastname'];   
+}
+
+function convergence_getNamePresta($prestaID) {
+    
+    $query = 'SELECT RAISONSOCIALE FROM PMT_PARTENAIRE WHERE UID='.$prestaID;
+    $result = executeQuery($query);
+    if (is_array($result)) {
+        return $result[1]['RAISONSOCIALE'];
+    }
+    else
+        return '';
+}
+
+function convergence_loadInfoDemande($demandeID) {    
+    $query = 'SELECT * FROM PMT_DEMANDES WHERE APP_UID="'.$demandeID.'"';
+    $result = executeQuery($query);
+    if (is_array($result)) {
+        return $result[1];
+    }
+    
+} 
+
+function convergence_loadInfoPresta($prestaID) {    
+    $query = 'SELECT * FROM PMT_PARTENAIRE WHERE UID='.$prestaID;
+    $result = executeQuery($query);
+    if (is_array($result)) {
+        return $result[1];
+    }
+    
+} 
+
+function convergence_getCPVille($villeID) {
+    
+    $query = 'SELECT ZIP,NAME FROM PMT_VILLE WHERE UID='.$villeID;
+    $result = executeQuery($query);
+    if (is_array($result)) {
+        return $result[1]['ZIP'].' '.$result[1]['NAME'];
+    }
+    else
+        return '';    
+}
+
+function convergence_annuleCheque($chequeID) {
+    
+    $query = 'UPDATE PMT_CHEQUES SET ANNULE=1 WHERE UID='.$chequeID;
+    $result = executeQuery($query);
+    if (is_array($result)) {
+        return '';
+    }
+    else
+        return '';    
+}
+
+function convergence_annuleChequier($commandeID) {
+    
+    $query = 'UPDATE PMT_CHEQUES SET ANNULE=1 WHERE ID_DEMANDE='.$commandeID;
+    $result = executeQuery($query);
+    if (is_array($result)) {
+        return '';
+    }
+    else
+        return '';    
+    
+}    
+/***
+ * Génère la liste des champs pour un INSERT
+ */
+function convergence_makeINSERT($datas,$fields){
+    foreach($datas as $k => $v){
+        /*$type = gettype($v);
+        if('double' == $type || 'integer' == $type){
+            $datas[$k] = intval($v);
+        }else{
+            $datas[$k] =  mysql_real_escape_string($v);
+        }*/
+         $datas[strtoupper($k)] = $v;
+    }
+    
+    $res = array_intersect_key($datas,$fields);
+    $ret[0] = implode(',',array_keys($res));
+    $values = implode('","',array_values($res));
+    $ret[1] = '"'.$values.'"';     
+    return $ret;
+}
+function convergence_makeUPDATE($datas,$fields){
+    foreach($datas as $k => $v){
+        /*$type = gettype($v);
+        if('double' == $type || 'integer' == $type){
+            $datas[$k] = intval($v);
+        }else{
+            $datas[$k] =  mysql_real_escape_string($v);
+        }*/
+        $datas[strtoupper($k)] = $v;
+    }    
+    $res = array_intersect_key($datas,$fields);          
+    $set = array();
+    foreach($res as $k => $v){
+        $set[] = $k.'="'.$v.'"';
+    }
+    $ret = implode(', ',$set);
+    return $ret;
+}
+function convergence_insertPMT($app_id,$table,$array_key){    
+    try{      
+        $fields = convergence_getAllAppData($app_id);
+        $fields['USR_UID'] = $fields['USER_LOGGED'];
+        $fields[$table.'_APP_UID'] = $fields['APPLICATION'];
+        $array_insert = array_flip($array_key);    
+        $insert = convergence_makeINSERT($fields,$array_insert);
+        $query = 'INSERT INTO '.$table.'('.$insert[0].') VALUES ('.$insert[1].')';
+        $result = executeQuery($query);           
+    }
+    catch (Exception $e) {
+        var_dump($e);
+        die();
+    }     
+    return $result;    
+   
+}
+
+function convergence_updatePMT($app_id,$table,$wherefields,$array_key){
+   try{     
+        $fields = convergence_getAllAppData($app_id);
+        $fields[$table.'_APP_UID'] = $fields['APPLICATION'];
+       /*$array_insert = array('RAISONSOCIALE','SIRET','NUM_PRESTA',
+            'ACTIVITE','DATE_CREATION','DATE_CONV','ADRESSE1','ADRESSE2','ADRESSE3',
+            'CODEPOSTAL','VILLE','TELEPHONE','TELECOPIE','CIVILITE_CONTACT','NOM_CONTACT','PRENOM_CONTACT',
+            'TEL_CONTACT','TEL_PORTABLE' ,'MAIL','DOMICILIATION','CODE_BANQUE','CODE_GUICHET','NUM_COMPTE','CLE_RIB','USR_UID');*/
+        $array_insert = array_flip($array_key);
+        $set = convergence_makeUPDATE($fields,$array_insert);
+        $query = 'UPDATE '.$table.' SET '.$set.' WHERE '.$wherefields.' = "'.$fields['USER_LOGGED'].'"';     
+        $result = executeQuery($query);
+    }
+    catch (Exception $e) {
+        var_dump($e);
+        die();
+    }     
+    return $result;      
+}
+function convergence_test_uid_PMT_PARTENAIRE($uid) {   
+    if ($uid == ''){
+        return false;
+    }    
+    else {
+        $query = 'SELECT count(*) as NB FROM PMT_PARTENAIRE WHERE USR_UID = "'.$uid.'"';        
+        $result = executeQuery($query);
+        if(isset($result) && $result[1]['NB'] > 0){           
+            return true;
+        }else{
+            return false;
+        }
+    }
+}
+function convergence_get_PMT_DATA($table,$field,$uid) {   
+    $query = 'SELECT * FROM '.$table.' WHERE '.$field.' = "'.$uid.'"';
+    $result = executeQuery($query);
+    return $result;
+}
+
+function convergence_concatFiles($files) {
+    
+    //si plusieurs fichiers on les concatenent 
+    if (is_array($files) && count($files)>1) {
+       
+        $i=0;
+        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN ('.implode(',',$files).') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME"';    
+        $result = executeQuery($query);
+        
+        foreach($result as $f) {
+            $path = PATH_DOCUMENT . $f['APP_UID'] . PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
+            $concatFile[$i++] = $path.'.pdf';
+        }
+         
+    }
+    //sinon on concatene tous les docs de ce dispositif
+    else {
+        
+        $i=0;
+        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN ('.implode(',',$files).') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME"';    
+        $result = executeQuery($query);
+        
+        foreach($result as $f) {
+            $path = PATH_DOCUMENT . $f['APP_UID'] . PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
+            $concatFile[$i++] = $path.'.pdf';
+        }
+ 
+    }
+    
+    $resultFile = '/tmp/temp_concat_'.time().'.pdf';
+    exec('gs -q -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite -sOutputFile='.$resultFile.' -dBATCH '.implode(' ',$concatFile));
+
+    $return = file_get_contents($resultFile);
+    unlink($resultFile);
+
+    return $return;
+        
+    
+}
+
+function convergence_getCodeRNE($uid){
+    $query = 'SELECT count(*) as nb FROM PMT_ETABLISSEMENT WHERE RNE = "'.$uid.'"';
+    $result = executeQuery($query);
+    if(isset($result) && $result[1]['NB'] > 0){           
+        return true;
+    }else{
+        return false;
+    }
+}
+
+function convergence_UpdateHidden($table,$field,$value){
+     try{         
+        $query = 'UPDATE '.$table.' SET HIDDEN=1 WHERE '.$field.' = "'.$value.'"';     
+        $result = executeQuery($query);
+    }
+    catch (Exception $e) {
+        var_dump($e);
+        die();
+    }     
+    return $result;      
+}

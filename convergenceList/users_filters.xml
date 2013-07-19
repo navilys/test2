@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm  width  = "700" enabletemplate="1">
+<TITLE_SEARCH type="title" enablehtml="0" btn_cancel="Cancel">
+  <en>Search options:</en>
+</TITLE_SEARCH>
+ <FIRST_NAME type="text" maxlength="64" validate="Any" required="0" readonly="0" size="15" mode="edit" btn_cancel="Cancel" mask="" strto="" dependentfields="" defaultvalue="" hint="" formula="" function="" sqlconnection="" savelabel="0">
+    <en>FIRST NAME: </en>
+ </FIRST_NAME>
+ <LAST_NAME type="text" maxlength="64" validate="Any" required="0" readonly="0" size="15" mode="edit" btn_cancel="Cancel" mask="" strto="" dependentfields="" defaultvalue="" hint="" formula="" function="" sqlconnection="" savelabel="0">
+    <en>LAST NAME: </en>
+ </LAST_NAME>
+<SEARCH type="button" btn_cancel="Cancel" onclick="fn= document.getElementById('form[FIRST_NAME]').value; ln= document.getElementById('form[LAST_NAME]').value; loadResultSearch(fn,ln);">
+  <en>Search</en>
+</SEARCH>
+<CLEAR type="button" btn_cancel="Cancel" onclick="clearFilters();">
+  <en>Clear</en>
+</CLEAR>
+</dynaForm>

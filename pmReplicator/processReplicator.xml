@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm type="xmlform" width="800" enabletemplate="1" mode="edit">
+<MESSAGE_DISPLAY type="label" enablehtml="1">
+	<en></en>
+</MESSAGE_DISPLAY>
+<ProcessmakerReplicator type="title" enablehtml="0" btn_cancel="Cancel">
+  <en>Processmaker Replication</en>
+</ProcessmakerReplicator>
+<ReplicationSelectOrigin type="subtitle" enablehtml="0" btn_cancel="Cancel">
+  <en>Select Origin to Replicate</en>
+</ReplicationSelectOrigin>
+<SEARCH_ORIGIN type="text" maxlength="64" validate="Any" required="0" readonly="0" size="40" mode="edit" btn_cancel="Cancel">
+  <en>Search Origin To Replicate</en>
+</SEARCH_ORIGIN>
+<WORKSPACES_ORIGIN type="dropdown" options='Array' size="11" width="500px" mode="edit" btn_cancel="Cancel" sqlconnection="dbarray">
+	SELECT 
+		id, value 
+	FROM 
+		workspaces
+	ORDER BY
+		value
+	<en>WORKSPACE ORIGIN</en>
+</WORKSPACES_ORIGIN>
+<DESTINATION_WORKSPACES type="subtitle" btn_cancel="Cancel">
+  <en>Destination Workspaces</en>
+</DESTINATION_WORKSPACES>
+<SEARCH_DESTINATION type="text" maxlength="64" validate="Any" required="0" readonly="0" size="40" mode="edit" btn_cancel="Cancel">
+  <en>Search Destination Workspace</en>
+</SEARCH_DESTINATION>
+<LIST_UNSELECTED_WORKSPACES type="listbox" options='Array' width="310px; height:221px" mode="edit" btn_cancel="Cancel" sqlconnection="dbarray">
+	SELECT 
+		id, value 
+	FROM 
+		workspaces
+	ORDER BY
+		value
+  <en>Unselected Workspaces</en>
+</LIST_UNSELECTED_WORKSPACES>
+<SELECTED_WORKSPACES type="listbox" required="0" options="Array" width="310px; height:221px" size="5" mode="edit" btn_cancel="Cancel" sqlconnection="dbarray">
+	SELECT 
+		id, value 
+	FROM 
+		workspaces
+	ORDER BY
+		value
+  <en>Selected Workspaces</en>
+</SELECTED_WORKSPACES>
+<SELECT_TABLES type="subtitle" enablehtml="0" btn_cancel="Cancel">
+  <en>Select Tables To Transfer</en>
+</SELECT_TABLES>
+<SEARCH_TABLE type="text" maxlength="64" validate="Any" required="0" readonly="0" size="40" mode="edit" btn_cancel="Cancel">
+  <en>Search Tables To Transfer</en>
+</SEARCH_TABLE>
+<LIST_TABLES type="listbox" required="0" size="5" width="231px" mode="edit" btn_cancel="Cancel">
+  <en>Tables In Workspace</en>
+</LIST_TABLES>
+<UNSELECTED_TABLES type="listbox" options='Array' width="263px; height:210px;" mode="edit" btn_cancel="Cancel" >
+	<![CDATA[
+		SELECT 
+			ADD_TAB_NAME,ADD_TAB_NAME
+		FROM
+			wf_@#WORKSPACES_ORIGIN.ADDITIONAL_TABLES
+		ORDER BY
+			ADD_TAB_NAME
+		 ]]>
+	<en>Unselected Tables</en>
+</UNSELECTED_TABLES>
+<UNSELECTED_PROCESS type="listbox" options='Array' width="263px; height:210px;" mode="edit" btn_cancel="Cancel">
+<![CDATA[
+	SELECT 
+		C.CON_ID,C.CON_VALUE
+	FROM 
+		wf_@#WORKSPACES_ORIGIN.PROCESS P 
+	INNER JOIN
+		wf_@#WORKSPACES_ORIGIN.CONTENT C
+	ON
+		(P.PRO_UID=C.CON_ID)
+	WHERE 
+		C.CON_CATEGORY='PRO_TITLE'
+		 ]]>
+</UNSELECTED_PROCESS>
+</dynaForm>

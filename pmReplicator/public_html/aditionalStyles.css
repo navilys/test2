@@ -1,0 +1,401 @@
+.FormFieldLineRadio br{
+	display:none
+}
+/*
+ 	apparience that will come in handy when collapse functionllity 
+ 	becomes enabled
+*/
+/*.CollapsibleHeader {
+	cursor:pointer	
+}
+.TCLCurtain{
+	position:relative;	
+}
+.TCLSlider{
+	position:absolute;
+}
+.TCLContainer{
+	overflow:hidden;
+	position:relative;
+	z-index:10;
+	height:0px;
+}*/
+/*
+End Collapse apparience
+*/
+/*
+	Classes used to apply general shape to diferent dom elements
+*/
+.tclScrollRight{
+	overflow-y:scroll;
+}
+.tclCursorDefault{
+	cursor:default;
+}
+.tclDisplayNone{
+	display:none;
+}
+.tclShowBar{
+	overflow:auto;
+}
+.tclPositionAbsolute{
+	position:absolute;
+}
+.tclPositionRelative{
+	position:relative;
+}
+.tclBoxView{
+	display:block;
+}
+.tclTextAlignCenter{
+	text-align:center;	
+}
+.tclTextAlignLeft{
+	text-align:left;
+}
+.tclTextAlignRight{
+	text-align:right;
+}
+.tclMessageHeader{
+	background:#C3D1DF;
+	width:100%;
+}
+.tclPadding{
+	padding:1px 1px 1px 1px;	
+}
+.tclCircularBorder{
+  -moz-border-radius: 8px;
+  border-radius: 8px;	
+}
+.tclCricularBorderMore{
+  -moz-border-radius: 10px;
+  border-radius: 12px;
+}
+.tclHeaderSize{
+	font-size:1.5em;	
+}
+.tclBorderTop1{
+	border-top:1px solid;
+}
+.tclBorderLeft1{
+	border-left:1px solid;
+}
+.tclBorderRight1{
+	border-right: 1px solid;
+}
+.tclBorderBottom1{
+	border-bottom:1px solid;
+}
+.tclBorderTopColor1{
+	border-top-color:#BEBEBE;
+}
+.tclBorderTopColor2{
+	border-top-color:#8E8E8E;
+}
+.tclBorderLeftColor1{
+	border-left-color:#BEBEBE;
+}
+.tclBorderRightColor1{
+	border-right-color:#BEBEBE;
+}
+.tclBorderBottomColor1{
+	border-bottom-color:#BEBEBE;
+}
+.tclBackMessageErrorColor{
+	background-color:Red;	
+}
+.tclBackMessageSuccessColor{
+	background-color:green;	
+}
+.tclMessageWidth{
+  width:100%;	
+}
+.tclBackground{
+	width:100%;
+	opacity:0.5;
+	filter=alpha(opacity=50);
+}
+.tclOpacity{
+	opacity:0.5;
+	filter=alpha(opacity=50);
+}
+.tclMessageOptions{
+	padding-right:3px;	
+	cursor:pointer;
+}
+.tclFontItalic{
+	font-style:italic;
+}
+.tclFontBold{
+	font-weight:bold;
+}
+.tclFontSize0{
+	font-size:0.8em;
+}
+.tclFontSize1{
+	font-size:1em;
+}
+.tclFontSize2{
+	font-size:1.2em;
+}
+.tclFontSize3{
+	font-size:2em;
+}
+.tclFontSize4{
+	font-size:2.2em;
+}
+.tclClearBoth{
+	clear:both;
+}
+.tclInlineAlignLeft{
+	float:left;
+}
+.tclInlineAlignRight{
+	float:right;
+}
+.tclPaddingLeft3{
+	padding-left: 3px
+}
+.tclSmallHeight{
+	height:20px
+}
+.tclTopPadding2{
+	padding-top:2px;
+}
+.tclTopPadding3{
+	padding-top:3px;
+}
+.tclTopPadding4{
+	padding-top:4px;
+}
+.tclTopPadding1{
+	padding-top:1px;
+}
+.tclBottomPadding1{
+	padding-bottom:1px;
+}
+.tclBottomPadding2{
+	padding-bottom:2px;
+}
+.tclBottomPadding3{
+	padding-bottom:3px;
+}
+.tclBottomPadding4{
+	padding-bottom:4px;
+}
+.tclLeftPadding1{
+	padding-left:1px;
+}
+.tclLeftPadding2{
+	padding-left:2px;
+}
+.tclLeftPadding3{
+	padding-left:3px;
+}
+.tclMarginTop3{
+	margin-top:3px;
+}
+.tclMarginBottom3{
+	margin-bottom:3px;
+}
+.tclMarginLeft3{
+	margin-left:3px;
+}
+.tclMarginRight3{
+	margin-right:3px;
+}
+.tclElementTable{
+	overflow:hidden;
+}
+.tclWidthHalf{
+	width:49%;
+}
+.tclWidth150{
+	width:150px;
+}
+.tclWidth170{
+	width:170px;
+}
+.tclWidth200{
+	width:200px;
+}
+.tclWidth210{
+	width:210px;
+}
+.tclWidth227{
+	width:227px;
+}
+.tclWidth245{
+	width:245px;
+}
+.tclWidth250{
+	width:250px;
+}
+.tclWidth290{
+	width:290px;
+}
+.tclListSelected{
+	background:#3875D7;
+	color:#fff;
+}
+.tclWidth500{
+	width:500px;
+}
+.tclWidth557{
+	width:557px;
+}
+.tclWidth650{
+	width:650px;
+}
+.tclWidth850{
+	width:850px;
+}
+.tclWidth900{
+	width:900px;
+}
+.tclWidth1500{
+	width:1500px;
+}
+.tclWidth2000{
+	width:2000px;
+}
+.tclWidth2600{
+	width:2600px;
+}
+.tclHeight250{
+	height:250px;
+}
+.tclHeight205{
+	height:205px;
+}
+.tclCorpColor0{
+	background:#000;
+}
+.tclCorpColor1{
+	background:#FFF
+}
+.tclCorpColor2{
+	background:#347797;
+}
+.tclCorpColor3{
+	background:#003465;
+}
+.tclCorpColor4{
+	background:#D0D0D0;
+}
+.tclCorpColor5{
+	background:#EEEEEE;
+}
+.tclTextCorpColor0{
+	color:#000;
+}
+.tclTextCorpColor1{
+	color:#FFF
+}
+.tclTextCorpColor2{
+	color:#347797;
+}
+.tclTextCorpColor3{
+	color:#003465;
+}
+.tclTextCorpColor4{
+	color:#D0D0D0;
+}
+.tclTextCorpColor5{
+	color:#EEEEEE;
+}
+.tclInlineAlignLeft input{
+	padding:0;
+	margin:0;
+}
+/*
+	End General Shape classes
+*/
+.tclRow::selection{
+	background-color:transparent;
+	color:#000;
+}
+.tclRow::-moz-selection{
+	bockground-color:transparent;
+	color:#000;
+}
+::selection{
+	background-color:transparent;
+	color:#000;
+}
+::-moz-selection{
+	bockground-color:transparent;
+	color:#000;
+}
+.tclSmallButton{
+	padding:6px 6px 6px 6px;
+	cursor:pointer;
+}
+.tclMediumButton{
+	padding:12px 12px 12px 12px;
+	cursor:pointer;
+}
+.tclBigButton{
+	padding:20px 20px 20px 20px;
+	cursor:pointer;
+}
+.tclSliderWrapper select{
+	padding-top:4px;
+	padding-left:4px;
+	border:0;
+	background:#E0E7EF;
+	-moz-border-radius: 10px;
+  	border-radius: 10px;
+  	color:#fff;
+  	border-left:1px solid #003465;
+  	border-bottom:1px solid #003465;
+}
+.tclSelectBox{
+	padding-top:4px;
+	padding-left:4px;
+	border:0;
+	background:#E0E7EF;
+	-moz-border-radius: 10px;
+  	border-radius: 10px;
+  	border-left:1px solid #003465;
+  	border-bottom:1px solid #003465;
+}
+.tclButtonList{
+	list-style:none;
+	padding:0;
+	margin:0;
+	padding-left:20px;
+	padding-top:40px;
+}
+/*
+	Box Shape for message popup window
+*/
+.tclMessage{
+	left:50%;
+	top:10%;
+	margin-left:-25%;
+	position:absolute;
+	width:500px;
+	z-index:100;
+}
+.tclMessageWrapper{
+	position:absolute;
+	width:96%;
+	margin-left:2%;
+	margin-top:1.5%;
+	background:#eee;
+	top:0;
+	color:#000000;
+}
+#tclFloatingDiv{
+ 		display:none;
+ 		position:absolute;
+ 		opacity:0.5;
+ 		filter:alpha(opacity=50);
+ 		background:#000;
+ 		-moz-border-radius:15px;
+		border-radius:15px;
+ 	}
+/*
+	End message popup window shape.
+*/

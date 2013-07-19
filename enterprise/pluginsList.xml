@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm>
+
+<id type="text" colWidth="20" titleAlign="left" align="left">
+  <en>#</en>
+</id>
+
+<title type="text" colWidth="150" titleAlign="left" align="left">
+  <en>Name</en>
+  <es>Nombre</es>
+</title>
+<version type="text" colWidth="50" titleAlign="left" align="left">
+  <en>Version</en>  
+  <es>Version</es>
+</version>
+<description type="text" colWidth="150" titleAlign="left" align="left">
+  <en>Description</en>
+  <es>Descripcion</es>
+</description>
+
+<status type="link" value="@#status" link="@#linkStatus" colWidth="40" align="center">
+  <en></en>
+</status>
+
+<edit type="link" value="@#edit" link="@#linkEdit" colWidth="40" align="center">
+  <en></en>
+</edit>
+
+</dynaForm>

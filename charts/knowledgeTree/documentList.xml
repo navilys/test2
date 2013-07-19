@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm
+  width         = "100%"
+>
+<id type="text" colWidth="30" titleAlign="left" align="left" >
+  <en>#</en>
+</id>
+<title type="text" colWidth="160" titleAlign="left" align="left" >
+  <en>Title</en>
+</title>
+<type type="text" colWidth="45" titleAlign="left" align="left" >
+  <en>Type</en>
+</type>
+<!--
+<creator type="text" colWidth="90" titleAlign="left" align="left" >
+  <en>Creator</en>
+</creator>
+
+<modifiedby   type="text" colWidth="90" titleAlign="left" align="left" >
+  <en>Modified By</en>
+</modifiedby  >
+!-->
+<size type="text" colWidth="45" titleAlign="left" align="left"  showInTable="0">
+  <en>Size</en>
+</size>
+
+<mime type="text" colWidth="75" titleAlign="left" align="rigth"  showInTable="0">
+  <en>Mime Type</en>
+</mime>
+
+<created_date type="text" colWidth="105" titleAlign="left" align="left"   >
+  <en>Size</en>
+</created_date>
+
+<filename type="text" showInTable="0"  >
+  <en>Filename</en>
+</filename>
+
+
+<random type="text" showInTable="0"   >
+  <en></en>
+</random>
+
+<open type="link" value="Open" link="../knowledgeTree/documentShow?a=@#filename&amp;b=@#id&amp;t=@#type&amp;r=@#random" colWidth="40" align="center" >
+  <en></en>
+</open>
+
+</dynaForm>

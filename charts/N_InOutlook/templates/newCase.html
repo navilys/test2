@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Start a Case</title>
+    <style type="text/css" title="currentStyle">
+      @import "/plugin/N_InOutlook/cssNightlies/table.css";
+    </style>
+    <script type="text/javascript" src="/plugin/N_InOutlook/js/jquery.js"></script>
+    <script type="text/javascript" src="/plugin/N_InOutlook/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript">{literal}
+      $(document).ready(function() {
+        var oTable = $('#example').dataTable({          
+          "sScrollY": 320,          
+          "bPaginate": false,
+        	"bLengthChange": false,
+        	"bFilter": false,
+        	"bSort": false,
+        	"bInfo": false,
+        	"bAutoWidth": false
+        });
+        {/literal}{foreach from=$hide item=column}/*oTable.fnSetColumnVis({$column}, false);*/{/foreach}{literal}
+				$('td', oTable.fnGetNodes()).hover(function() {
+					var iCol = $('td').index(this) % 5;
+					var nTrs = oTable.fnGetNodes();
+					$('td:nth-child('+(iCol+1)+')', nTrs).addClass('highlighted');
+				},
+        function() {
+					$('td.highlighted', oTable.fnGetNodes()).removeClass('highlighted');
+				});
+        $('#example tbody tr').live('dblclick', function () {
+          var nTds = $('td', this);
+          var spans = nTds[0].getElementsByTagName('span');
+          if (spans.length == 4) {
+            window.location = spans[0].innerHTML + '?APP_UID=' + spans[1].innerHTML + '&DEL_INDEX=' + spans[2].innerHTML + '&action=' + spans[3].innerHTML;
+          }
+        });
+      });
+    {/literal}</script>
+  </head>
+  <body id="dt_example" class="ex_highlight">
+    <div id="container">
+      <h1>New Case</h1>
+      <div id="demo">
+        <table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+	        <thead>
+	          <tr>
+	            <th></th>	            
+	          </tr>
+	      	</thead>
+        	<tbody>	
+		        {foreach from=$initialTasks item=initialTask}
+		        <tr class="gradeA">
+		          <td class=""><img src="/images/icon.trigger.png" width="18" height="18" /> 
+		          	<a href="startCase?task={$initialTask.uid}" style="text-decoration: none;">{$initialTask.value}</a>
+		          </td>
+		        </tr>
+		        {/foreach}
+	        </tbody>
+      </table>
+     </div>
+   </div>
+  </body>
+</html>

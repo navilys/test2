@@ -1,0 +1,90 @@
+h1 {
+	font-style: italic;
+	font-family: verdana, sans-serif;
+	color: #808080;
+	margin-bottom: 0px;
+	font-size: 40px;
+}
+h2 {
+	margin-bottom: 0px;
+}
+h3.blueline {
+	color: #000080;
+	border-bottom: 2px #000080 solid;
+	margin-bottom: 0px;
+}
+span.ps {
+	font-family: verdana, sans-serif;
+	color: #808080;
+	margin-bottom: 0px;
+	font-size: 30px;
+	font-weight: bold;
+}
+
+pre {
+	white-space: pre; 
+	font-size: smaller;
+	font-family: monospaced, courier;
+	border: 1px lightgrey dotted;
+	color: black;
+	padding: 4px;
+	background-color: #f0f0f0; 
+}
+a {
+	color: #000080;
+}
+
+table {
+	border-collapse: collapse;
+}
+td {
+	font-family: sans-serif;
+}
+td.bluebar {
+	background-color: #333399; 
+	font-size: smaller;
+	text-align: right;
+	vertical-align: top;
+	color: #ffffff;
+	padding-top: 0px;
+	padding-bottom: 2px;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+td.bluebar a {
+	color: #ffffff;
+}
+td.formlabel {
+	white-space: nowrap;
+	vertical-align: top;
+	text-align: right;
+}
+tr.data td {
+	vertical-align: top;
+	border: 1px grey dotted;
+}
+
+input.button {
+	width: 140px;
+	height: 30px;
+}
+
+span.err {
+	color: #800000;
+}
+span.blue {
+	color: #0000ff;
+}
+
+div.tail {
+	text-align: center;
+	font-size: smaller;
+	margin-top: 15px;
+	margin-bottom: 15px;
+	border-top: solid 1px #808080;
+	color: #808080;
+}
+div.tail a {
+	text-decoration: none;
+	color: #808080;
+}

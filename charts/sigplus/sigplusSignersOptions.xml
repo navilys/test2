@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm type="xmlmenu">
+
+  <sigplusSignersNew type="private" defaultValue="../sigplusSigners/sigplusSignersNew"/>
+  
+  <MNU_NEW type="link" label="New" value='' link="@G::encryptLink(@#sigplusSignersNew)" colAlign="left" colWidth="85"></MNU_NEW>
+
+</dynaForm>

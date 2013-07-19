@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<dynaForm type="xmlform" name="" width="530" height="305" enabletemplate="0" mode="edit">
+	
+<!--<SYS_LANG    type="text"/>-->
+<REP_TAB_UID type="hidden"/>
+<PMR_UID     type="hidden"/>
+<PRO_UID     type="hidden"/>
+
+<PMR_TITLE type="text" required="1">
+	<en><![CDATA[Report Title]]></en>
+</PMR_TITLE>
+
+<PMR_DESCRIPTION type="textarea" required="0" rows="3">
+	<en><![CDATA[Description]]></en>
+</PMR_DESCRIPTION>
+
+<PMR_STATUS type="checkbox" value="ACTIVE" falsevalue="INACTIVE" defaultvalue="ACTIVE">
+  <en><![CDATA[Enable report ]]></en>
+</PMR_STATUS>
+
+<!--
+<PMR_STATUS type="hidden" defaultvalue="ACTIVE" />
+	-->
+	
+<DYN_UID type="dropdown" required="1" hint="Only grid forms are listed">
+<![CDATA[
+	SELECT
+		DISTINCT
+		D.DYN_UID,
+		C.CON_VALUE
+	FROM
+		DYNAFORM D
+		LEFT JOIN CONTENT C ON (D.DYN_UID = C.CON_ID AND C.CON_CATEGORY = 'DYN_TITLE' AND CON_LANG = 'en' )
+	WHERE
+		D.PRO_UID = @@PRO_UID AND
+		D.DYN_TYPE = 'grid'
+	ORDER BY C.CON_VALUE
+]]>
+  <en><![CDATA[Dynaform Template]]><option name="">- Select -</option></en>
+</DYN_UID>
+
+<APPLY type="button" onClick="savePMReport()" >
+	<en><![CDATA[Apply]]></en>
+</APPLY>
+<JS type="javascript">
+<![CDATA[
+	var ajax = WebResource("../pmReports/rptAjax"); 
+ 
+	function savePMReport(){
+		if(getField('PMR_TITLE').value == '' || getField('DYN_UID').value == ''){
+			alert('Fill all required fields');
+			return false;
+		}
+		var iPmrStatus=0;
+		if(getField('PMR_STATUS').checked)
+			iPmrStatus=1;
+		ajax.save_pm_report(
+			getField('REP_TAB_UID').value,
+			getField('PMR_UID').value,
+			getField('PRO_UID').value,
+			getField('PMR_TITLE').value,
+			getField('PMR_DESCRIPTION').value,
+			iPmrStatus,
+			getField('DYN_UID').value
+		);
+		oPanelNew.remove();
+	}
+	
+]]></JS>
+</dynaForm>

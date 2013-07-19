@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="ElockDynaform" width="600" mode="edit" enableTemplate="0" border="0">
+
+<title1 type="title" >
+  <en>Delete ElockDynaform</en>
+</title1>
+
+
+<LABEL_UID_DYNAFORM type="caption" colWidth='32'  >
+  <en>Dynaform</en>
+</LABEL_UID_DYNAFORM>
+
+<UID_DYNAFORM type="hidden" colWidth='32'  >
+</UID_DYNAFORM>
+
+<LABEL_UID_APPLICATION type="caption" colWidth='32'  >
+  <en>Application</en>
+</LABEL_UID_APPLICATION>
+
+<UID_APPLICATION type="hidden" colWidth='32'  >
+</UID_APPLICATION>
+
+
+<BTN_SUBMIT type="submit" >
+  <en>delete</en>
+</BTN_SUBMIT>
+
+</dynaForm>

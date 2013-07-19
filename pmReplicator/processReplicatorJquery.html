@@ -1,0 +1,99 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+ <head>
+    <link href="{stylePath}smart_wizard_vertical.css" rel="stylesheet" type="text/css">
+    <link href="{stylePath}jquery.dataTables.css" rel="stylesheet" type="text/css">
+    <link href="{stylePath}aditionalTableCss.css" rel="stylesheet" type="text/css">
+    <script src="{scriptPath}jquery.js" type="text/javascript"></script>
+    <script src="{scriptPath}jquery.smartWizard.js"></script>
+    <script src="{scriptPath}jquery.dataTables.js" type="text/javascript"></script>
+    <script src="{scriptPath}tclSelectorManipulatorDataTable.js" type="text/javascript"></script>
+    <script src="{scriptPath}tclDataTablesStructure.js" type="text/javascript"></script>
+    <script src="{scriptPath}tclDataTablePlugIns.js" type="text/javascript"></script>
+    <script src="{scriptPath}formDataController.js" type="text/javascript"></script>
+    <script src="{scriptPath}replicatorDefaultData.js" type="text/javascript"></script>
+    <script src="{scriptPath}comboBoxFunction.js" type="text/javascript"></script>
+    <script src="{scriptPath}processReplicatorJquery.js" type="text/javascript"></script>
+ </head>
+ <body>
+ <h1 id="processTitle">Process Replicator</h1>
+ <form action="#" method="POST">
+    <div id="wizard" class="swMain">
+        <ul>
+            <li>
+                <a href="#step-1">
+                    <label class="stepNumber">1</label>
+                    <spam class="stepDesc">
+                        Process
+                        <br />
+                        <small>Process to Transfer</small>
+                    </spam>
+                </a>
+            </li>
+            <li>
+                <a href="#step-2">
+                    <label class="stepNumber">2</label>
+                    <spam class="stepDesc">
+                        Target Branches
+                        <br />
+                        <small>Replication Destiny</small>
+                    </spam>
+                    
+                </a>
+            </li>
+            <li>
+                <a href="#step-3">
+                    <label class="stepNumber">3</label>
+                    <spam class="stepDesc">
+                        Transfer
+                        <br />
+                        <small>Perform Transfer</small>
+                    </spam>
+                    
+                </a>
+            </li>
+        </ul>
+        <div id="step-1" class="content">
+            <h2 class="StepTitle">Select the process you want to replicate</h2>
+            <div style="width:360px;float:left">
+                <div class="tclTableTitle">Available elements</div>
+                <div id="processOrigin"></div>
+            </div>
+            <div class="tclButtonBox">
+                <a class="tclButton topTcl" org_table="#process" dest_table="#processTargetData" href="javascript:void(0)"><span>&rarr;</span></a> 
+                <a class="tclButton bottomTcl" org_table="#processTargetData" dest_table="#process" href="javascript:void(0)"><span>&larr;</span></a>
+            </div>
+            <div style="width:340px;float:right">
+                <div class="tclTableTitle">Selected elements</div>
+                <div id="processTarget"></div>
+            </div>
+        </div>
+        <div id="step-2" class="content">
+            <h2 class="StepTitle">Step 2: Target Branch</h2>
+            <div style="width:340px; float:left;">
+                <div class="tclTableTitle">Available elements</div>
+                <div id="workspacesO"></div>
+            </div>
+            <div class="tclButtonBox">
+                <a class="tclButton topTcl" org_table="#wrkspaceO" dest_table="#wrkspaceD" href="javascript:void(0)"><span>&rarr;</span></a> 
+                <a class="tclButton bottomTcl" org_table="#wrkspaceD" dest_table="#wrkspaceO" href="javascript:void(0)"><span>&larr;</span></a>
+            </div>
+             <div style="width:340px; float:right">
+                <div class="tclTableTitle">Selected elements</div>
+                <div id="workspacesD"></div>
+            </div>
+        </div>
+       <div id="step-3" class="content">
+            <h2 class="StepTitle">Step 3: Transfer</h2>
+            <div class="tclLoader"><img src="{stylePath}245.gif" /></div>
+            <div id="transferSummary">Summary</div>
+            
+        </div>
+    </div>
+ </form>
+ </body>
+</html>

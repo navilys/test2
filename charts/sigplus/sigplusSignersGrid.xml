@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm type="grid" name="sigplusSignersGrid" width="500" enabletemplate="0" mode="edit">
+<!--
+<case_variable type="text" maxlength="64" validate="Any" required="0" readonly="0" size="15" mode="edit" mask="" strto="" dependentfields="" defaultvalue="" hints_message="" formula="" function="" sqlconnection="" savelabel="0">  <en>Case Variable</en>
+</case_variable>
+-->
+<signer_name type="text" maxlength="128" validate="Any" required="0" readonly="0" size="60" mode="edit" mask="" strto="" dependentfields="" defaultvalue="" hints_message="" formula="" function="" sqlconnection="" savelabel="0" showVars="1" symbol="@#" process="@#PRO_UID" >
+  <en>Signer</en>
+</signer_name>
+</dynaForm>

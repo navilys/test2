@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<database name="workflow">
+  <table name="ADDONS_STORE">
+    <column name="STORE_ID" type="VARCHAR" size="32" primaryKey="true" />
+    <column name="STORE_VERSION" type="INTEGER" />
+    <column name="STORE_LOCATION" type="VARCHAR" size="2048" required="true" />
+    <column name="STORE_TYPE" type="VARCHAR" size="255" required="true" />
+    <column name="STORE_LAST_UPDATED" type="TIMESTAMP" />
+  </table>
+  <table name="ADDONS_MANAGER">
+    <vendor type="mysql">
+      <parameter name="Name" value="ADDONS_MANAGER"/>
+      <parameter name="Engine" value="MyISAM"/>
+      <parameter name="Version" value="10"/>
+      <parameter name="Row_format" value="Dynamic"/>
+      <parameter name="Rows" value="129"/>
+      <parameter name="Avg_row_length" value="115"/>
+      <parameter name="Data_length" value="14860"/>
+      <parameter name="Max_data_length" value="281474976710655"/>
+      <parameter name="Index_length" value="5120"/>
+      <parameter name="Data_free" value="0"/>
+      <parameter name="Auto_increment" value=""/>
+      <parameter name="Create_time" value="2007-12-06 07:22:27"/>
+      <parameter name="Update_time" value="2007-12-09 14:08:22"/>
+      <parameter name="Check_time" value=""/>
+      <parameter name="Collation" value="utf8_general_ci"/>
+      <parameter name="Checksum" value=""/>
+      <parameter name="Create_options" value=""/>
+      <parameter name="Comment" value="Addons manager"/>
+    </vendor>
+    <column name="ADDON_ID" type="VARCHAR" size="255" required="true" primaryKey="true" />
+    <column name="STORE_ID" type="VARCHAR" size="32" required="true" primaryKey="true" />
+    <column name="ADDON_NAME" type="VARCHAR" size="255" required="true" />
+    <column name="ADDON_NICK" type="VARCHAR" size="255" required="true" />
+    <column name="ADDON_DOWNLOAD_FILENAME" type="VARCHAR" size="1024" required="false" />
+    <column name="ADDON_DESCRIPTION" type="VARCHAR" size="2048" required="false" />
+    <column name="ADDON_STATE" type="VARCHAR" size="255" required="true" />
+    <column name="ADDON_STATE_CHANGED" type="TIMESTAMP" required="false" />
+    <column name="ADDON_STATUS" type="VARCHAR" size="255" required="true" />
+    <column name="ADDON_VERSION" type="VARCHAR" size="255" required="true" />
+    <column name="ADDON_TYPE" type="VARCHAR" size="255" required="true" />
+    <column name="ADDON_PUBLISHER" type="VARCHAR" size="255" required="false" />
+    <column name="ADDON_RELEASE_DATE" type="TIMESTAMP" required="false" />
+    <column name="ADDON_RELEASE_TYPE" type="VARCHAR" size="255" required="false" />
+    <column name="ADDON_RELEASE_NOTES" type="VARCHAR" size="255" required="false" />
+    <column name="ADDON_DOWNLOAD_URL" type="VARCHAR" size="2048" required="false" />
+    <column name="ADDON_DOWNLOAD_PROGRESS" type="FLOAT" required="false" />
+    <column name="ADDON_DOWNLOAD_MD5" type="VARCHAR" size="32" required="false" />
+  </table>
+</database>

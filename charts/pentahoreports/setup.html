@@ -1,0 +1,250 @@
+<form  style="margin: 0px;" enctype="multipart/form-data" method="post" class="formDefault" 
+	action="pluginsSetupSave?id=pentahoreports.php" name="Pentaho_Reports_Setup_Form" >  
+	<div style="width: 650px; padding-left: 0pt; padding-right: 0pt; border-width: 1px;" class="borderForm">
+  <div class="boxTop"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <div style="height: 100%;" class="content">
+    <table width="99%">
+      <tr>
+        <td valign="top">
+
+	       <div id="checkStatus" style="display:block;">
+          <table cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+              <td align="" colspan="2" class="FormSubTitle">
+                <span>Pentaho Reports Admin Page</span>
+              </td>
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_TABLE_TRIGGERS}</td>
+              <td width="400" class="FormFieldContent"><span id="checkDatabase" name="checkDatabase"></span></td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_USER_CREATE}</td>
+              <td width="400" class="FormFieldContent"><span id="checkPentahoUser" name="checkPentahoUser"></span></td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_SYNC}</td>
+              <td width="400" class="FormFieldContent"><span id="checkWorkspace" name="checkWorkspace"></span></td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_JNDI_CONNECTION}</td>
+              <td width="400" class="FormFieldContent"><span id="checkJndi" name="checkJndi"></span></td> 
+            </tr>
+         </table>
+         </div>
+
+	       <div id="fields" style="display:none;">
+          <table cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+              <td align="" colspan="2" class="FormSubTitle">
+                <span>{PENTAHO_LABEL_USER_CONSOLE}</span>
+              </td>
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_SERVER}</td>
+              <td width="400" class="FormFieldContent">
+              	<input type="text" value="{PentahoServer}" maxlength="100" size="60" name="form[PentahoServer]" id="form[PentahoServer]" class="module_app_input___gray">
+              </td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_WS_USER_PASSWORD}</td>
+              <td width="400" class="FormFieldContent">
+              	<input type="text"     value="{PentahoUsername}" maxlength="20" size="20" name="form[PentahoUsername]" id="form[PentahoUsername]" class="module_app_input___gray">
+              	<input type="password" value="{PentahoPassword}" maxlength="20" size="20" name="form[PentahoPassword]" id="form[PentahoPassword]" class="module_app_input___gray" autocomplete="off" >
+              </td> 
+            </tr>
+            
+          </table>            
+         </div>
+        
+	       <div id="jndiInfo" style="display:none;">
+          <table cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+              <td align="" id="form[TITLEJ]" colspan="2" class="FormSubTitle">
+                <span><span name="form[TITLEJ]" id="form[TITLEJ]">{PENTAHO_LABEL_JNDI_INFORMATION}</span></span>
+              </td>
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_DATASOURCE}</td>
+              <td width="400" class="FormFieldContent">
+              	<input type="text" readonly value="{jndiName}"  size="15" name="form[jndiName]" id="form[jndiName]" class="module_app_input___gray"></td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_DRIVER_CLASS}</td>
+              <td width="400" class="FormFieldContent">
+              	<input type="text" readonly value="{jndiDriverClass}"  size="30" name="form[jndiDriverClass]" id="form[jndiDriverClass]" class="module_app_input___gray"></td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_USER_NAME}</td>
+              <td width="400" class="FormFieldContent">
+              	<input type="text" readonly value="{jndiUserName}" size="15" name="form[jndiUserName]" id="form[jndiUserName]" class="module_app_input___gray"></td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_PASSWORD}</td>
+              <td width="400" class="FormFieldContent">
+              	<input type="text" readonly value="{jndiPassword}"  size="15" name="form[jndiPassword]" id="form[jndiPassword]" class="module_app_input___gray"></td> 
+            </tr>
+            <tr>
+              <td width="250" class="FormLabel">{PENTAHO_LABEL_URL}</td>
+              <td width="400" class="FormFieldContent">
+              	<input type="text" readonly value="{jndiUrl}"  size="70" name="form[jndiUrl]" id="form[jndiUrl]" class="module_app_input___gray"></td> 
+              </tr>
+             </tr>
+           </table>
+        	</div>
+
+	       <div id="buttons" style="display:block;">
+          <table cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+              <td align="" colspan="2" class="FormButton">
+<!--
+              	<input type="button" value="Edit Setup" onclick="showFieldsInfo(); return false;"     class="module_app_button___gray" >
+!-->
+                <input type="button" value="{PENTAHO_LABEL_CONFIGURATION}" onclick="editConfigurationFile();" class="module_app_button___gray" >
+              	<input type="button" value="{PENTAHO_LABEL_ROLES_MANAGER}" onclick="showRolesManager();" class="module_app_button___gray" >
+              	<!--<input type="button" value="Assign Users" onclick="assignUser(); return false;" class="module_app_button___gray" >-->
+              	<input type="button" value="{PENTAHO_LABEL_SHOW_JNDI_INFORMATION}" onclick="showJndiInfo(); return false;" class="module_app_button___gray" >
+              	<input type="button" value="{PENTAHO_LABEL_REBUILD}" onclick="rebuildWorkspace(); return false;" class="module_app_button___gray" >
+              </td>
+             </tr>
+         </table>
+         </div>
+	
+        </td>
+      </tr>
+    </tbody></table>
+    </div>
+    <div class="boxBottom"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+  </div>
+  </form>
+
+
+<script language="Javascript" >
+
+  window.onload = function() {
+    var oRPC = new leimnud.module.rpc.xmlhttp({
+      async : false,
+      method: "POST",
+      url:  "../pentahoreports/setupPageAjax",
+      args  : "action=database"
+    });
+    document.getElementById('checkStatus').style.display = 'block';
+    document.getElementById('jndiInfo').style.display = 'none';
+      
+    document.getElementById("checkDatabase").innerHTML = "<img src='/images/ajax-loader.gif' border='0'>";
+    oRPC.make();
+    r = oRPC.xmlhttp.responseText;
+    document.getElementById("checkDatabase").innerHTML = r;
+    updatePentahoUser();
+  };
+   
+  function updatePentahoUser ( ) {
+    document.getElementById("checkPentahoUser").innerHTML = "<img src='/images/ajax-loader.gif' border='0'>";
+    var oRPC = new leimnud.module.rpc.xmlhttp({
+      async : true,
+      method: "POST",
+      url:  "../pentahoreports/setupPageAjax",
+      args  : "action=pentahoUser"
+    });
+    oRPC.callback = function (rpc){
+      r = oRPC.xmlhttp.responseText;
+      document.getElementById("checkPentahoUser").innerHTML = r;
+      updateWorkspace();
+    }
+    oRPC.make();
+    
+  };
+
+  /**
+   * @abstract show an ajax popup window that displays the user assign module
+   * @return void
+   */
+  function assignUser ( ) {
+    //delete (currentPopupWindow);
+    popupWindow("Assign User/Group/Department to a Role","../pentahoreports/pentahoAssignUserToRole", 500, 420);
+  };
+
+  /**
+   * @abstract show an ajax popup window that displays the Roles Manager
+   * @return void
+   */
+  function showRolesManager ( ) {
+    //delete (currentPopupWindow);
+    popupWindow("Roles Manager","../pentahoreports/pentahoRolesList", 550, 420);
+  }
+
+  function editConfigurationFile ( ) {
+    popupWindow("Edit Configuration","../pentahoreports/setupPage?configuration=1", 650, 350);
+  }
+
+  function updateWorkspace ( ) {
+    document.getElementById("checkWorkspace").innerHTML = "<img src='/images/ajax-loader.gif' border='0'>";
+    var oRPC = new leimnud.module.rpc.xmlhttp({
+        async : true,
+        method: "POST",
+        url:  "../pentahoreports/setupPageAjax",
+        args  : "action=workspace" 
+      });
+
+    oRPC.callback = function (rpc){
+      r = oRPC.xmlhttp.responseText;
+      document.getElementById("checkWorkspace").innerHTML = r;
+      updateJndi();
+    }
+
+    oRPC.make();
+   
+  }; 
+ 	 	
+  function rebuildWorkspace ( ) {
+    document.getElementById('checkStatus').style.display = 'block';
+    document.getElementById('jndiInfo').style.display = 'none';
+
+    document.getElementById("checkWorkspace").innerHTML = "<img src='/images/ajax-loader.gif' border='0'>";
+    var oRPC = new leimnud.module.rpc.xmlhttp({
+        async : true,
+        method: "POST",
+        url:  "../pentahoreports/setupPageAjax",
+        args  : "action=rebuild" 
+      });
+
+    oRPC.callback = function (rpc){
+      r = oRPC.xmlhttp.responseText;
+      document.getElementById("checkWorkspace").innerHTML = r;
+      updateJndi();
+    }
+    oRPC.make();
+  }; 
+  
+  function updateJndi ( ) {
+    document.getElementById("checkJndi").innerHTML = "<img src='/images/ajax-loader.gif' border='0'>";
+    var oRPC = new leimnud.module.rpc.xmlhttp({
+        async : true,
+        method: "POST",
+        url:  "../pentahoreports/setupPageAjax",
+        args  : "action=jndi" 
+      });
+
+    oRPC.callback = function (rpc){
+      r = oRPC.xmlhttp.responseText;
+      document.getElementById("checkJndi").innerHTML = r;
+    }
+    oRPC.make();
+    
+  }; 
+ 	
+  function showJndiInfo () {
+    document.getElementById('checkStatus').style.display = 'none';
+    document.getElementById('fields').style.display = 'none';
+    document.getElementById('jndiInfo').style.display = 'block';
+  }
+
+  function showFieldsInfo () {
+    document.getElementById('checkStatus').style.display = 'none';
+    document.getElementById('fields').style.display = 'block';
+    document.getElementById('jndiInfo').style.display = 'none';
+  }
+
+
+
+</script>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="ElockOutputCfg" width="100%" type="pagedtable"
+  sql="SELECT * from ELOCK_OUTPUT_CFG "
+  sqlConnection=""
+  menu = "elock/elockOutputCfgOptions"
+>
+
+<PRO_UID type="text" colWidth='96'  >
+  <en>Uid</en>
+</PRO_UID>
+
+<TAS_UID type="text" colWidth='96'  >
+  <en>Uid</en>
+</TAS_UID>
+
+<DOC_UID type="text" colWidth='96'  >
+  <en>Uid</en>
+</DOC_UID>
+
+
+<LINK type="link" colWidth="60" titleAlign="left" align="left" link='elockOutputCfgEdit?id=@!STP_UID' >
+  <en>Edit</en>
+</LINK >
+
+<LINK2 type="link" colWidth="60" titleAlign="left" align="left" link='elockOutputCfgDelete?id=@!STP_UID' >
+  <en>Delete</en>
+</LINK2 >
+
+</dynaForm>

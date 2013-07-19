@@ -1,0 +1,52 @@
+.ss_key_add2{
+	background: transparent url(/plugin/fieldcontrol/fieldSelected1.png) left center no-repeat scroll !important;
+}
+.ss_save{
+	background: transparent url(/plugin/fieldcontrol/save.png) left center no-repeat scroll !important;
+}
+.ss_key_inbox{
+	background: transparent url(/plugin/fieldcontrol/inbox_pencil.png) left center no-repeat scroll !important;
+}
+.icon_help{
+	background: transparent url(/plugin/fieldcontrol/help.png) left center no-repeat scroll !important;
+}
+.ss_action{
+	background: transparent url(/plugin/fieldcontrol/action.png) left center no-repeat scroll !important;
+}
+
+.ss_sql{
+	background: transparent url(/plugin/fieldcontrol/sql.png) left center no-repeat scroll !important;
+}
+
+.clear_data{
+	background: transparent url(/plugin/fieldcontrol/Clear.png) left center no-repeat scroll !important;
+}
+
+
+
+.addQuery{
+	width:80px!important;
+	height:15px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+}
+.executeQuery{
+	width:80px!important;
+	height:27px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+}
+.whereQuery{
+	width:80px!important;
+	height:30px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+}
+.frameForm{
+	background-color: #E7E7E7 !important;
+	padding-top:2px;
+	padding-bottom:2px;
+	padding-right:2px;
+	padding-left:2px;
+}
+.ss_close_req {background-position:0 -17191px !important}

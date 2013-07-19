@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm
+  width         = "100%"
+>
+
+<title type="text" colWidth="160" titleAlign="left" align="left" >
+  <en>Title</en>
+</title>
+<created_date type="text" colWidth="45" titleAlign="left" align="left" >
+  <en>Created</en>
+</created_date>
+<modified_by type="text" colWidth="45" titleAlign="left" align="left" >
+  <en>Modified</en>
+</modified_by>
+
+<created_by type="text" colWidth="90" titleAlign="left" align="left" >
+  <en>Creator</en>
+</created_by>
+
+<filesize type="text" colWidth="45" titleAlign="left" align="left"  showInTable="0">
+  <en>Size</en>
+</filesize>
+
+<mime_type type="text" colWidth="75" titleAlign="left" align="rigth"  showInTable="0">
+  <en>Mime Type</en>
+</mime_type>
+
+
+<filename type="text" showInTable="0"  >
+  <en>Filename</en>
+</filename>
+
+
+<random type="text" showInTable="0"   >
+  <en></en>
+</random>
+
+<open type="link" value="Get" link="@#downloadScript" colWidth="40" align="center" >
+  <en></en>
+</open>
+
+</dynaForm>

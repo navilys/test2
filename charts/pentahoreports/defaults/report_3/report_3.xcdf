@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdf>
+	<title>Compare Task Times and Delays across all Processes</title>
+	<author>Colosa</author>
+	<description>Compare Task Times and Delays across all Processes</description>
+	<icon></icon>
+	<template>reports_content/report_3/report_3_template.html</template>
+	<style>processmaker</style>
+</cdf>

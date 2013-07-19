@@ -1,0 +1,67 @@
+                 
+      <script src="js/parameters.js" type="text/javascript"></script>
+            
+      <script>
+        function clickOnProcess(value) {
+          oCase = "null";         
+          Dashboards.fireChange('process',value);         
+     
+        }
+        
+      function clickOnUser(value) {
+          userName = value;        
+          Dashboards.fireChange('user',value);
+      }
+       </script>
+          
+
+   </head>
+   <body style="border:2px solid #dddddd">
+      <script>
+        var process = "null";
+        var oCase = "null";
+        
+              UsersBarChart = {
+                    name: "UsersBarChart",
+                    type: "xaction",
+                    solution: "{SOLUTION}",
+                    path: "reports_content/report_5",
+                    action: "users_time_comparison.waqr.xaction",
+                    listeners:[],
+                    parameters: [],
+                    htmlObject: "UsersBarChartObject",
+                    executeAtStart: true
+              }
+              
+              UserInboxPieChart = {
+                    name: "UserInboxPieChart",
+                    type: "xaction",
+                    solution: "{SOLUTION}",
+                    path: "reports_content/report_5",
+                    action: "user_time_inbox.waqr.xaction",
+                    listeners:["user"],
+                    parameters: [["USER","user"]],
+                    htmlObject: "UserInboxPieChartObject",
+                    executeAtStart: false
+              }
+                       
+              // The intial dashboard load function definition
+                var components = [UsersBarChart, UserInboxPieChart];
+                function load(){
+	                Dashboards.init(components);
+	                //alert("alert");
+                }
+
+// The intial dashboard load function execution
+                load();  
+      </script>
+      <table> 
+        <tr>
+            <td><div id="UsersBarChartObject"></div></td>
+        </tr>
+        <tr>
+            <td><div id="UserInboxPieChartObject"></div><td>
+        </tr>
+      </table>
+      <div id="EmbeddedReportTitle"></div>
+      <div id="EmbeddedReportObject"></div>

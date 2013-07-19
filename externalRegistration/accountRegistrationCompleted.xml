@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="accountRegistrationCompleted" version="1.0" basedir="" xmlform_type="NORMAL" width="520px" labelwidth="0">
+<TITLE type="title">
+  <en>Account Registration Completed</en>
+  <fr>Inscription complète</fr>
+</TITLE>
+<MESSAGE type="text" size="30" maxlength="32" mode="view" enableHTML="1">
+  <en/>
+</MESSAGE>
+</dynaForm>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Multitenant Log Viewer</title>
+        <link href="{stylePath}jquery.dataTables2.css" rel="stylesheet" type="text/css">
+        <link href="{stylePath}jquery-ui.min.css" rel="stylesheet" type="text/css">
+        <link href="{stylePath}workspaceManagement.css" rel="stylesheet" type="text/css">
+        <link href="{stylePath}multitenant-log.css" rel="stylesheet" type="text/css">
+        <script src="{scriptPath}jquery.min.js" type="text/javascript"></script>
+        <script src="{scriptPath}jquery-ui.min.js" type="text/javascript"></script>
+        <script src="{scriptPath}jquery.dataTables.min.js" type="text/javascript"></script>
+        <script src="{scriptPath}multitenant-log.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <h1>Multitenant Log</h1>
+        <fieldset title="Filters">
+            <div>
+                <label>Date from:</label>
+                <input type="text" title="Start Date" name="DateFrom" id="DateFrom" class="datepicker" />
+                <label style="width: auto">to</label>
+                <input type="text" title="End Date" name="DateTo" id="DateTo" class="datepicker" />
+            
+            
+                <label>Action:</label>
+                <select id="Action" name="Action" title="Action">
+                    <option value="">&lt;Any&gt;</option>
+                    <option value="Backup Workspace">Backup Workspace</option>
+                    <option value="Restore Workspace">Restore Workspace</option>
+                    <option value="Clone Workspace">Cloning Workspace</option>
+                    <option value="Delete Workspace">Delete Workspace</option>
+                    <option value="Enable Workspace">Enable Workspace</option>
+                    <option value="Disable Workspace">Disable Workspace</option>
+                    <option value="Dynaforms replication">Dynaforms replication</option>
+                    <option value="PM tables replication">PM tables replication</option>
+                    <option value="Processes replication">Processes replication</option>
+                </select>
+            </div>
+            <div>
+                <label>Type:</label>
+                <select id="Type" name="Type" title="Type">
+                    <option value="">&lt;Any&gt;</option>
+                    <option value="error">Error</option>
+                    <option value="warning">Warning</option>
+                    <option value="message">Message</option>
+                </select>
+            
+                <label>IP address:</label>
+                <input type="text" name="ipaddress" id="ipaddress" title="IP Address" />
+           
+                <label>Content:</label>
+                <input type="text" name="content" id="content" title="Content" />
+            </div>
+            <div>
+                <input type="button" name="filter" value="Filter" id="apply-filters-button" />
+            </div>
+        </fieldset>
+
+        <div id="log-table-container">
+            <table border="0" class="display" id="log-table">
+	            <thead>
+		            <tr>
+                        <th>ID</th>
+			            <th>Date &amp; Time</th>
+			            <th>IP</th>
+			            <th>Action</th>
+                        <th>Type</th>
+			            <th>Description</th>
+			            <th>Details</th>
+		            </tr>
+	            </thead>
+	            <tbody>
+		            <tr>
+			            <td colspan="6" class="dataTables_empty">Loading data from server...</td>
+		            </tr>
+	            </tbody>
+	            <tfoot>
+		            <tr>
+                        <th>ID</th>
+			            <th>Date &amp; Time</th>
+			            <th>IP</th>
+			            <th>Action</th>
+                        <th>Type</th>
+			            <th>Description</th>
+			            <th>Details</th>
+		            </tr>
+	            </tfoot>
+            </table>
+        </div>
+
+        <div id="log-details-dialog" title="Log entry details" style="display: none">
+            <h3>Details:</h3>
+            <div class="log-entry" id="log-detail"></div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<action-sequence> 
+  <title>{PM_TABLE} Report</title>
+  <version>1</version>
+  <documentation> 
+    <author>Colosa</author>  
+    <description></description>  
+    <icon>PentahoReporting.png</icon>  
+    <help/>  
+    <result-type>report</result-type> 
+  </documentation>
+
+  <inputs/>
+
+  <outputs/>
+
+  <resources> 
+    <report-definition> 
+      <solution-file> 
+        <location>{PM_TABLE}_report.xml</location>  
+        <mime-type>text/xml</mime-type> 
+      </solution-file> 
+    </report-definition> 
+  </resources>
+  
+  <actions> 
+    <action-definition> 
+      <component-name>SQLLookupRule</component-name>
+      <action-outputs> 
+        <query-result type="result-set" mapping="query_result"/> 
+      </action-outputs>
+      <component-definition> 
+        <jndi><![CDATA[{JNDI_SOLUTION}]]></jndi>  
+        <query><![CDATA[SELECT * FROM {PM_TABLE}]]></query>  
+        <live><![CDATA[true]]></live> 
+      </component-definition> 
+    </action-definition>
+  
+    <action-definition> 
+      <component-name>JFreeReportComponent</component-name>
+      <action-type>report</action-type>
+      <action-inputs> 
+        <data type="result-set" mapping="query_result"/> 
+      </action-inputs>
+      <action-resources> 
+        <report-definition type="resource"/> 
+      </action-resources>
+      <component-definition>
+        <output-type><![CDATA[html]]></output-type>
+      </component-definition> 
+    </action-definition>
+ 
+  </actions> 
+</action-sequence>

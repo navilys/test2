@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm menu="FieldsSelector" width="600" rowsPerPage="1000" enabletemplate="0">
+
+<TITLE_NEW_OPTIONS type="title" enablehtml="0" btn_cancel="Cancel">
+  <en><![CDATA[Permissions New Options]]></en>
+  <es><![CDATA[Permissions New Options]]></es>
+  <po><![CDATA[Permissions New Options]]></po>
+</TITLE_NEW_OPTIONS>
+<GRID_SELECTOR_NEW_OPTIONS type="grid" xmlgrid="convergenceList/Grid_SelectorFields" addrow="0" deleterow="0" btn_cancel="Cancel"/>
+<SAVEASNEWVERSION type="submit">
+  <en>UPDATE </en>
+  <es>UPDATE </es>
+  <po>UPDATE </po>
+</SAVEASNEWVERSION>
+
+<JAVA_SCRIPT type="javascript"><![CDATA[
+
+]]></JAVA_SCRIPT>
+</dynaForm>

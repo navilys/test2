@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="KtDocType" width="600" mode="edit" enableTemplate="0" border="0">
+
+<title1 type="title" >
+  <en>Delete KtDocType</en>
+</title1>
+
+
+<LABEL_PRO_UID type="caption" colWidth='32'  >
+  <en>Uid</en>
+</LABEL_PRO_UID>
+
+<PRO_UID type="hidden" colWidth='32'  >
+</PRO_UID>
+
+<LABEL_DOC_UID type="caption" colWidth='32'  >
+  <en>Uid</en>
+</LABEL_DOC_UID>
+
+<DOC_UID type="hidden" colWidth='32'  >
+</DOC_UID>
+
+
+<BTN_SUBMIT type="submit" >
+  <en>delete</en>
+</BTN_SUBMIT>
+
+</dynaForm>

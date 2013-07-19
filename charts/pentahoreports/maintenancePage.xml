@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm
+  name="Pentaho Reports Maintenance Form"
+  type="xmlform"
+  width="550"
+>
+
+<TITLE type="title" group="1">
+  <en>JNDI Information</en>
+</TITLE>
+
+<STITLE type="subtitle" group="1">
+  <en>Please create this Database Source in Pentaho Administration Console</en>
+</STITLE>
+
+<jndiName type="text" mode="view" >
+  <en>Datasource Name</en>
+</jndiName>
+
+<jndiDriverClass type="text" mode="view" >
+  <en>Driver Class</en>
+</jndiDriverClass>
+
+<jndiUserName type="text" mode="view" >
+  <en>User Name</en>
+</jndiUserName>
+
+<jndiPassword type="text" mode="view" >
+  <en>Password</en>
+</jndiPassword>
+
+<jndiUrl type="text" mode="view" >
+  <en>URL</en>
+</jndiUrl>
+
+
+<STITLE2 type="subtitle" group="1">
+  <en>Build ProcessMaker workspace folder in Pentaho Solution</en>
+</STITLE2>
+
+<ACCEPT type="submit" >
+  <en>rebuild</en>
+</ACCEPT>
+</dynaForm>

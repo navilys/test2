@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="KtConfig" width="600" mode="edit" enableTemplate="0" border="0">
+
+<title1 type="title" >
+  <en>KtConfig form</en>
+</title1>
+
+<USR_UID type="text" size='32' maxlength='32' >
+  <en>Uid
+  </en>
+</USR_UID>
+
+<KT_USERNAME type="text" size='60' maxlength='100' >
+  <en>Sername
+  </en>
+</KT_USERNAME>
+
+<KT_PASSWORD type="text" size='60' maxlength='100' >
+  <en>Assword
+  </en>
+</KT_PASSWORD>
+
+
+<BTN_SUBMIT type="submit" >
+  <en>save</en>
+</BTN_SUBMIT>
+
+</dynaForm>

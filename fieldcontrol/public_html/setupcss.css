@@ -1,0 +1,28 @@
+/**
+ * Setup options Interface styles
+ */
+
+.ICON_MT_GROUPS_ROLES{
+    background-image: url(/plugin/fieldcontrol/permission.png) !important;
+}
+.ICON_INBOX{
+    background-image: url(/plugin/fieldcontrol/admin_inbox.png) !important;
+}
+.ICON_ACTION_INBOX{
+	background-image: url(/plugin/fieldcontrol/actions_inbox.png) !important;
+}
+.ICON_MY_PROFILE{
+	background-image: url(/plugin/fieldcontrol/myProfile.png) !important;
+}
+.frameForm{
+	background-color: #E7E7E7  !important;
+	padding:5px 10px 0 10px;
+}
+
+.ss_configUsers{
+	background: transparent url(/plugin/fieldcontrol/configUser.png) left center no-repeat scroll !important;
+}
+
+.ss_configListUsers{
+	background: transparent url(/plugin/fieldcontrol/configListUser.png) left center no-repeat scroll !important;
+}

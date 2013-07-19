@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="accountActivatedSuccessfully" version="1.0" basedir="" xmlform_type="NORMAL" width="520px" labelwidth="0">
+<TITLE type="title">
+  <en>Account Activated Successfully</en>
+</TITLE>
+<MESSAGE type="text" size="30" maxlength="32" mode="view" enableHTML="1">
+  <en/>
+</MESSAGE>
+</dynaForm>

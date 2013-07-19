@@ -1,0 +1,143 @@
+/* 
+    Document   : aditionalTalbeCss
+    Created on : Jan 31, 2013, 2:08:14 PM
+    Author     : Marel
+    Description:
+        Purpose of the stylesheet follows.
+*/
+@font-face {
+    font-family: 'armataregular';
+    src: url('/plugin/pmReplicator/fonts/armata-regular-webfont.eot');
+    src: url('/plugin/pmReplicator/fonts/armata-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/plugin/pmReplicator/fonts/armata-regular-webfont.woff') format('woff'),
+         url('/plugin/pmReplicator/fonts/armata-regular-webfont.ttf') format('truetype'),
+         url('/plugin/pmReplicator/fonts/armata-regular-webfont.svg#armataregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'roboto_condensedregular';
+    src: url('/plugin/pmReplicator/fonts/robotocondensed-regular-webfont.eot');
+    src: url('/plugin/pmReplicator/fonts/robotocondensed-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/plugin/pmReplicator/fonts/robotocondensed-regular-webfont.woff') format('woff'),
+         url('/plugin/pmReplicator/fonts/robotocondensed-regular-webfont.ttf') format('truetype'),
+         url('/plugin/pmReplicator/fonts/robotocondensed-regular-webfont.svg#roboto_condensedregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+body{
+	margin: 0px;
+	padding: 0px;
+	font-size: 10px;
+	font-family: 'armataregular';	
+}
+h1{
+	font-family: 'roboto_condensedregular';	
+	color: #00A2E5;	
+	padding-left: 55px;
+	height: 48px;
+  line-height: 48px;
+  text-transform: uppercase;
+  text-align: left;
+  font-size: 25px;
+}
+h1#processTitle{
+	background: transparent url(/plugin/pmReplicator/images/processReplicator.png) no-repeat left center scroll;	
+}
+h1#tableTitle{
+	background: transparent url(/plugin/pmReplicator/images/tableReplicator.png) no-repeat left center scroll;	
+}
+h1#dynaformTitle{
+	background: transparent url(/plugin/pmReplicator/images/dynaformReplicator.png) no-repeat left center scroll;	
+}
+.tclLoader{
+    text-align: center;
+    padding-top:150px;
+    display:none;
+}
+table.dataTable{
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  margin: 10px 0;
+  font-family: 'armataregular';	
+  font-size: 10px;
+}
+tbody tr.even:hover, tbody tr.even td.highlighted{
+    cursor: pointer;
+    background-color: #A0D6E7;
+}
+tbody tr.odd:hover, tbody tr.odd td.highlighted{
+    cursor: pointer;
+    background-color: #A0D6E7;
+}
+tbody tr.even:hover td.sorting_1{
+    cursor: pointer;
+    background-color: #A0D6E7;
+}
+tbody tr.odd:hover td.sorting_1{
+    cursor: pointer;
+    background-color: #A0D6E7;
+}
+tbody tr.even:hover td.sorting_2{
+    cursor: pointer;
+    background-color: #A0D6E7;
+}
+tbody tr.odd:hover td.sorting_2{
+    cursor: pointer;
+    background-color: #A0D6E7;
+}
+tr.row_selected td{
+    background-color:#C3D7DF !important;
+}
+a.tclButton{
+    color:#347898;
+    text-decoration: none;
+   
+}
+a.tclButton span{
+    margin-top:5px;
+   /*  display:block;*/
+    -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
+    font-size: 14px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    padding:1px;
+}
+.tclButtonBox{
+    margin-left:5px;
+    margin-top:112px; 
+    float:left;
+    padding:5px;
+    width:28px;
+}
+.topTcl span, .bottomTcl span{
+	display: none;	
+}
+.topTcl, .bottomTcl{
+	height: 24px;	
+	width: 24px;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-position: left top;
+	display: block;	
+}
+.topTcl{
+	background-image: url('/plugin/pmReplicator/images/rightArrow.png');	
+}
+.bottomTcl{
+	background-image: url('/plugin/pmReplicator/images/leftArrow.png');	
+}
+.tclTableTitle{
+ 		background: none repeat scroll 0 0 #00A2E5;
+    border-radius: 5px 5px 5px 5px;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 3px;
+    text-align: center;
+}

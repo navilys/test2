@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="KtFieldsMap" width="600" mode="edit" enableTemplate="0" border="0">
+
+<title1 type="title" >
+  <en>KtFieldsMap form</en>
+</title1>
+
+
+<DOC_KT_TYPE_ID type="hidden" colWidth='60'  >
+  <en>Kt Type Id</en>
+</DOC_KT_TYPE_ID>
+
+<PRO_UID type="hidden" colWidth='32'  >
+  <en>Uid</en>
+</PRO_UID>
+
+
+<FIELDS_MAP type="textarea" size='25' maxlength='25' >
+  <en>Ds Map
+  </en>
+</FIELDS_MAP>
+
+<DESTINATION_PATH type="text" size='60' maxlength='250' >
+  <en>Ination Path
+  </en>
+</DESTINATION_PATH>
+
+
+<BTN_SUBMIT type="submit" >
+  <en>save</en>
+</BTN_SUBMIT>
+
+</dynaForm>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm
+  name="actionByEmail Setup Form"
+  type="xmlform"
+  width="550"
+>
+
+<TITLE type="title" group="1">
+  <en>Action By Email Plugin</en>
+</TITLE>
+
+<HelpText type="subtitle" maxlength="100" size ="60">
+  <en>There is no further configuration needed.</en>
+</HelpText>
+
+</dynaForm>

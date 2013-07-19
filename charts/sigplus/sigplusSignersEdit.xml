@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="SigplusSigners" width="450" mode="edit" enableTemplate="0" border="0">
+<PRO_UID type="hidden" showInTable="0" />
+<TAS_UID type="hidden" showInTable="0" />
+<STP_UID type="hidden" showInTable="0" />
+
+<title1 type="title" >
+  <en>Output Document to be signed</en>
+</title1>
+
+<DOC_UID type="dropdown" style="width:250px" sqlConnection="dbarray">
+  SELECT * FROM docList
+  <en>Documents List</en>
+</DOC_UID>
+
+<SIGNERS_TITLE type="title" enablehtml="0">
+  <en>Signers</en>
+</SIGNERS_TITLE>
+
+<SIGNERS_GRID type="grid" xmlgrid="sigplus/sigplusSignersGrid" addrow="1" deleterow="1"></SIGNERS_GRID>
+
+<BTN_SUBMIT type="submit">
+  <en>save</en>
+</BTN_SUBMIT>
+</dynaForm>

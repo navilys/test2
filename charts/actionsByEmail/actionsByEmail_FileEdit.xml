@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="actionsByEmail_FileEdit" type="xmlform" width="100%" enableTemplate="1">
+<TEMPLATE type="hidden" defaultValue=""/>
+<THETITLE type="title" enableHTML="1">
+  <en><![CDATA[<div align="center">Edit @#TEMPLATE email template</div>]]></en>
+</THETITLE>
+<CONTENT type="html" height="420" width="100%" defaultValue="">
+  <en/>
+</CONTENT>
+<ACCEPT type="button" onclick="saveFile();">
+  <en>Save</en>
+</ACCEPT>
+<CANCEL type="button" onclick="cancel();">
+  <en>Cancel</en>
+</CANCEL>
+<JS type="javascript" replacetags="1">
+<![CDATA[
+var cancel = function () {
+ oPanel.remove();
+};
+
+var saveFile = function() {
+  var fc64 = base64_encode(getField('CONTENT').value);
+  fc64 = fc64.replace(/&amp;/g, '@amp@');
+  fc64 = fc64.replace(/\+/g, '%2B');
+  var oRPC = new leimnud.module.rpc.xmlhttp({
+    url: '../actionsByEmail/actionsByEmailAjax',
+    args: 'action=updateTemplate&PRO_UID=' + Pm.options.uid + '&TEMPLATE=' + getField('TEMPLATE').value + '&CONTENT=' + fc64
+  });
+  oPanel.loader.show();
+  oRPC.callback = function(rpc) {
+    oPanel.remove();
+  }.extend(this);
+  oRPC.make();
+};
+]]>
+</JS>
+</dynaForm>

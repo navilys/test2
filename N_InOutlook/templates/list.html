@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>{$listTitle}</title>
+    <style type="text/css" title="currentStyle">
+      @import "/plugin/N_InOutlook/cssNightlies/table.css";
+    </style>
+    <script type="text/javascript" src="/plugin/N_InOutlook/js/jquery.js"></script>
+    <script type="text/javascript" src="/plugin/N_InOutlook/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript">{literal}
+      $(document).ready(function() {
+        var oTable = $('#example').dataTable({
+          "bSortClasses": false,
+          "sScrollY": 320,
+          "bJQueryUI": true,
+          "sPaginationType": "full_numbers",
+           "aaSorting": [[0, "desc"]]
+        });
+        {/literal}{foreach from=$hide item=column}/*oTable.fnSetColumnVis({$column}, false);*/{/foreach}{literal}
+				$('td', oTable.fnGetNodes()).hover(function() {
+					var iCol = $('td').index(this) % 5;
+					var nTrs = oTable.fnGetNodes();
+					$('td:nth-child('+(iCol+1)+')', nTrs).addClass('highlighted');
+				},
+        function() {
+					$('td.highlighted', oTable.fnGetNodes()).removeClass('highlighted');
+				});
+        $('#example tbody tr').live('dblclick', function () {
+          var nTds = $('td', this);
+          var spans = nTds[1].getElementsByTagName('span');
+          if (spans.length == 4) {
+            window.location = spans[0].innerHTML + '?APP_UID=' + spans[1].innerHTML + '&DEL_INDEX=' + spans[2].innerHTML + '&action=' + spans[3].innerHTML;
+          }
+        });
+        {/literal}{$customJS}{literal}
+      });
+    {/literal}</script>
+  </head>
+  <body id="dt_example" class="ex_highlight">
+    <div id="container">
+      <h1>{$listTitle}</h1>
+      <div id="demo">
+	      <table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+	        <thead>
+	          <tr>
+	            {foreach from=$columns item=column}
+	            <th>{$column}</th>
+	            {/foreach}
+	          </tr>
+	        </thead>
+	        <tbody>
+	          {foreach from=$rows item=row}
+	          <tr class="gradeA">
+	            {foreach from=$row item=field}
+	            <td class="">{$field}</td>
+	            {/foreach}
+	          </tr>
+	          {/foreach}
+	        </tbody>
+	        <tfoot>
+	          <tr>
+	            {foreach from=$columns item=column}
+	            <th>{$column}</th>
+	            {/foreach}
+	          </tr>
+	        </tfoot>
+	      </table>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm type="grid" name="GridFieldsSelector" width="500" enabletemplate="0" mode="edit">
+<ID type="text" maxlength="64" validate="Any" required="0" readonly="0" size="25" mode="edit" btn_cancel="Cancel" style='display:none;'>
+  <en/>
+</ID>
+<ROL_UID type="text" maxlength="64" validate="Any" required="0" readonly="0" size="25" mode="edit" btn_cancel="Cancel" style='display:none;'>
+  <en/>
+</ROL_UID>
+<DESCRIPTION type="text" maxlength="64" validate="Any" required="0" readonly="0" size="30" mode="edit" btn_cancel="Cancel">
+  <en>FIRSTNAME AND LASTNAME</en>
+</DESCRIPTION>
+<GROUP_UID type="text" style='display:none;'>
+  <en/>
+</GROUP_UID>
+<FIELD_NAME type="text" style='display:none;'>
+  <en/>
+</FIELD_NAME>
+<ROL_CODE type="text" style="background: #CCC; none repeat scroll 0% 0%; border-style: none none double; border-color: -moz-use-text-color -moz-use-text-color #138BAE; border-width: medium medium 3px; text-align:left;" maxlength="64" validate="Any" required="0" readonly="1" size="30" mode="edit" btn_cancel="Cancel">
+  <en>PERMISSION</en>
+</ROL_CODE>
+<POSITION type="text"  maxlength="64" validate="Any" required="0" readonly="0" size="10" mode="edit" btn_cancel="Cancel">
+  <en>POSITION</en>
+</POSITION>
+<INCLUDE_OPTION type="yesno" readonly="0" mode="edit" btn_cancel="Cancel">
+  <en>INCLUDE IN THE LIST?</en>
+</INCLUDE_OPTION>
+</dynaForm>

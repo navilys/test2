@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<dynaForm type="xmlform" name="fieldcontrol/serPermissionByField" width="460" enabletemplate="0" mode="" nextstepsave="" printdynaform="0">
+<LIST_FORM type="dropdown" required="0" mode="edit" options="Array" btn_cancel="Cancel" defaultvalue="1" >
+	SELECT
+		CON_ID,
+		CON_VALUE
+	FROM
+		CONTENT
+	WHERE 
+		CON_LANG = 'en' AND
+		CON_CATEGORY = 'DYN_TITLE'	
+<en> Form
+	<option name="">- Select -</option>
+</en>
+</LIST_FORM>
+<SELECT_FORM type="submit">
+<en>Select</en>
+</SELECT_FORM>
+</dynaForm>
+

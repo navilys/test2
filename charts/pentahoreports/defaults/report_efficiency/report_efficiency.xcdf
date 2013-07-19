@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdf>
+	<title>My Efficiency</title>
+	<author>Colosa</author>
+	<description>My Efficiency</description>
+	<icon></icon>
+	<template>reports_content/report_efficiency/report_efficiency_template.html</template>
+	<style>processmaker</style>
+</cdf>

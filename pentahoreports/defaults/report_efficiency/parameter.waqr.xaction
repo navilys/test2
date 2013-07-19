@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<action-sequence> 
+  <name>parameter.waqr.xaction</name>
+  <title>parameter</title>
+  <version>1</version>
+  <logging-level>warn</logging-level>
+  <documentation> 
+    <author>Colosa</author>  
+    <description></description>  
+    <icon>PentahoReporting.png</icon>  
+    <help></help>  
+    <result-type>report</result-type> 
+  </documentation>
+
+  <inputs> 
+    <output-type type="string"> 
+      <default-value>html</default-value>  
+      <sources> 
+        <request>type</request> 
+      </sources> 
+    </output-type>  
+    <USER type="string"> 
+      <default-value/>  
+      <sources> 
+        <request>USER</request> 
+      </sources> 
+    </USER>  
+    <USER_VALUES type="string-list"> 
+      <sources> 
+        <request>USER_VALUES</request> 
+      </sources>  
+      <default-value type="string-list"> 
+        
+      </default-value> 
+    </USER_VALUES> 
+  </inputs>
+
+  <outputs/>
+
+  <resources> 
+    <parameter-template> 
+      <solution-file> 
+        <location>parameter_template.html</location>  
+        <mime-type>text/xml</mime-type> 
+      </solution-file> 
+    </parameter-template>  
+    <report-definition> 
+      <solution-file> 
+        <location>app_cache_temp.waqr.xml</location>  
+        <mime-type>text/xml</mime-type> 
+      </solution-file> 
+    </report-definition> 
+  </resources>
+  
+  <actions> 
+    <action-definition> 
+      <component-name>SQLLookupRule</component-name>
+      <action-type>rule</action-type>
+      <action-outputs> 
+        <query-result type="result-set" mapping="USER_VALUES"/> 
+      </action-outputs>
+      <component-definition> 
+        <jndi><![CDATA[{JNDI_SOLUTION}]]></jndi>  
+        <query><![CDATA[select distinct(APP_CURRENT_USER) from APP_CACHE_VIEW]]></query>  
+        <live><![CDATA[false]]></live> 
+      </component-definition> 
+    </action-definition>
+  
+    <action-definition> 
+      <component-name>SecureFilterComponent</component-name>
+      <action-type>Prompt For Region, Dept, and Output Type</action-type>
+      <action-inputs> 
+        <USER type="string"/>  
+        <USER_VALUES type="string-list"/> 
+      </action-inputs>
+      <action-outputs/>
+      <component-definition> 
+        <selections> 
+          <!-- for now ignore the column names -->  
+          <USER style="select"> 
+            <title></title>  
+            <filter>USER_VALUES</filter> 
+          </USER> 
+        </selections>  
+        <xsl>parameter-template</xsl>  
+        <target>Report_Window</target> 
+      </component-definition> 
+    </action-definition>
+ 
+  </actions> 
+</action-sequence>

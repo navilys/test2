@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title></title>
+
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/jcore.libraries.css">
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/jcore.adam-ui.css">
+
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/bootstrap-responsive.css">
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/DT_bootstrap.css">
+
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/styles.css">
+
+    <script type="text/javascript">
+        var processes = <?php echo G::json_encode($processesList) ?>;
+        var globals = <?php echo G::json_encode($globals) ?>;
+        var globalFieldTypes = <?php echo G::json_encode($globalFieldTypes) ?>;
+    </script>
+</head>
+
+<body>
+    <br/>
+    <div class="container">
+
+        <div class="row">
+            <div class="span6">
+                <b>BUSINESS RULES</b>
+            </div>
+            <div class="span6">
+                <div class="btn-toolbar pull-right" style="margin: 0;">
+                    <div class="btn-group">
+                        <a class="btn btn-mini x-action-new" href="#"> <i class="icon-plus"></i>
+                            New&nbsp;
+                        </a>
+                        <a class="btn btn-mini x-action-import" href="#"> <i class="icon-circle-arrow-up"></i>
+                            Import&nbsp;
+                        </a>
+
+                        <!-- <a class="btn btn-mini x-action-globals" href="#"> <i class="icon-circle-arrow-down"></i>
+                            Global Variables&nbsp;
+                        </a> -->
+
+                        <button class='btn  btn-mini dropdown-toggle' data-toggle='dropdown' type='button'>
+                            <i class='icon-cog'></i>
+                            <span class='caret'></span>
+                        </button>
+
+                        <ul class='dropdown-menu pull-right'>
+                            <li class='nav-header'>
+                                TOOLS
+                            </li>
+                            <li>
+                                <a href="#" class="x-action-globals">Global Variables</a>
+                            </li>
+                            <li>
+                                <a href="#" class="x-action-dbcnn">DB Connections</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="span12">
+                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped" id="rules_table">
+                    <thead>
+                        <th>Rule set</th>
+                        <th>Type</th>
+                        <th>Update Date</th>
+                        <th>Options</th>
+                    </thead>
+                    <?php foreach ($rules as $rule) { ?>
+                    <tr>
+                        <td>
+                            <?php echo $rule['RST_NAME']?></td>
+                        <td>
+                            <?php echo $rule['RST_TYPE']?></td>
+                        <td width="20%">
+                            <?php echo $rule['RST_UPDATE_DATE']?></td>
+                        <td width="120px" data-id="<?php echo $rule['RST_UID']?>
+                            " style="text-align:right">
+                            <?php if ($rule['SHOW_OPEN_EDITOR']) {?>
+                            <a class="btn btn-mini" href="editor.php?id=<?php echo $rule['RST_UID']?>
+                                " title="Open in Editor">
+                                <i class="icon-wrench"></i>
+                            </a>
+                            <?php } ?>
+                            <a class="btn btn-mini" href="#" onclick="showSource('<?php echo $rule['RST_UID']?>',
+                                <?php echo $rule['SHOW_OPEN_EDITOR']?>); return false;" title="Edit Source">
+                                <i class="icon-edit"></i>
+                            </a>
+                            <a class="btn btn-mini" href="#" onclick="exportPmrl('<?php echo $rule['RST_UID']?>' );
+                                return false;" title="Export">
+                                <i class="icon-circle-arrow-down"></i>
+                            </a>
+                            <a class="btn btn-mini" href="#" onclick="deleteRule('<?php echo $rule['RST_UID']?>');
+                                return false;" title="Delete Rule">
+                                <i class="icon-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php }?></table>
+            </div>
+        </div>
+    </div>
+
+    <form id="form1" style="display:none;">
+        <div style="padding: 10px;">
+
+            <table width="100%">
+                <tr>
+                    <td> <b>RULE SET SOURCE</b>
+                        &nbsp;&nbsp;&nbsp;
+                    </td>
+                    <td>
+                        <div class="btn-toolbar pull-right" style="margin: 0;">
+                            <div class="btn-group x-options-edit-source" style="display:none">
+                                <a class="btn btn-mini x-action-save-popup" href="#">
+                                    <i class="icon-ok"></i>
+                                    Save&nbsp;
+                                </a>
+                                <a class="btn btn-mini x-action-cancel-edit-popup" href="#">
+                                    <i class="icon-remove"></i>
+                                    Cancel&nbsp;
+                                </a>
+                                <a class="btn btn-mini x-action-cancel-popup" href="#">
+                                    <i class="icon-ban-circle"></i>
+                                    Close&nbsp;
+                                </a>
+                            </div>
+                            <div class="btn-group x-options-show-source">
+                                <a class="btn btn-mini x-action-edit-popup" href="#">
+                                    <i class="icon-pencil"></i>
+                                    Edit&nbsp;
+                                </a>
+                                <a class="btn btn-mini x-action-cancel-popup" href="#">
+                                    <i class="icon-ban-circle"></i>
+                                    Close&nbsp;
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <hr/>
+
+            <div class="control-group">
+                <div class="controls">
+                    <pre class="pre-scrollable pre_rule_source" style="width:98%; height: 265px;"></pre>
+                    <textarea class="pre-scrollable textarea_rule_source" style="width:98%; height: 265px; display:none;"></textarea>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+    <script id="new_rule_panel" type="text/x-jquery-tmpl">
+    <div>
+        <div style="padding: 10px;">
+            <form class="form-horizontal" action="controllers/businessRulesProxy.php?" method="POST">
+                <table width="100%">
+                    <tr>
+                        <td><b>NEW RULE SET {$name}</b></td>
+                        <td>
+                            <div class="btn-toolbar pull-right" style="margin: 0;">
+                                <div class="btn-group x-options-show-source">
+                                    <button class="btn btn-mini x-action-save-new"><i class="icon-ok"></i> Save&nbsp;</button>
+                                    <button class="btn btn-mini x-action-cancel-new"><i class="icon-ban-circle"></i> Cancel&nbsp;</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <hr/>
+
+                <div class="control-group">
+                    <label class="control-label" for="RST_NAME">Name *</label>
+                    <div class="controls">
+                        <input type="text" id="RST_NAME" placeholder="Set a Rule Set Name" class="span4" />
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="RST_DESCRIPTION">Description</label>
+                    <div class="controls">
+                        <textarea id="RST_DESCRIPTION" placeholder="Set a description" class="span4"></textarea>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="RST_TYPE">Type</label>
+                    <div class="controls">
+                        <select id="RST_TYPE">
+                            <option value="single">Single Hit</option>
+                            <option value="multiple">Multiple Hit</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="PRO_UID">Process *</label>
+                    <div class="controls">
+                        <select id="PRO_UID">
+                            <?php foreach ($processesList as $proc) { ?>
+                            <option value="<?php echo $proc['PRO_UID'] ?>"><?php echo $proc['PRO_TITLE'] ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    </script>
+
+    <script id="import_panel" type="text/x-jquery-tmpl">
+    <div>
+        <div style="padding: 10px;">
+            <div>
+            <table width="100%">
+        <!-- <div style="padding: 0 10px 10px 10px; background-color:#fff;">
+            <div style="padding-top:10px; position:fixed; width:550px; background-color:#fff; z-index:50000">
+            <table width="100%" style="top:50px;background-color: #fff;"> -->
+                <tr>
+                    <td><b>GLOBAL VARIABLES</b></td>
+                    <td>
+                        <div class="btn-toolbar pull-right" style="margin: 0;">
+                            <div class="btn-group x-options-show-source">
+                                <button class="btn btn-mini x-action-add-globals"><i class="icon-plus"></i>Add&nbsp;</button>
+                                <button class="btn btn-mini x-action-cancel-globals"><i class="icon-ban-circle"></i> Cancel&nbsp;</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <hr/>
+            </div>
+
+            <div style="left:30px; width:100%">
+                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped" id="globals_table">
+                    <thead>
+                        <th>Name</th>
+                        <th>Value</th>
+                        <th>Type</th>
+                        <th width="100">Options</th>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    </script>
+
+    <script id="globals_panel" type="text/x-jquery-tmpl">
+    <div>
+        <div style="padding: 10px;">
+            <div>
+            <table width="100%">
+        <!-- <div style="padding: 0 10px 10px 10px; background-color:#fff;">
+            <div style="padding-top:10px; position:fixed; width:550px; background-color:#fff; z-index:50000">
+            <table width="100%" style="top:50px;background-color: #fff;"> -->
+                <tr>
+                    <td><b>GLOBAL VARIABLES</b></td>
+                    <td>
+                        <div class="btn-toolbar pull-right" style="margin: 0;">
+                            <div class="btn-group x-options-show-source">
+                                <button class="btn btn-mini x-action-add-globals"><i class="icon-plus"></i>Add&nbsp;</button>
+                                <button class="btn btn-mini x-action-cancel-globals"><i class="icon-ban-circle"></i> Cancel&nbsp;</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <hr/>
+            </div>
+
+            <div style="left:30px; width:100%">
+                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped" id="globals_table">
+                    <thead>
+                        <th>Name</th>
+                        <th>Value</th>
+                        <th>Type</th>
+                        <th width="100">Options</th>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    </script>
+
+    <script id="dbcnn_panel" type="text/x-jquery-tmpl">
+    <div>
+        <div style="padding: 10px;">
+            <div>
+            <table width="100%">
+                <tr>
+                    <td><b>Database Connections</b></td>
+                    <td>
+                        <div class="btn-toolbar pull-right" style="margin: 0;">
+                            <div class="btn-group x-options-show-source">
+                                <button class="btn btn-mini x-dbcnn-new"><i class="icon-plus"></i>New&nbsp;</button>
+                                <button class="btn btn-mini x-dbcnn-cancel"><i class="icon-ban-circle"></i> Cancel&nbsp;</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <hr/>
+            </div>
+
+            <div style="left:30px; width:100%">
+                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped" id="dbcnn_table">
+                    <thead>
+                        <th>Type</th>
+                        <th>Server</th>
+                        <th>Data Base Name</th>
+                        <th width="70">Options</th>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    </script>
+
+    <script id="dbcnn_new_panel" type="text/x-jquery-tmpl">
+    <div>
+        <div style="padding: 10px;">
+            <div>
+            <table width="100%">
+                <tr>
+                    <td><b>New Database Connection</b></td>
+                    <td>
+                        <div class="btn-toolbar pull-right" style="margin: 0;">
+                            <div class="btn-group x-options-show-source">
+                                <button class="btn btn-mini x-dbcnn-save"><i class="icon-ok"></i>Save&nbsp;</button>
+                                <button class="btn btn-mini x-dbcnn-cancel"><i class="icon-ban-circle"></i> Cancel&nbsp;</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <hr/>
+            </div>
+
+            <div style="left:30px; width:100%">
+                <form class="form-horizontal x-dbcnn-form" action="controllers/businessRulesProxy.php?" method="POST">
+                    <input type="hidden" id="DBS_UID" value="${DBS_UID}" />
+
+                    <div class="control-group">
+                        <label class="control-label" for="DBS_TYPE">Data Base Engine</label>
+                        <div class="controls">
+                            <select id="DBS_TYPE">
+                                <?php foreach ($dbServices as $type) { ?>
+                                <option value="<?php echo $type['id'];?>"><?php echo $type['name'];?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="DBS_SERVER">Server </label>
+                        <div class="controls">
+                            <input type="text" id="DBS_SERVER" placeholder="Data Base Server" class="span3" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="DBS_PORT">Port </label>
+                        <div class="controls">
+                            <input type="text" id="DBS_PORT" placeholder="Set Server Port" class="span3" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="DBS_DATABASE_NAME">Data Base Name </label>
+                        <div class="controls">
+                            <input type="text" id="DBS_DATABASE_NAME" placeholder="Data Base Name" class="span3" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="DBS_USERNAME">User </label>
+                        <div class="controls">
+                            <input type="text" id="DBS_USERNAME" placeholder="User Name" class="span3" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="DBS_PASSWORD">Password </label>
+                        <div class="controls">
+                            <input type="password" id="DBS_PASSWORD" placeholder="Password" class="span3" />
+                        </div>
+                    </div>
+                    <!--<div class="control-group">
+                        <label class="control-label" for="DBS_DESCRIPTION">Description</label>
+                        <div class="controls">
+                            <textarea id="DBS_DESCRIPTION" placeholder="Set a description" class="span3"></textarea>
+                        </div>
+                    </div>-->
+                </form>
+            </div>
+        </div>
+    </div>
+    </script>
+
+    <script id="set_query_panel" type="text/x-jquery-tmpl">
+    <div>
+        <div style="padding: 10px;">
+            <div>
+            <table width="100%">
+                <tr>
+                    <td><b>Global variable Query</b></td>
+                    <td>
+                        <div class="btn-toolbar pull-right" style="margin: 0;">
+                            <div class="btn-group x-options-show-source">
+                                <button class="btn btn-mini x-query-save"><i class="icon-ok"></i>Save&nbsp;</button>
+                                <button class="btn btn-mini x-query-cancel"><i class="icon-ban-circle"></i> Cancel&nbsp;</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <hr/>
+            </div>
+
+            <div style="left:30px; width:100%">
+                <form class="form-horizontal x-query-form" action="#" method="POST">
+                    <input type="hidden" id="GF_NAME" value="${GF_NAME}" />
+
+                    <div class="control-group">
+                        <label class="control-label" for="DBS_TYPE">Data Base Connection</label>
+                        <div class="controls">
+                            <select id="DBS_UID"></select>
+                        </div>
+                    </div>
+                    Query: <br/>
+                    <textarea id="GF_QUERY" placeholder="Set a Query" class="span6" rows="5"></textarea>
+
+                </form>
+            </div>
+        </div>
+    </div>
+    </script>
+
+
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jquery.tmpl.min.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/bootstrap.js"></script>
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jcore.libraries.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jcore.adam-ui.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jquery.dataTables.min.js"></script>
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jcore.pmdraw-0.2.0.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/underscore-min.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jcore.brcontrol-0.1.0.min.js"></script>
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/main.js"></script>
+</body>
+</html>

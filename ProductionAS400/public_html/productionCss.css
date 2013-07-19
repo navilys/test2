@@ -1,0 +1,72 @@
+/**
+ * Setup options Interface styles
+ */
+
+.frameForm{
+	background-color: #E7E7E7 !important;
+	padding-top:2px;
+	padding-bottom:2px;
+	padding-right:2px;
+	padding-left:2px;
+}
+.frameRules{
+	background-color: #E7E7E7 !important;
+	padding-top:2px;
+	padding-bottom:2px;
+	padding-right:2px;
+	padding-left:2px;
+}
+
+.ICON_INBOX{
+    background-image: url(/plugin/ProductionAS400/production.png) !important;
+}
+.ICON_DEDOUBLO{
+    background-image: url(/plugin/ProductionAS400/rules.png) !important;
+}
+.ss_save{
+	background: transparent url(/plugin/ProductionAS400/save.png) left center no-repeat scroll !important;
+}
+.ss_del{
+	background: transparent url(/plugin/ProductionAS400/delete_item.png) left center no-repeat scroll !important;
+}
+.ss_copy{
+	background: transparent url(/plugin/ProductionAS400/duplicate.png) left center no-repeat scroll !important;
+}
+.addQuery{
+	width:80px!important;
+	height:15px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+}
+.executeQuery{
+	width:80px!important;
+	height:27px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+}
+.whereQuery{
+	width:80px!important;
+	height:30px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+}
+.copyField{
+	width:60px!important;
+	height:30px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+	padding: 0;
+	vertical-align:text-top;
+	text-align:left;
+	border-spacing:0;
+}
+.delField{
+	width:60px!important;
+	height:30px!important;
+	margin-right: auto !important;
+	margin-left: auto !important;
+	padding: 0;
+	vertical-align:text-top;
+	text-align:left;
+	border-spacing:0;
+}

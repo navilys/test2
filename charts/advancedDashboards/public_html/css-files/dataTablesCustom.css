@@ -1,0 +1,27 @@
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+  padding: 0 0.25em;
+  
+  color: #000000;
+  /*font-weight: bold;*/
+}
+
+.ui-widget-header {
+  font-weight: normal;
+  font-size: 70%;
+}
+
+.ui-state-default, tr.odd, tr.even {
+  font-size: 70%;
+}
+
+tr.odd td , tr.even td{
+  padding: 0 0.25em;
+}
+
+tr.odd {
+  background: #FFFFFF;
+}
+
+tr.even {
+  background: #F2F2F2;
+}

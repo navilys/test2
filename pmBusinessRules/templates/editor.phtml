@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title></title>
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jquery-1.8.3.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/bootstrap.min-buttons.css">
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/jcore.brcontrol.css">
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/easyselector-0.1.1.css">
+    <link rel="stylesheet" type="text/css" href="/plugin/pmBusinessRules/styles.css">
+    <style>
+        .simple-container {
+            margin-right: auto;
+            margin-left: auto;
+            width: 90%;
+        }
+
+        .simple-container:before, .simple-container:after {
+            display: table;
+            line-height: 0;
+            content: "";
+        }
+        .simple-container:after {
+            clear: both;
+        }
+
+        .row {
+            margin-left: -20px;
+        }
+
+        .row:before, .row:after {
+            display: table;
+            line-height: 0;
+            content: "";
+        }
+        .row:after {
+            clear: both;
+        }
+
+
+        [class*="span"] {
+            float: left;
+            min-height: 1px;
+            margin-left: 20px;
+        }
+
+        .span6 {
+            width: 50%;
+        }
+
+        .span12 {
+            width: 100%;
+        }
+
+        .pull-right {
+            float: right;
+        }
+
+        hr {
+            margin: 4px 0 10px 0;
+
+            border: 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #fff;
+        }
+    </style>
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jcore.pmdraw-0.2.0.js"></script>
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/underscore-min.js"></script>
+
+    <script>
+        var id = '<?php echo $id?>';
+        var ruleSet = <?php echo G::json_encode($ruleSet)?>;
+        var fields = <?php echo G::json_encode($fields)?>;
+    </script>
+</head>
+
+<body>
+<br/>
+<div class="simple-container">
+
+    <table width="100%">
+        <tr>
+        <td>
+            <b>
+                <?php if (empty($id)) {?>
+                NEW BUSINESS RULE
+                <?php } else { ?>
+                EDIT BUSINESS RULE
+                <?php } ?>
+            </b>&nbsp;&nbsp;&nbsp;
+        </td>
+        <td>
+            <div class="btn-toolbar pull-right" style="margin: 0;">
+                <div class="btn-group">
+                    <a class="btn btn-mini x-action-save" href="#"><i class="icon-ok"></i> Save&nbsp;&nbsp;</a>
+                    <a class="btn btn-mini x-action-sancel" href="main"><i class="icon-ban-circle"></i> Cancel&nbsp;&nbsp;</a>
+                </div>
+            </div>
+        </td>
+        </tr>
+    </table>
+    <hr/>
+
+    <div class="row">
+        <div class="span12">
+            <div id="business-rule" style="width:97%" />
+        </div>
+    </div>
+
+</div>
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/jcore.brcontrol-0.1.0.min.js"></script>
+
+    <script type="text/javascript" src="/plugin/pmBusinessRules/js/editor.js"></script>
+</body>
+</html>

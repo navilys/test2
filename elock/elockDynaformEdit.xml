@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="ElockDynaform" width="600" mode="edit" enableTemplate="0" border="0">
+
+<title1 type="title" >
+  <en>ElockDynaform form</en>
+</title1>
+
+
+<UID_DYNAFORM type="hidden" colWidth='32'  >
+  <en>Dynaform</en>
+</UID_DYNAFORM>
+
+<UID_APPLICATION type="hidden" colWidth='32'  >
+  <en>Application</en>
+</UID_APPLICATION>
+
+
+<BASE64 type="textarea" size='25' maxlength='25' >
+  <en>64
+  </en>
+</BASE64>
+
+<USER type="text" size='60' maxlength='100' >
+  <en>
+  </en>
+</USER>
+
+<timestamp type="text" size='60' maxlength='100' >
+  <en>stamp
+  </en>
+</timestamp>
+
+
+<BTN_SUBMIT type="submit" >
+  <en>save</en>
+</BTN_SUBMIT>
+
+</dynaForm>

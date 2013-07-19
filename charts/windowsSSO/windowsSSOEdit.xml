@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dynaForm name="windowsSSO/windowsSSOEdit" type="xmlform">
+
+<title type="title">
+  <en>Authentication Source Information</en>
+</title>
+
+<AUTH_SOURCE_UID type="hidden"/>
+
+<AUTH_SOURCE_NAME type="text" size="50" maxlength="50" required="1">
+  <en>Name</en>
+</AUTH_SOURCE_NAME>
+
+<AUTH_SOURCE_PROVIDER type="hidden" defaultValue="activeDirectory"/>
+
+<AUTH_SOURCE_AUTO_REGISTER type="dropdown">
+  <en>Enabled Automatic Register
+    <option name="0">No</option>
+    <option name="1">Yes</option>
+  </en>
+</AUTH_SOURCE_AUTO_REGISTER>
+
+<AUTH_SOURCE_SERVER_NAME type="text" size="50" maxlength="50" required="1" readOnly="1">
+  <en>Server Name</en>
+</AUTH_SOURCE_SERVER_NAME>
+
+<AUTH_SOURCE_PORT type="text" size="5" maxlength="5" required="1" defaultValue="389" validate="Int" readOnly="1">
+  <en>Port</en>
+</AUTH_SOURCE_PORT>
+
+<AUTH_SOURCE_BASE_DN type="text" size="50" maxlength="128" required="1" readOnly="1">
+  <en>Base DN</en>
+</AUTH_SOURCE_BASE_DN>
+
+<AUTH_SOURCE_RETIRED_OU type="text" size="50" maxlength="128" required="0">
+  <en>OU for Retired Employees OU</en>
+</AUTH_SOURCE_RETIRED_OU>
+
+<btnSave type="submit">
+  <en>Save</en>
+</btnSave>
+
+<btnCancel type="button" onclick="history.go(-1);" >
+  <en>Cancel</en>
+</btnCancel>
+
+<JS type="javascript">
+<![CDATA[
+var dynaformOnload = function() {
+  var rpc = new leimnud.module.rpc.xmlhttp({
+    url: '../windowsSSO/authSourcesSynchronizeAjax',
+    method: 'POST',
+    args: 'm=getPlexcelConfiguration'
+  });
+  rpc.callback = function(rpc) {
+    var response = rpc.xmlhttp.responseText.parseJSON();
+    if (response.status == 'OK') {
+      getField('AUTH_SOURCE_SERVER_NAME').value = response.serverName;
+      getField('AUTH_SOURCE_PORT').value = response.port;
+      getField('AUTH_SOURCE_BASE_DN').value = response.baseDN;
+    }
+    else {
+      alert(response.message);
+    }
+  }.extend(this);
+  rpc.make();
+};
+]]>
+
+</JS>
+
+</dynaForm>

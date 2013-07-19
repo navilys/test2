@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+  <title></title>
+  
+  {literal}
+  <style type="text/css">
+  body 
+  {
+    margin: 0;
+    padding: 0;
+
+    background: #FFFFFF;
+    color: #000000;
+    font: 85% arial, verdana, helvetica, sans-serif;
+  }
+
+  .dataGrid 
+  {
+    padding: 0;
+
+    width: 99%;
+    height: 100%;
+
+    background: #FFFFFF;
+    text-align: left;
+  }
+  
+  .dataGridHeader
+  {
+    background: #4BB2C5;
+    color: #FFFFFF;
+    font: bold 0.8em verdana, arial, helvetica, sans-serif;
+    text-align:center;
+  }
+  
+  .dataGridTotal
+  {
+    background: #C5B47F;
+    color: #000000;
+    font: bold 0.8em verdana, arial, helvetica, sans-serif;
+    text-align:center;
+  }
+
+  .dataGridElement
+  {
+    background: #E8EAEA;
+    color: #000000;
+    font: 0.8em verdana, arial, helvetica, sans-serif;
+    text-align:center;
+  }
+  
+  .floatl
+  {
+    position:absolute;
+    float:left;
+  }
+  </style>
+  {/literal}
+</head>
+<body>
+<div class="dataGrid">
+  <table width="100%" border="0" cellspacing="1" cellpadding="5">
+    <tr>
+      <th class="dataGridHeader">/</th>
+      {foreach from=$statut item=statutItem name=header}
+        {if $smarty.foreach.header.last}
+            <th class="dataGridTotal">{$statutItem}</th>
+        {else}
+            <th class="dataGridHeader">{$statutItem}</th>
+        {/if}
+      {/foreach}
+    </tr>
+  
+    {foreach from=$user item=item name=row}
+        {if $smarty.post.repartition == $item[0] || $smarty.post.repartition != 'NONE' || $smarty.post.repartition != null}
+            {if $smarty.foreach.row.last}
+                <tr>
+                    {foreach from=$item item=quantity name=cell}
+                        {if $smarty.foreach.cell.first || $smarty.foreach.cell.last}
+                            <td class="dataGridTotal">{$quantity}</td>
+                        {else}
+                            <td class="dataGridTotal">{$quantity}</td>
+                        {/if}
+                    {/foreach}
+                </tr>
+            {else}
+                <tr>
+                    {foreach from=$item item=quantity name=cell}
+                        {if $smarty.foreach.cell.first}
+                            <td class="dataGridHeader">{$quantity}</td>
+                        {elseif $smarty.foreach.cell.last}
+                             <td class="dataGridTotal">{$quantity}</td>
+                        {else}
+                            <td class="dataGridElement">{$quantity}</td>
+                        {/if}
+                    {/foreach}
+                </tr>
+            {/if}
+        {/if}
+    {/foreach}
+  </table>
+</div>
+<div style="margin-top: 0.25em;"><strong>Note: </strong>{$note}</div>
+<form name="reportProjectTest" method="post" action="">
+<div>
+<select name="filtre">
+<option value="NONE">(Chèques)</option>
+{foreach from=$typesCheq item=typeCh}
+<option value="{$typeCh}" {if $smarty.post.filtre == $typeCh}selected="1"{/if} >{$typeCh}</option>
+{/foreach}
+</select>
+</div>
+<div>
+<p></p><input name="repartition" value="statut" type="radio" {if $smarty.post.repartition == 'statut'}checked="1"{/if}>Etats des dossiers<p>
+<p><input name="repartition" value="ville" type="radio" {if $smarty.post.repartition == 'ville'}checked="1"{/if}>Villes<p>
+<p><input name="repartition" value="departement" type="radio" {if $smarty.post.repartition == 'departement'}checked="1"{/if}>Départements<p>
+<p><input name="repartition" value="typecheq" type="radio" {if $smarty.post.repartition == 'typecheq'}checked="1"{/if}>Types chéquiers<p>
+<p><input name="repartition" value="theme" type="radio" {if $smarty.post.repartition == 'theme'}checked="1"{/if}>Thématiques<p>
+</div>
+<div>
+<input type="submit" value="Filtrer">
+</div>
+</form>
+{if $smarty.get.z != 1}
+    <div class="floatl">
+        <a href="javascript:;" onclick="window.open('http://172.17.20.29/sysCheqLivreApp/fr/neoclassic/dashboard/renderDashletInstance?DAS_INS_UID=71655464051d17645940cb4038207338&amp;z=1', '_blank'); return false;" title="Zoom"><img src="/plugin/advancedDashboards/icons/zoom25x25.png" alt=""></a>
+    </div>
+{/if}
+</body>
+</html>

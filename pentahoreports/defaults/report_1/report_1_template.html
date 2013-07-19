@@ -1,0 +1,134 @@
+      <script>
+
+      function selectProcess(value) {
+          if (task == "null"){
+            task = "";
+          }           
+          if (user == "null"){
+            user = "";
+          }
+          taskName = "All Tasks";
+          userName = "All Users";
+          Dashboards.fireChange('process',value);
+          user = "null";
+          task = "null"
+      }
+
+      function clickOnTask(value) {
+          if (user == "null"){
+            user = "";
+          }
+		  taskName = value;          
+		  value = ".["+value+"]";
+          Dashboards.fireChange('task',value);
+          user = "null";
+      }
+
+      function clickOnUser(value) {
+          userName = value;
+          value = ".["+value+"]";
+          Dashboards.fireChange('user',value);
+      }
+
+      </script>
+          
+      <script>
+        var process = "";
+        var processName = "";
+        var task = "";
+        var taskName = "All Tasks";
+        var user = "";
+        var userName = "All Users";
+
+              ProcessForm = {
+                    name: "ProcessForm",
+                    type: "select",
+                    solution: "{SOLUTION}",
+                    path: "reports_content/report_1",
+                    action: "parameter.waqr.xaction",
+                    listeners:[],
+                    parameters: [],
+                    parameter: "process",
+                    htmlObject: "ProcessFormObject",
+                    executeAtStart: true,
+                    preExecution:function(){},
+				    postExecution:function(){
+				    	task = "";
+    	    	        user = "";
+				    	Dashboards.processChange(this.name);		    	 
+				    }
+              }
+
+              TaskPieChart = {
+                    name: "TaskPieChart",
+                    type: "xaction",
+                    solution: "{SOLUTION}",
+                    path: "reports_content/report_1",
+                    action: "tasks_pie.waqr.xaction",
+                    listeners:["process"],
+                    parameters: [["PROCESS","process"]],
+                    htmlObject: "TaskPieChartObject",
+                    executeAtStart: false
+              }
+              
+              CasesBarChart = {
+                    name: "CasesBarChart",
+                    type: "xaction",
+                    solution: "{SOLUTION}",
+                    path: "reports_content/report_1",
+                    action: "cases_bars.waqr.xaction",
+                    listeners: ["task","process"],
+                    parameters: [["TASK","task"], ["TASKNAME","taskName"], ["PROCESS","process"]],
+                    htmlObject: "CasesBarChartObject",
+                    executeAtStart: false
+              }
+              
+              UserTrendChart = {
+                    name: "UserTrendChart",
+                    type: "xaction",
+                    solution: "{SOLUTION}",
+                    path: "reports_content/report_1",
+                    action: "user_trends.waqr.xaction",
+                    listeners: ["user", "task" ,"process"],
+                    parameters: [["USER","user"], ["TASK","task"], ["TASKNAME","taskName"], ["USERNAME","userName"], ["PROCESS","process"]],
+                    htmlObject: "UserTrendChartObject",
+                    executeAtStart: false
+              }
+              
+              // The intial dashboard load function definition
+              var components = [TaskPieChart, ProcessForm, CasesBarChart, UserTrendChart];
+              function load(){
+	             Dashboards.init(components);
+              }
+
+       // The intial dashboard load function execution
+                load();  
+
+      </script>
+      <table> 
+        <tr>
+           <td>
+                <div style="margin:10px;border:1px solid #808080;padding:5px;">
+                    <table width="100%" style="padding:5px;">
+                        <tr>
+                            <td class="portlet-section-subheader">Select a Process<br/>
+                            </td>
+                        </tr>
+                        <tr>
+                        <!-- START IGNORE -->
+                            <td class="portlet-font"><div id="ProcessFormObject"></div></td>
+                        <!-- END IGNORE -->
+                        </tr>    
+                    </table>
+                </div>
+           <td>
+        </tr>
+        <tr>
+
+            <td><div id="TaskPieChartObject"></td>
+            <td><div id="CasesBarChartObject"></div><td>
+        </tr>
+        <tr>
+        	<td colspan="2"><div id="UserTrendChartObject"></div></td>
+        </tr>
+      </table>
