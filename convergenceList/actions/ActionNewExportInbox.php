@@ -143,7 +143,7 @@ $rSQL = executeQuery($sSQL);
 /* * *** End generate doc *** */
 $messageInfo .= 'Export terminé.';
 //$infoArray = exportXls($exportTitle, $rSQL, $exportDescription, $path);
-
+// com git
 exportXls($exportTitle, $rSQL, $exportDescription, $path);
 
 
