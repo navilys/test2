@@ -26,7 +26,7 @@ function phpExcelLibraryProject_getMyCurrentTime() {
     return G::CurDate('H:i:s');
 }
 
-function exportXls($title = 'Sample', $data = array(), $subTitle = array(), $path = '/var/tmp/sample.xls') {
+function exportXls($title = 'Sample', $data = array(), $subTitle = array(), $path = '/var/tmp/sample.xls', $ext = 'xls') {
 // Create new PHPExcel object
     $objPHPExcel = new PHPExcel();
 // Set document properties
@@ -83,7 +83,7 @@ function exportXls($title = 'Sample', $data = array(), $subTitle = array(), $pat
     $objPHPExcel->setActiveSheetIndex(0);
     $worksheet = $objPHPExcel->getActiveSheet();
 
-    if ($title != 'Sample')
+    if ($title != 'Sample' && $ext != 'csv')
     {
         if (count($data))
         {
@@ -117,6 +117,9 @@ function exportXls($title = 'Sample', $data = array(), $subTitle = array(), $pat
     }
     if (count($data))
     {
+        $nbCol = count($data[1]) - 1;
+        $rowMax = count($data);
+        $currentData = 1;
         $startDatas = PHPExcel_Cell::stringFromColumnIndex(0) . $row;
         foreach ($data as $k => $line)
         {
@@ -126,14 +129,14 @@ function exportXls($title = 'Sample', $data = array(), $subTitle = array(), $pat
             {
                 $coord = PHPExcel_Cell::stringFromColumnIndex($col) . ($row);
                 $worksheet->setCellValue($coord, $value);                
-                if ($row == $rowMax)
+                if ($currentData == $rowMax)
                 {
                     $colName = PHPExcel_Cell::stringFromColumnIndex($col);
                     $worksheet->getColumnDimension($colName)->setAutoSize(true);
                 }
                 $col++;
             }
-
+            $currentData++;
             $row++;
         }
         $rowDatas = $startDatas . ':' . PHPExcel_Cell::stringFromColumnIndex($col - 1) . ($row - 1);
@@ -147,28 +150,56 @@ function exportXls($title = 'Sample', $data = array(), $subTitle = array(), $pat
 // Save Excel 2007 file
     //$infoArray = array();
     //$callStartTime = microtime(true);
-    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+    $ext = strtolower($ext);
+    switch ($ext)
+    {
+        case 'xls':
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+            header("Content-Type: application/force-download");
+            header("Content-Type: application/octet-stream");
+            header("Content-Type: application/download");
+            header("Content-Disposition: attachment; filename=" . $path . ".xls");
+            header("Content-Transfer-Encoding: binary");
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+            //$objWriter->save($path . '.xls');
+            break;
 
-    /*
-      $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(';')
-      ->setEnclosure('"')
-      ->setLineEnding("\r\n")
-      ->setSheetIndex(0)
-      ->save($path.'.csv');
-     */
-    header("Pragma: public");
-	header("Expires: 0");
-	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-	header("Content-Type: application/force-download");
-	header("Content-Type: application/octet-stream");
-	header("Content-Type: application/download");
-	header("Content-Disposition: attachment; filename=".$path.".xls");
-	header("Content-Transfer-Encoding: binary");
-	
-	
-	$objWriter->save($path . '.xls');
-	
-	$objWriter->save("php://output");
-	die();
+        case 'xlsx':
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="' . $path . '.xlsx"');
+            header('Cache-Control: max-age=0');
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            break;
+        case 'csv':
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+            header("Cache-Control: private", false);
+            header('Content-Disposition: attachment; filename="' . $path . '.csv";');
+            header("Content-Transfer-Encoding: binary");
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(';')
+                    ->setEnclosure('"')
+                    ->setLineEnding("\r\n")
+                    ->setSheetIndex(0);
+            break;
+
+        default:
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+            header("Content-Type: application/force-download");
+            header("Content-Type: application/octet-stream");
+            header("Content-Type: application/download");
+            header("Content-Disposition: attachment; filename=" . $path . ".xls");
+            header("Content-Transfer-Encoding: binary");
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+           // $objWriter->save($path . '.xls');
+            break;
+    }
+    $objWriter->save("php://output");
+	//die();
+    exit;
 }
 

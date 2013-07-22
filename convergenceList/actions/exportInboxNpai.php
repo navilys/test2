@@ -16,6 +16,8 @@ $objPHPExcel = new PHPExcel();
 header("Content-Type: text/plain");
 $array = array();
 $array = $_REQUEST['array'];
+$type = $_REQUEST['type'];
+$ext = $_REQUEST['ext'];
 $items = json_decode($array, true);
 $flag = 0;
 $messageInfo = '';
@@ -95,8 +97,8 @@ if (sizeof($rDtaSelect))
     foreach ($rDtaSelect as $index)
     {
         if ($index['FIELD_NAME'] != 'APP_NUMBER' && $index['FIELD_NAME'] != 'APP_UID')
-        {
-            $fieldSelect = "SELECT QUERY_SELECT FROM PMT_INBOX_FIELDS_SELECT WHERE ID_INBOX = '" . $idInbox . "' AND
+            {
+        $fieldSelect = "SELECT QUERY_SELECT FROM PMT_INBOX_FIELDS_SELECT WHERE ID_INBOX = '" . $idInbox . "' AND
                                                                             ROL_CODE ='" . $idRol . "' AND FIELD_NAME = '" . $index['FIELD_NAME'] . "'  ";
             $datafieldSelect = executeQuery($fieldSelect);
             $totSelectQuery = sizeof($datafieldSelect);
@@ -122,14 +124,41 @@ if (sizeof($rDtaSelect))
     $dataSelected = implode(', ', $dataSelected);
 }
 /* * **** End get fields select **** */
-$sSQL = "SELECT $dataSelected  FROM  $idTable $sJoins $sWhere $sOrderBy";
+if ($type != 'npai')
+{
+    $sSQL = "SELECT $dataSelected , APP_UID  FROM  $idTable $sJoins $sWhere $sOrderBy";
+}
+else
+{
+        $sSQL = "SELECT $dataSelected FROM  $idTable $sJoins $sWhere $sOrderBy";
+}
 $rSQL = executeQuery($sSQL);
 
+if ($type != 'npai')
+{
+    $listeApp_uid = array();
+    foreach ($rSQL as $k => $npai)
+    {
+        $query = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION LIKE "Retour de production%"';
+        $resultDate = executeQuery($query);
+        if (isset($resultDate[1]['HLOG_DATECREATED']) && $resultDate[1]['HLOG_DATECREATED'] != '')
+        {
+            $query2 = 'SELECT count(*) as NB, HLOG_APP_UID FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_DATECREATED > "' . $resultDate[1]['HLOG_DATECREATED'] . '" AND HLOG_ACTION="Modification de l\'adresse"';
+            $result2 = executeQuery($query2);
+            if ($result2[1]['NB'] > 0)
+            {
+                $listeApp_uid[] = $npai['APP_UID'];                
+            }
+            else
+            {
+                unset($rSQL[$k]);
+            }
+            unset($rSQL[$k]['APP_UID']);
+        }
+    }
+}
 /* * *** End generate doc *** */
 $messageInfo .= 'Export terminé.';
-//$infoArray = exportXls($exportTitle, $rSQL, $exportDescription, $path);
-// com git
-exportXls($exportTitle, $rSQL, $exportDescription, $path);
-
-
+$ext = 'xls';
+exportXls($exportTitle, $rSQL, $exportDescription, $path, $ext);
 ?>
