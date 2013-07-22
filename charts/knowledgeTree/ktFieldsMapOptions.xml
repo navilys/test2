@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dynaForm type="xmlmenu">
-
-  <ktFieldsMapNew type="private" defaultValue="../ktFieldsMap/ktFieldsMapNew"/>
-  
-  <MNU_NEW type="link" label="New" value='' link="@G::encryptLink(@#ktFieldsMapNew)" colAlign="left" colWidth="85"></MNU_NEW>
-
-</dynaForm>

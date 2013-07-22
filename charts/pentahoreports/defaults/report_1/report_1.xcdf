@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cdf>
-	<title>Compare Cases per Task for Processes</title>
-	<author>Colosa</author>
-	<description>Compare Cases per Task for Processes</description>
-	<icon></icon>
-	<template>reports_content/report_1/report_1_template.html</template>
-	<style>processmaker</style>
-</cdf>

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dynaForm type="xmlmenu">
-<MNU_ADD type="link" value="@G::LoadTranslation(ID_NEW)" link="#" onclick="showPMReportPanelConfig(0);return false;" colAlign="left" colWidth="35">
-  <en/>
-</MNU_ADD>
-</dynaForm>

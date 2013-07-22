@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cdf>
-	<title>Process Efficiency for a Single Process</title>
-	<author>Colosa</author>
-	<description>Process Efficiency for a Single Process</description>
-	<icon></icon>
-	<template>reports_content/report_7/report_7_template.html</template>
-	<style>processmaker</style>
-</cdf>

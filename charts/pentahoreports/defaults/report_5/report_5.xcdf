@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cdf>
-	<title>User InBox Efficiency Comparison</title>
-	<author>Colosa</author>
-	<description>User InBox Efficiency Comparison</description>
-	<icon></icon>
-	<template>reports_content/report_5/report_5_template.html</template>
-	<style>processmaker</style>
-</cdf>
