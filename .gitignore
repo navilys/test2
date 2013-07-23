@@ -40,3 +40,7 @@ sigplus/
 sigplus.php
 windowsSSO/
 windowsSSO.php
+enterprise.php
+enterprise/
+externalRegistration.php
+externalRegistration/
