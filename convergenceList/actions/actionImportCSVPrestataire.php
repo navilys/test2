@@ -201,51 +201,92 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 			}
 		}
 		
-    foreach ($dataCSV as $row) {
-        $appData =  array();
-        foreach ($items as $field) { 
-            if($firstLineHeader == 'on'){
+	$select = executeQuery("SELECT MAX(IMPCSV_IDENTIFY) AS IDENTIFY FROM PMT_IMPORT_CSV_DATA WHERE IMPCSV_TABLE_NAME = '$tableName'");
+    $identify = isset($select[1]['IDENTIFY'])? $select[1]['IDENTIFY']:0;
+    $identify = $identify + 1;
+    $csv_file = $tableName."_".$identify.".csv";  
+	$csv_sep = ";";  
+	$csv="";  
+    $csv_end = "\n";
+    $swInsert = 0;
+    	
+    foreach ($dataCSV as $row) 
+    {
+        $totRow = sizeof($row);
+        $totIni = 1;
+        if($totalCases >= 100)
+        {
+            foreach($row as $value)
+            {
+                if($totIni == $totRow)
+                $csv.=$value;
+                else
+                    $csv.=$value.$csv_sep;
+                $totIni++;
+            }
+            $csv.=$csv_end;
+            if($swInsert == 0)
+            {
+                $select = executeQuery("SELECT MAX(IMPCSV_ID) AS ID_CSV FROM PMT_IMPORT_CSV_DATA");
+                $maxId = isset($select[1]['ID_CSV'])? $select[1]['ID_CSV']:0;
+                $maxId = $maxId + 1;
+                foreach ($items as $field)
+                { 
+                    $insert = "INSERT INTO PMT_IMPORT_CSV_DATA 
+                          (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION) VALUES
+                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD')";
+                    executeQuery($insert);
+                    $swInsert = 1;
+                    $maxId++;
+                }
+            }
+            
+        }
+        else
+        {
+            $appData =  array();
+            foreach ($items as $field) { 
+                if($firstLineHeader == 'on'){
             	
-                if(isset($row[$field['COLUMN_CSV']]))
-                {
-                	if($row[$field['COLUMN_CSV']])
-                		$appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
-                	else
-                		$appData[$field['FIELD_NAME']] = ' ';
+                    if(isset($row[$field['COLUMN_CSV']]))
+                    {
+                	    if($row[$field['COLUMN_CSV']])
+                		    $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+                	    else
+                		    $appData[$field['FIELD_NAME']] = ' ';
+                    }
+                    else
+                    {
+                	    if($field['COLUMN_CSV'])
+                    	    $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+                        else
+                    	    $appData[$field['FIELD_NAME']] = ' ';
+                    } 
                 }
                 else
                 {
-                	if($field['COLUMN_CSV'])
-                    	$appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
-                    else
-                    	$appData[$field['FIELD_NAME']] = ' ';
-                } 
-            }
-            else
-            {
-                $aCol = explode(' ', trim($field['COLUMN_CSV']));
-                if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-                    $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
-                else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-                    $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
-                }        
-            }
-        }  
-        $appData['FLAG_ACTION'] = 'multipleDerivation';
+                    $aCol = explode(' ', trim($field['COLUMN_CSV']));
+                    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
+                        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+                    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
+                        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+                    }        
+                }
+            }  
+            $appData['FLAG_ACTION'] = 'multipleDerivation';
         
-        $appData['EXEC_AUTO_DERIVATE'] = 'NO';
-        $appData['eligible'] = 0; // only process beneficiary
-        $appData['FLAG_EDIT'] = 1;
-        $appData['CurrentUserAutoDerivate'] = $USR_UID;       
+            $appData['EXEC_AUTO_DERIVATE'] = 'NO';
+            $appData['eligible'] = 0; // only process beneficiary
+            $appData['FLAG_EDIT'] = 1;
+            $appData['CurrentUserAutoDerivate'] = $USR_UID;       
         
-  		//si $appData[$field['SIRET']] existe  load et update sinon newcase
-  		$appData['SIRET'] = isset($appData['SIRET'])?$appData['SIRET']:'';
-        $query = "SELECT APP_UID FROM PMT_PRESTATAIRE WHERE STATUT = 1 AND SIRET ='".$appData['SIRET']."'";
-        $result= executeQuery($query);
-        //G::pr($row);
-        $caseUID = '0';
+  		    $appData['SIRET'] = isset($appData['SIRET'])?$appData['SIRET']:'';
+            $query = "SELECT APP_UID FROM PMT_PRESTATAIRE WHERE STATUT = 1 AND SIRET ='".$appData['SIRET']."'";
+            $result= executeQuery($query);
+            
+            $caseUID = '0';
         
-        // labels //
+             // labels //
         
 	        foreach($appData As $key => $fields)
 	        {
@@ -256,7 +297,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 					
 					if($key == $row['FIELD_NAME'])
 					{
-						//$i = isset($fields[$key])?$fields[$key]:$row['FIELD_DEFAULT_VALUE'];
 						$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
 						
 						if(count($row['FIELD_SQL_OPTION']))
@@ -279,17 +319,11 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 								$id = $row['FIELD_SQL_OPTION'][0]['id'];
 								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
 							}
-							/*$label = isset($row['FIELD_SQL_OPTION'][$i])?$row['FIELD_SQL_OPTION'][$i]:$row['FIELD_SQL_OPTION'][1];
-							$appData[$row['FIELD_NAME']] = isset($appData[$row['FIELD_NAME']])?$appData[$row['FIELD_NAME']]:$i; 
-							$appData[$row['FIELD_NAME']."_label"] = $label;*/
-							//$appData[$row['FIELD_NAME']] = $id;
-							//$appData[$row['FIELD_NAME']."_label"] = $label;
+							
 							$record[$row['FIELD_NAME']] = $id;
 							$appData = array_merge($record,$appData);
 							$record[$row['FIELD_NAME']."_label"] = $label;
 							$appData = array_merge($record,$appData);
-							//$appData[$row['FIELD_NAME']] = $id;
-							//$appData[$row['FIELD_NAME']."_label"] = $label;
 						}
 						else
 						{
@@ -307,23 +341,14 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 										break;
 									}
 								}
-								/*if($id=="" && $label=="")
-								{
-									$id = $row['FIELD_OPTION'][0]['id'];
-									$label = $row['FIELD_OPTION'][0]['descrip'];
-								}*/
 								
-								//$label = isset($row['FIELD_OPTION'][$i])?$row['FIELD_OPTION'][$i]:$row['FIELD_OPTION'][1];
-								//$appData[$row['FIELD_NAME']] = isset($appData[$row['FIELD_NAME']])?$appData[$row['FIELD_NAME']]:$i;
 								$record = Array();
-								//$appData[$row['FIELD_NAME']] = $id;
-								//$appData[$row['FIELD_NAME']."_label"] = $label;
+								
 								$record[$row['FIELD_NAME']] = $id;
 								$appData = array_merge($record,$appData);
 								$record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
-								//$appData[$row['FIELD_NAME']] = $id;
-								//$appData[$row['FIELD_NAME']."_label"] = $label;
+								
 							}
 						}
 					}
@@ -338,7 +363,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 						$row['FIELD_DEFAULT_VALUE'] = 0;
 						
 					$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])?$appData[$row['FIELD_NAME']."_label"]:'';
-					//if(!isset($appData[$row['FIELD_NAME']."_label"]))
+					
 					if($appData[$row['FIELD_NAME']."_label"] =="")
 					{
 						$i = $row['FIELD_DEFAULT_VALUE'];	
@@ -363,17 +388,12 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 								$id = $row['FIELD_SQL_OPTION'][0]['id'];
 								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
 							}
-							/*$label = isset($row['FIELD_SQL_OPTION'][$i])?$row['FIELD_SQL_OPTION'][$i]:$row['FIELD_SQL_OPTION'][1];
-							$appData[$row['FIELD_NAME']] = isset($appData[$row['FIELD_NAME']])?$appData[$row['FIELD_NAME']]:$i; 
-							$appData[$row['FIELD_NAME']."_label"] = $label;*/
-							//$appData[$row['FIELD_NAME']] = $id;
-							//$appData[$row['FIELD_NAME']."_label"] = $label;
+							
 							$record[$row['FIELD_NAME']] = $id;
 							$appData = array_merge($record,$appData);
 							$record[$row['FIELD_NAME']."_label"] = $label;
 							$appData = array_merge($record,$appData);
-							//$appData[$row['FIELD_NAME']] = $id;
-							//$appData[$row['FIELD_NAME']."_label"] = $label;
+							
 						}
 						else
 						{
@@ -397,17 +417,12 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 									$id = $row['FIELD_OPTION'][0]['id'];
 									$label = $row['FIELD_OPTION'][0]['descrip'];
 								}
-								//$label = isset($row['FIELD_OPTION'][$i])?$row['FIELD_OPTION'][$i]:$row['FIELD_OPTION'][1];
-								//$appData[$row['FIELD_NAME']] = isset($appData[$row['FIELD_NAME']])?$appData[$row['FIELD_NAME']]:$i;
-								//$appData[$row['FIELD_NAME']] = $id;
 								
-								//$appData[$row['FIELD_NAME']."_label"] = $label;
 								$record[$row['FIELD_NAME']] = $id;
 								$appData = array_merge($record,$appData);
 								$record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
-								//$appData[$row['FIELD_NAME']] = $id;
-								//$appData[$row['FIELD_NAME']."_label"] = $label;
+								
 							}
 						}
 					}
@@ -416,49 +431,46 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         //G::pr($appData);die; 
         // end labels //
    
-        if(is_array($result) && count($result)>0){
-            $caseUID =$result[1]['APP_UID'];                    
-            $oCase = new Cases ();     
-            $FieldsCase = $oCase->loadCase ( $caseUID );  
-            $FieldsCase['APP_DATA'] = array_merge($FieldsCase['APP_DATA'],$appData);
-            $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-            $FieldsCase['APP_DATA']['STATUT'] = 1;
-            $oCase->updateCase($caseUID,$FieldsCase);
+            if(is_array($result) && count($result)>0){
+                $caseUID =$result[1]['APP_UID'];                    
+                $oCase = new Cases ();     
+                $FieldsCase = $oCase->loadCase ( $caseUID );  
+                $FieldsCase['APP_DATA'] = array_merge($FieldsCase['APP_DATA'],$appData);
+                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
+                $FieldsCase['APP_DATA']['STATUT'] = 1;
+                $oCase->updateCase($caseUID,$FieldsCase);
             
-        }else{
-        	
-	        $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
-            if($caseUID >0) {
-				
-            	$_SESSION['APPLICATION'] = $caseUID;
-		    
-            	autoDerivate($proUid,$caseUID,$USR_UID);
-	            $oCase = new Cases ();
-	            $FieldsCase = $oCase->loadCase ( $caseUID );
-	            $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-	            $FieldsCase['APP_DATA']['STATUT'] = 1;
-	            
-	            $oCase->updateCase($caseUID,$FieldsCase);
-            }
-        }     
-        /*modify FRED NUM DOSSIER */
-        // G::LoadClass('case');
-        /*
-        $caseInstance = new Cases();
-        $newFields = $caseInstance->loadCase ($caseUID);
-        $selectAppNumber = "SELECT APP_NUMBER FROM APPLICATION WHERE APP_UID = '".$caseUID."' ";
-        $dataAppNumber = executeQuery($selectAppNumber);
-        //$qtemp = 'SELECT NUM_DOSSIER FROM PMT_EIES WHERE NOM = "'.$appData['EIE_label'].'" AND STATUT = 1 ';
-        //$rtemp = executeQuery($qtemp);
-        $numDossier = $dataAppNumber[1]['APP_NUMBER'];
-        $newFields['APP_DATA']['NUM_DOSSIER'] = $numDossier;
-        $newFields['APP_DATA']['STATUT'] = 1;
-        //$newFields['APP_DATA']['EIE'] = $rtemp[1]['NUM_DOSSIER'];
-        PMFSendVariables($caseUID, $newFields['APP_DATA']);		    
-        $caseInstance->updateCase($caseUID, $newFields);
-        /* FIN modify FRED NUM DOSSIER */
+            }else{
+            	
+	            $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
+                if($caseUID >0) {
+		    		
+                	$_SESSION['APPLICATION'] = $caseUID;
+		        
+                	autoDerivate($proUid,$caseUID,$USR_UID);
+	                $oCase = new Cases ();
+	                $FieldsCase = $oCase->loadCase ( $caseUID );
+	                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
+	                $FieldsCase['APP_DATA']['STATUT'] = 1;
+	                
+	                $oCase->updateCase($caseUID,$FieldsCase);
+                }
+            }    
+        }
         $totalCases++;
     }
+    # create file tmp
+     if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+       echo "Cannot open file";  
+       exit;  
+    }  
+    if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
+       echo "Cannot write to file";  
+       exit;  
+    }  
+    fclose($handle);  
+    # end create file tmp
+    
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
 }
@@ -544,227 +556,280 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		}
 	}
 
+	$select = executeQuery("SELECT MAX(IMPCSV_IDENTIFY) AS IDENTIFY FROM PMT_IMPORT_CSV_DATA WHERE IMPCSV_TABLE_NAME = '$tableName'");
+    $identify = isset($select[1]['IDENTIFY'])? $select[1]['IDENTIFY']:0;
+    $identify = $identify + 1;
+    $csv_file = $tableName."_".$identify.".csv";  
+	$csv_sep = ";";  
+	$csv="";  
+    $csv_end = "\n";
+    $swInsert = 0;
+    $whereDelete = '';
     foreach ($dataCSV as $row) 
     {
-        $appData =  array();
-        foreach ($items as $field) 
-        { 
-            if($firstLineHeader == 'on')
+        
+        if($totalCases >= 100)
+        {
+            foreach($row as $value)
             {
-            	if(isset($row[$field['COLUMN_CSV']]))
+                if($totIni == $totRow)
+                $csv.=$value;
+                else
+                    $csv.=$value.$csv_sep;
+                $totIni++;
+            }
+            $csv.=$csv_end;
+            if($swInsert == 0)
+            {
+                $select = executeQuery("SELECT MAX(IMPCSV_ID) AS ID_CSV FROM PMT_IMPORT_CSV_DATA");
+                $maxId = isset($select[1]['ID_CSV'])? $select[1]['ID_CSV']:0;
+                $maxId = $maxId + 1;
+                foreach ($items as $field)
+                { 
+                    $insert = "INSERT INTO PMT_IMPORT_CSV_DATA 
+                          (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION ) VALUES
+                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD_DELETE', '".mysql_escape_string($dataDeleteEdit)."' )";
+                    executeQuery($insert);
+                    $swInsert = 1;
+                    $maxId++;
+                }
+            }
+            
+        }
+        else
+        {
+            $appData =  array();
+            foreach ($items as $field) 
+            { 
+                if($firstLineHeader == 'on')
                 {
-                	if($row[$field['COLUMN_CSV']])
-                		$appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
-                	else
-                		$appData[$field['FIELD_NAME']] = ' ';
+                	if(isset($row[$field['COLUMN_CSV']]))
+                    {
+                    	if($row[$field['COLUMN_CSV']])
+                    		$appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+                    	else
+                    		$appData[$field['FIELD_NAME']] = ' ';
+                    }
+                    else
+                    {
+                    	if($field['COLUMN_CSV'])
+                        	$appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+                        else
+                        	$appData[$field['FIELD_NAME']] = ' ';
+                    } 
                 }
                 else
                 {
-                	if($field['COLUMN_CSV'])
-                    	$appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
-                    else
-                    	$appData[$field['FIELD_NAME']] = ' ';
-                } 
-            }
-            else
-            {
-                $aCol = explode(' ', trim($field['COLUMN_CSV']));
-                if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-                    $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
-                else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-                    $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
-                }        
-            }
-        }       
+                    $aCol = explode(' ', trim($field['COLUMN_CSV']));
+                    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
+                        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+                    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
+                        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+                    }        
+                }
+            }       
 		
-        foreach($appData As $key => $fields)
-	    {
-			foreach ($_dataForms As $row)
-			{
-				if($row['FIELD_DEFAULT_VALUE'] == '')
-					$row['FIELD_DEFAULT_VALUE'] = 0;
-					
-				if($key == $row['FIELD_NAME'])
-				{
-					$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
-						
-					if(count($row['FIELD_SQL_OPTION']))
-					{
-						$options = $row['FIELD_SQL_OPTION'];
-						$id = "";
-						$label = "";
-						foreach($options As $row2)
-						{
-							if($row2['id'] == $i)
-							{
-								$id = $row2['id'];
-								$label = $row2['descrip'];
-								break;
-							}
-						}
-							
-						if($id=="" && $label=="")
-						{
-							$id = $row['FIELD_SQL_OPTION'][0]['id'];
-							$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-						}
-						
-						$record[$row['FIELD_NAME']] = $id;
-						$appData = array_merge($record,$appData);
-						$record[$row['FIELD_NAME']."_label"] = $label;
-						$appData = array_merge($record,$appData);
-					}
-					else
-					{
-						if(count($row['FIELD_OPTION']))
-						{
-							$options = $row['FIELD_OPTION'];
-							$id = "";
-							$label = "";
-							foreach($options As $row2)
-							{
-								if($row2['id'] == $i)
-								{
-									$id = $row2['id'];
-									$label = $row2['descrip'];
-									break;
-								}
-							}
-							
-							$record = Array();
-							$record[$row['FIELD_NAME']] = $id;
-							$appData = array_merge($record,$appData);
-							$record[$row['FIELD_NAME']."_label"] = $label;
-							$appData = array_merge($record,$appData);
-						}
-					}
-				}
-			}	
-		}
-		$whereDelete = '';
-	    foreach($appData As $key => $fields)
-	    {
-	    	foreach ($_dataForms As $row)
-			{
-				if($row['FIELD_DEFAULT_VALUE'] == '')
-					$row['FIELD_DEFAULT_VALUE'] = 0;
-						
-				$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])?$appData[$row['FIELD_NAME']."_label"]:'';
-				if($appData[$row['FIELD_NAME']."_label"] =="")
-				{
-					$i = $row['FIELD_DEFAULT_VALUE'];	
-					if(count($row['FIELD_SQL_OPTION']))
-					{
-						$options = $row['FIELD_SQL_OPTION'];
-						$id = "";
-						$label = "";
-						foreach($options As $row2)
-						{
-							if($row2['id'] == $i)
-							{
-								$id = $row2['id'];
-								$label = $row2['descrip'];
-								break;
-							}
-						}
-							
-						if($id=="" && $label=="")
-						{
-							$id = $row['FIELD_SQL_OPTION'][0]['id'];
-							$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-						}
-						$record[$row['FIELD_NAME']] = $id;
-						$appData = array_merge($record,$appData);
-						$record[$row['FIELD_NAME']."_label"] = $label;
-						$appData = array_merge($record,$appData);
-					}
-					else
-					{
-						if(count($row['FIELD_OPTION']))
-						{
-							$options = $row['FIELD_OPTION'];
-							$id = "";
-							$label = "";
-							foreach($options As $row2)
-							{
-								if($row2['id'] == $i)
-								{
-									$id = $row2['id'];
-									$label = $row2['descrip'];
-									
-								}
-							}
-								
-							if($id=="" && $label=="")
-							{
-								$id = $row['FIELD_OPTION'][0]['id'];
-								$label = $row['FIELD_OPTION'][0]['descrip'];
-							}
-							$record[$row['FIELD_NAME']] = $id;
-							$appData = array_merge($record,$appData);
-							$record[$row['FIELD_NAME']."_label"] = $label;
-							$appData = array_merge($record,$appData);
-						}
-					}
-				}
-			}
-			foreach ($itemsDeleteEdit as $field ) 
-    		{ 
-    			//G::pr($field['CSV_FIELD_NAME']);
-   				$fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
-   				//print($fieldNameEditDelete. '  '.$key.'  ');
-   				if($fieldNameEditDelete == $key )
-   				{
-    				if($whereDelete == '')
-						$whereDelete = $key." = '".$fields."'";
-					else 
-						$whereDelete = $whereDelete." AND " .$key." = '".$fields."'";
-   				}
-    		} 
-			
-	    }
-	    // end labels
-	    // delete cases 
-	    if($whereDelete != '')
-	    {
-	    	$query = "SELECT APP_UID FROM $tableName WHERE $whereDelete AND APP_UID NOT IN ( $idCasesGenerate ) "; //print($query.'  '); 
-	    	$deleteData = executeQuery($query);
-	    	if(sizeof($deleteData))
-	    	{
-	    		foreach($deleteData as $index)
-	    		{	
-	    			$CurDateTime=date('Y-m-d H:i:s');
-	    			insertHistoryLogPlugin($index['APP_UID'],$_SESSION['USER_LOGGED'],$CurDateTime,'1',$index['APP_UID'],'Delete Case');
-	    			deletePMCases($index['APP_UID']); 
-	    		}
-	    		genDataReport($tableName);
-	    	}
-	    }
-	    // end delete cases
-	    
-        $appData['FLAG_ACTION'] = 'multipleDerivation';
-        $appData['EXEC_AUTO_DERIVATE'] = 'NO';
-        $appData['eligible'] = 0; // only process beneficiary
-        $appData['FLAG_EDIT'] = 1;
-        $appData['CurrentUserAutoDerivate'] = $USR_UID;
-        $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
-        if($totalCases == 0)
-        	$idCasesGenerate = "'".$caseUID."'";
-        else
-        	$idCasesGenerate = $idCasesGenerate.", '".$caseUID."'";
-        if($caseUID >0) 
-        {
-            autoDerivate($proUid,$caseUID,$USR_UID);
-            $oCase = new Cases ();
-            $FieldsCase = $oCase->loadCase ( $caseUID );
-            $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-            $FieldsCase['APP_DATA']['STATUT'] = 1;
-            $oCase->updateCase($caseUID,$FieldsCase);
+            foreach($appData As $key => $fields)
+	        {
+		    	foreach ($_dataForms As $row)
+		    	{
+		    		if($row['FIELD_DEFAULT_VALUE'] == '')
+		    			$row['FIELD_DEFAULT_VALUE'] = 0;
+		    			
+		    		if($key == $row['FIELD_NAME'])
+		    		{
+		    			$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
+		    				
+		    			if(count($row['FIELD_SQL_OPTION']))
+		    			{
+		    				$options = $row['FIELD_SQL_OPTION'];
+		    				$id = "";
+		    				$label = "";
+		    				foreach($options As $row2)
+		    				{
+		    					if($row2['id'] == $i)
+		    					{
+		    						$id = $row2['id'];
+		    						$label = $row2['descrip'];
+		    						break;
+		    					}
+		    				}
+		    					
+		    				if($id=="" && $label=="")
+		    				{
+		    					$id = $row['FIELD_SQL_OPTION'][0]['id'];
+		    					$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+		    				}
+		    				
+		    				$record[$row['FIELD_NAME']] = $id;
+		    				$appData = array_merge($record,$appData);
+		    				$record[$row['FIELD_NAME']."_label"] = $label;
+		    				$appData = array_merge($record,$appData);
+		    			}
+		    			else
+		    			{
+		    				if(count($row['FIELD_OPTION']))
+		    				{
+		    					$options = $row['FIELD_OPTION'];
+		    					$id = "";
+		    					$label = "";
+		    					foreach($options As $row2)
+		    					{
+		    						if($row2['id'] == $i)
+		    						{
+		    							$id = $row2['id'];
+		    							$label = $row2['descrip'];
+		    							break;
+		    						}
+		    					}
+		    					
+		    					$record = Array();
+		    					$record[$row['FIELD_NAME']] = $id;
+		    					$appData = array_merge($record,$appData);
+		    					$record[$row['FIELD_NAME']."_label"] = $label;
+		    					$appData = array_merge($record,$appData);
+		    				}
+		    			}
+		    		}
+		    	}	
+		    }
+		    $whereDelete = '';
+	        foreach($appData As $key => $fields)
+	        {
+	        	foreach ($_dataForms As $row)
+		    	{
+		    		if($row['FIELD_DEFAULT_VALUE'] == '')
+		    			$row['FIELD_DEFAULT_VALUE'] = 0;
+		    				
+		    		$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])?$appData[$row['FIELD_NAME']."_label"]:'';
+		    		if($appData[$row['FIELD_NAME']."_label"] =="")
+		    		{
+		    			$i = $row['FIELD_DEFAULT_VALUE'];	
+		    			if(count($row['FIELD_SQL_OPTION']))
+		    			{
+		    				$options = $row['FIELD_SQL_OPTION'];
+		    				$id = "";
+		    				$label = "";
+		    				foreach($options As $row2)
+		    				{
+		    					if($row2['id'] == $i)
+		    					{
+		    						$id = $row2['id'];
+		    						$label = $row2['descrip'];
+		    						break;
+		    					}
+		    				}
+		    					
+		    				if($id=="" && $label=="")
+		    				{
+		    					$id = $row['FIELD_SQL_OPTION'][0]['id'];
+		    					$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+		    				}
+		    				$record[$row['FIELD_NAME']] = $id;
+		    				$appData = array_merge($record,$appData);
+		    				$record[$row['FIELD_NAME']."_label"] = $label;
+		    				$appData = array_merge($record,$appData);
+		    			}
+		    			else
+		    			{
+		    				if(count($row['FIELD_OPTION']))
+		    				{
+		    					$options = $row['FIELD_OPTION'];
+		    					$id = "";
+		    					$label = "";
+		    					foreach($options As $row2)
+		    					{
+		    						if($row2['id'] == $i)
+		    						{
+		    							$id = $row2['id'];
+		    							$label = $row2['descrip'];
+		    							
+		    						}
+		    					}
+		    						
+		    					if($id=="" && $label=="")
+		    					{
+		    						$id = $row['FIELD_OPTION'][0]['id'];
+		    						$label = $row['FIELD_OPTION'][0]['descrip'];
+		    					}
+		    					$record[$row['FIELD_NAME']] = $id;
+		    					$appData = array_merge($record,$appData);
+		    					$record[$row['FIELD_NAME']."_label"] = $label;
+		    					$appData = array_merge($record,$appData);
+		    				}
+		    			}
+		    		}
+		    	}
+		    	foreach ($itemsDeleteEdit as $field ) 
+    	    	{ 
+   		    		$fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
+   		    		
+   		    		if($fieldNameEditDelete == $key )
+   		    		{
+    	    			if($whereDelete == '')
+		    				$whereDelete = $key." = '".$fields."'";
+		    			else 
+		    				$whereDelete = $whereDelete." AND " .$key." = '".$fields."'";
+   		    		}
+    	    	} 
+		    	
+	        }
+	        // end labels
+	       
+	        // delete cases 
+	        if($whereDelete != '')
+	        {   genDataReport($tableName);
+	        	$query = "SELECT APP_UID FROM $tableName WHERE $whereDelete AND APP_UID NOT IN ( $idCasesGenerate ) "; //print($query.'  '); 
+	        	$deleteData = executeQuery($query);
+	        	if(sizeof($deleteData))
+	        	{
+	        		foreach($deleteData as $index)
+	        		{	
+	        			$CurDateTime=date('Y-m-d H:i:s');
+	        			insertHistoryLogPlugin($index['APP_UID'],$_SESSION['USER_LOGGED'],$CurDateTime,'1',$index['APP_UID'],'Delete Case');
+	        			deletePMCases($index['APP_UID']); 
+	        		}
+	        		
+	        	}
+	        }
+	        // end delete cases
+	        
+            $appData['FLAG_ACTION'] = 'multipleDerivation';
+            $appData['EXEC_AUTO_DERIVATE'] = 'NO';
+            $appData['eligible'] = 0; // only process beneficiary
+            $appData['FLAG_EDIT'] = 1;
+            $appData['CurrentUserAutoDerivate'] = $USR_UID;
+            $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
+            if($totalCases == 0)
+            	$idCasesGenerate = "'".$caseUID."'";
+            else
+            	$idCasesGenerate = $idCasesGenerate.", '".$caseUID."'";
+            if($caseUID >0) 
+            {
+                autoDerivate($proUid,$caseUID,$USR_UID);
+                $oCase = new Cases ();
+                $FieldsCase = $oCase->loadCase ( $caseUID );
+                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
+                $FieldsCase['APP_DATA']['STATUT'] = 1;
+                $oCase->updateCase($caseUID,$FieldsCase);
+            }
         }
       // print($caseUID);
         $totalCases++;
 
     }
+     # create file tmp
+     if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+       echo "Cannot open file";  
+       exit;  
+    }  
+    if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
+       echo "Cannot write to file";  
+       exit;  
+    }  
+    fclose($handle);  
+    # end create file tmp
+    
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
 }
@@ -849,221 +914,282 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 			}
 		}
 	}
+	
+	$select = executeQuery("SELECT MAX(IMPCSV_IDENTIFY) AS IDENTIFY FROM PMT_IMPORT_CSV_DATA WHERE IMPCSV_TABLE_NAME = '$tableName'");
+    $identify = isset($select[1]['IDENTIFY'])? $select[1]['IDENTIFY']:0;
+    $identify = $identify + 1;
+    $csv_file = $tableName."_".$identify.".csv";  
+	$csv_sep = ";";  
+	$csv="";  
+    $csv_end = "\n";
+    $swInsert = 0;
 
     foreach ($dataCSV as $row) 
     {
-        $appData =  array();
-        foreach ($items as $field) 
-        { 
-            if($firstLineHeader == 'on')
+        if($totalCases >= 100)
+        {
+            foreach($row as $value)
             {
-            	if(isset($row[$field['COLUMN_CSV']]))
+                if($totIni == $totRow)
+                $csv.=$value;
+                else
+                    $csv.=$value.$csv_sep;
+                $totIni++;
+            }
+            $csv.=$csv_end;
+            if($swInsert == 0)
+            {
+                $select = executeQuery("SELECT MAX(IMPCSV_ID) AS ID_CSV FROM PMT_IMPORT_CSV_DATA");
+                $maxId = isset($select[1]['ID_CSV'])? $select[1]['ID_CSV']:0;
+                $maxId = $maxId + 1;
+                foreach ($items as $field)
+                { 
+                    $insert = "INSERT INTO PMT_IMPORT_CSV_DATA 
+                          (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION ) VALUES
+                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD_UPDATE', '".mysql_escape_string($dataDeleteEdit)."' )";
+                    executeQuery($insert);
+                    $swInsert = 1;
+                    $maxId++;
+                }
+            }
+            
+        }
+        else
+        {
+            $appData =  array();
+            foreach ($items as $field) 
+            { 
+                if($firstLineHeader == 'on')
                 {
-                	if($row[$field['COLUMN_CSV']])
-                		$appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
-                	else
-                		$appData[$field['FIELD_NAME']] = ' ';
+                	if(isset($row[$field['COLUMN_CSV']]))
+                    {
+                    	if($row[$field['COLUMN_CSV']])
+                    		$appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+                    	else
+                    		$appData[$field['FIELD_NAME']] = ' ';
+                    }
+                    else
+                    {
+                    	if($field['COLUMN_CSV'])
+                        	$appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+                        else
+                        	$appData[$field['FIELD_NAME']] = ' ';
+                    } 
                 }
                 else
                 {
-                	if($field['COLUMN_CSV'])
-                    	$appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
-                    else
-                    	$appData[$field['FIELD_NAME']] = ' ';
-                } 
-            }
-            else
-            {
-                $aCol = explode(' ', trim($field['COLUMN_CSV']));
-                if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-                    $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
-                else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-                    $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
-                }        
-            }
-        }       
-		
-        foreach($appData As $key => $fields)
-	    {
-			foreach ($_dataForms As $row)
-			{
-				if($row['FIELD_DEFAULT_VALUE'] == '')
-					$row['FIELD_DEFAULT_VALUE'] = 0;
-					
-				if($key == $row['FIELD_NAME'])
-				{
-					$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
-						
-					if(count($row['FIELD_SQL_OPTION']))
-					{
-						$options = $row['FIELD_SQL_OPTION'];
-						$id = "";
-						$label = "";
-						foreach($options As $row2)
-						{
-							if($row2['id'] == $i)
-							{
-								$id = $row2['id'];
-								$label = $row2['descrip'];
-								break;
-							}
-						}
-							
-						if($id=="" && $label=="")
-						{
-							$id = $row['FIELD_SQL_OPTION'][0]['id'];
-							$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-						}
-						
-						$record[$row['FIELD_NAME']] = $id;
-						$appData = array_merge($record,$appData);
-						$record[$row['FIELD_NAME']."_label"] = $label;
-						$appData = array_merge($record,$appData);
-					}
-					else
-					{
-						if(count($row['FIELD_OPTION']))
-						{
-							$options = $row['FIELD_OPTION'];
-							$id = "";
-							$label = "";
-							foreach($options As $row2)
-							{
-								if($row2['id'] == $i)
-								{
-									$id = $row2['id'];
-									$label = $row2['descrip'];
-									break;
-								}
-							}
-							
-							$record = Array();
-							$record[$row['FIELD_NAME']] = $id;
-							$appData = array_merge($record,$appData);
-							$record[$row['FIELD_NAME']."_label"] = $label;
-							$appData = array_merge($record,$appData);
-						}
-					}
-				}
-			}	
-		}
-		$whereUpdate = '';
-	    foreach($appData As $key => $fields)
-	    {
-	    	foreach ($_dataForms As $row)
-			{
-				if($row['FIELD_DEFAULT_VALUE'] == '')
-					$row['FIELD_DEFAULT_VALUE'] = 0;
-						
-				$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])?$appData[$row['FIELD_NAME']."_label"]:'';
-				if($appData[$row['FIELD_NAME']."_label"] =="")
-				{
-					$i = $row['FIELD_DEFAULT_VALUE'];	
-					if(count($row['FIELD_SQL_OPTION']))
-					{
-						$options = $row['FIELD_SQL_OPTION'];
-						$id = "";
-						$label = "";
-						foreach($options As $row2)
-						{
-							if($row2['id'] == $i)
-							{
-								$id = $row2['id'];
-								$label = $row2['descrip'];
-								break;
-							}
-						}
-							
-						if($id=="" && $label=="")
-						{
-							$id = $row['FIELD_SQL_OPTION'][0]['id'];
-							$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-						}
-						$record[$row['FIELD_NAME']] = $id;
-						$appData = array_merge($record,$appData);
-						$record[$row['FIELD_NAME']."_label"] = $label;
-						$appData = array_merge($record,$appData);
-					}
-					else
-					{
-						if(count($row['FIELD_OPTION']))
-						{
-							$options = $row['FIELD_OPTION'];
-							$id = "";
-							$label = "";
-							foreach($options As $row2)
-							{
-								if($row2['id'] == $i)
-								{
-									$id = $row2['id'];
-									$label = $row2['descrip'];
-									
-								}
-							}
-								
-							if($id=="" && $label=="")
-							{
-								$id = $row['FIELD_OPTION'][0]['id'];
-								$label = $row['FIELD_OPTION'][0]['descrip'];
-							}
-							$record[$row['FIELD_NAME']] = $id;
-							$appData = array_merge($record,$appData);
-							$record[$row['FIELD_NAME']."_label"] = $label;
-							$appData = array_merge($record,$appData);
-						}
-					}
-				}
-			}
-			foreach ($itemsDeleteEdit as $field ) 
-    		{ 
-   				$fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
-   				if($fieldNameEditDelete == $key )
-   				{
-    				if($whereUpdate == '')
-						$whereUpdate = $key." = '".$fields."'";
-					else 
-						$whereUpdate = $whereUpdate." AND " .$key." = '".$fields."'";
-   				}
-    		} 
-	    }
-	        
-	     // end labels 
-	     
-	     // update cases 
-	    $query = "SELECT APP_UID FROM $tableName WHERE $whereUpdate ";
-	    $updateData = executeQuery($query);
-	    if(sizeof($updateData))
-	    {
-	    	foreach($updateData as $index)
-	    	{	
-	    		$oCase = new Cases ();
-	    		$FieldsCase = $oCase->loadCase ( $index['APP_UID'] );
-	    		$FieldsCase['APP_DATA'] = $appData;
-            	$oCase->updateCase($index['APP_UID'],$FieldsCase);
+                    $aCol = explode(' ', trim($field['COLUMN_CSV']));
+                    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
+                        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+                    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
+                        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+                    }        
+                }
+            }       
+	    	
+            foreach($appData As $key => $fields)
+	        {
+	    		foreach ($_dataForms As $row)
+	    		{
+	    			if($row['FIELD_DEFAULT_VALUE'] == '')
+	    				$row['FIELD_DEFAULT_VALUE'] = 0;
+	    				
+	    			if($key == $row['FIELD_NAME'])
+	    			{
+	    				$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
+	    					
+	    				if(count($row['FIELD_SQL_OPTION']))
+	    				{
+	    					$options = $row['FIELD_SQL_OPTION'];
+	    					$id = "";
+	    					$label = "";
+	    					foreach($options As $row2)
+	    					{
+	    						if($row2['id'] == $i)
+	    						{
+	    							$id = $row2['id'];
+	    							$label = $row2['descrip'];
+	    							break;
+	    						}
+	    					}
+	    						
+	    					if($id=="" && $label=="")
+	    					{
+	    						$id = $row['FIELD_SQL_OPTION'][0]['id'];
+	    						$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+	    					}
+	    					
+	    					$record[$row['FIELD_NAME']] = $id;
+	    					$appData = array_merge($record,$appData);
+	    					$record[$row['FIELD_NAME']."_label"] = $label;
+	    					$appData = array_merge($record,$appData);
+	    				}
+	    				else
+	    				{
+	    					if(count($row['FIELD_OPTION']))
+	    					{
+	    						$options = $row['FIELD_OPTION'];
+	    						$id = "";
+	    						$label = "";
+	    						foreach($options As $row2)
+	    						{
+	    							if($row2['id'] == $i)
+	    							{
+	    								$id = $row2['id'];
+	    								$label = $row2['descrip'];
+	    								break;
+	    							}
+	    						}
+	    						
+	    						$record = Array();
+	    						$record[$row['FIELD_NAME']] = $id;
+	    						$appData = array_merge($record,$appData);
+	    						$record[$row['FIELD_NAME']."_label"] = $label;
+	    						$appData = array_merge($record,$appData);
+	    					}
+	    				}
+	    			}
+	    		}	
 	    	}
-	    }
-	    else 
-	    {
-        	$appData['FLAG_ACTION'] = 'multipleDerivation';
-        	$appData['EXEC_AUTO_DERIVATE'] = 'NO';
-        	$appData['eligible'] = 0; // only process beneficiary
-        	$appData['FLAG_EDIT'] = 1;
-        	$appData['CurrentUserAutoDerivate'] = $USR_UID;
-        	$caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
-        	if($caseUID >0) 
-        	{
-            	autoDerivate($proUid,$caseUID,$USR_UID);
-            	$oCase = new Cases ();
-            	$FieldsCase = $oCase->loadCase ( $caseUID );
-            	$FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-            	$FieldsCase['APP_DATA']['STATUT'] = 1;
-            	$oCase->updateCase($caseUID,$FieldsCase);
-        	}
-	    }
-       
-        $totalCases++;
-
+	    	$whereUpdate = '';
+	        foreach($appData As $key => $fields)
+	        {
+	        	foreach ($_dataForms As $row)
+	    		{
+	    			if($row['FIELD_DEFAULT_VALUE'] == '')
+	    				$row['FIELD_DEFAULT_VALUE'] = 0;
+	    					
+	    			$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])?$appData[$row['FIELD_NAME']."_label"]:'';
+	    			if($appData[$row['FIELD_NAME']."_label"] =="")
+	    			{
+	    				$i = $row['FIELD_DEFAULT_VALUE'];	
+	    				if(count($row['FIELD_SQL_OPTION']))
+	    				{
+	    					$options = $row['FIELD_SQL_OPTION'];
+	    					$id = "";
+	    					$label = "";
+	    					foreach($options As $row2)
+	    					{
+	    						if($row2['id'] == $i)
+	    						{
+	    							$id = $row2['id'];
+	    							$label = $row2['descrip'];
+	    							break;
+	    						}
+	    					}
+	    						
+	    					if($id=="" && $label=="")
+	    					{
+	    						$id = $row['FIELD_SQL_OPTION'][0]['id'];
+	    						$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+	    					}
+	    					$record[$row['FIELD_NAME']] = $id;
+	    					$appData = array_merge($record,$appData);
+	    					$record[$row['FIELD_NAME']."_label"] = $label;
+	    					$appData = array_merge($record,$appData);
+	    				}
+	    				else
+	    				{
+	    					if(count($row['FIELD_OPTION']))
+	    					{
+	    						$options = $row['FIELD_OPTION'];
+	    						$id = "";
+	    						$label = "";
+	    						foreach($options As $row2)
+	    						{
+	    							if($row2['id'] == $i)
+	    							{
+	    								$id = $row2['id'];
+	    								$label = $row2['descrip'];
+	    								
+	    							}
+	    						}
+	    							
+	    						if($id=="" && $label=="")
+	    						{
+	    							$id = $row['FIELD_OPTION'][0]['id'];
+	    							$label = $row['FIELD_OPTION'][0]['descrip'];
+	    						}
+	    						$record[$row['FIELD_NAME']] = $id;
+	    						$appData = array_merge($record,$appData);
+	    						$record[$row['FIELD_NAME']."_label"] = $label;
+	    						$appData = array_merge($record,$appData);
+	    					}
+	    				}
+	    			}
+	    		}
+	    		foreach ($itemsDeleteEdit as $field ) 
+        		{ 
+   	    			$fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
+   	    			if($fieldNameEditDelete == $key )
+   	    			{
+        				if($whereUpdate == '')
+	    					$whereUpdate = $key." = '".$fields."'";
+	    				else 
+	    					$whereUpdate = $whereUpdate." AND " .$key." = '".$fields."'";
+   	    			}
+        		} 
+	        }
+	            
+	         // end labels 
+	        
+	         // update cases 
+	         genDataReport($tableName);
+	        $query = "SELECT APP_UID FROM $tableName WHERE $whereUpdate ";
+	        $updateData = executeQuery($query);
+	        if(sizeof($updateData))
+	        {
+	        	foreach($updateData as $index)
+	        	{	
+	        		$appData['FLAG_ACTION'] = 'multipleDerivation';
+            	    $appData['EXEC_AUTO_DERIVATE'] = 'NO';
+            	    $appData['eligible'] = 0; // only process beneficiary
+            	    $appData['FLAG_EDIT'] = 1;
+            	    $appData['CurrentUserAutoDerivate'] = $USR_UID;
+	        		$oCase = new Cases ();
+	        		$FieldsCase = $oCase->loadCase ( $index['APP_UID'] );
+	        		$appData = array_merge($FieldsCase['APP_DATA'],$appData);
+	        		$FieldsCase['APP_DATA'] = $appData;
+                	$oCase->updateCase($index['APP_UID'],$FieldsCase);
+                	executeTriggers($proUid, $index['APP_UID'] ,$USR_UID);
+	        	}
+	        }
+	        else 
+	        {
+            	$appData['FLAG_ACTION'] = 'multipleDerivation';
+            	$appData['EXEC_AUTO_DERIVATE'] = 'NO';
+            	$appData['eligible'] = 0; // only process beneficiary
+            	$appData['FLAG_EDIT'] = 1;
+            	$appData['CurrentUserAutoDerivate'] = $USR_UID;
+            	$caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
+            	if($caseUID >0) 
+            	{
+                	autoDerivate($proUid,$caseUID,$USR_UID);
+                	$oCase = new Cases ();
+                	$FieldsCase = $oCase->loadCase ( $caseUID );
+                	$FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
+                	$FieldsCase['APP_DATA']['STATUT'] = 1;
+                	$oCase->updateCase($caseUID,$FieldsCase);
+            	}
+	        }
+           
+            $totalCases++;
+        
+        }
     }
+    
+     # create file tmp
+     if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+       echo "Cannot open file";  
+       exit;  
+    }  
+    if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
+       echo "Cannot write to file";  
+       exit;  
+    }  
+    fclose($handle);  
+    # end create file tmp
+    
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
 }

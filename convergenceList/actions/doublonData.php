@@ -126,7 +126,7 @@ function getData($reg,$idInbox) {
 	
 	list($dataNum, $fieldData) = getFieldsIncludedDoublon($idInbox);
 	//G::pr($fieldData);
-	//G::pr($merge);
+	//G::pr($merge);die; 
 	if(is_array($merge) && count($merge) >0 && is_array($fieldData) &&  count($fieldData) >0){
 	 	$ind=0;// ind row
 	 	//$field = 'FIELD_DESC';

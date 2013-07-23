@@ -120,7 +120,7 @@ function ajaxPostRequest(url, callback_function, id){
             items : [TabPanel]
           });          
       }
-      if(DYNAFORMSLIST.length == 0)
+      if(DYNAFORMSLIST.length == 0 || ACTIVEFORMS == 1)
     	  fn_add_tab_principal('DynaForms','cases_EditJS.php?APP_UID='+APP_UID+'&ADAPTIVEHEIGHT='+ADAPTIVEHEIGHT,TabPanel);      
 
       else

@@ -91,25 +91,6 @@ function frderivateCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber
 			$NextTask = executeQuery($queryNextTask);			
 			$stepsByTask = getStepsByTask($currentTask);//FORM IDS in THE TASK			
 			$caseStepRes = array();
-			if(isset($DelIndex[1]['DEL_INDEX']) && $DelIndex[1]['DEL_INDEX'] != ''){
-	        	$queryDel = "SELECT * FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
-	        	$resDel = executeQuery($queryDel);
-	        	if(sizeof($resDel)){
-	        		if($resDel[1]['USR_UID'] == ""){
-	            		$queryuPDel = "UPDATE APP_DELEGATION SET USR_UID = '".$userLoggedIni."' 
-	            		WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
-	            		$queryuPDel = executeQuery($queryuPDel);
-	            		$userId = $userLoggedIni;
-	          		}
-	        		elseif(isset($_SESSION['USER_LOGGED_INI']) && $_SESSION['USER_LOGGED_INI'] != '' && $DelIndex[1]['DEL_INDEX']!= 1)
-	        		{
-	        			/*$queryuPDel = "UPDATE APP_DELEGATION SET USR_UID = '".$userLoggedIni."' 
-	            		WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
-	            		$queryuPDel = executeQuery($queryuPDel);*/
-	            		$userId = $resDel[1]['USR_UID'];
-	        		}
-	        	}
-			}
 			
 			foreach ($stepsByTask as $caseStep){
 				$caseStepRes[] = 	 $caseStep->getStepUidObj();
@@ -138,9 +119,43 @@ function frderivateCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber
 					executeTriggersMon($processId, $fcaseUID, $stepUid, 'AFTER', $currentTask);	//execute trigger after form	
 				}							
 				//$control = PMFDerivateCase($fcaseUID, $DelIndex[1]['DEL_INDEX'], $beforeA, $userId);
-				
-	    		$result = $ws->derivateCase( $userId, $fcaseUID, $DelIndex[1]['DEL_INDEX'], $beforeA );   
-	    		$rpta = $result['status_code'];
+				G::LoadClass( 'derivation' );
+				$oDerivation = new Derivation();
+				$aFields['TASK']= $oDerivation->prepareInformation( array ('USER_UID' => $userId,'APP_UID' => $fcaseUID,'DEL_INDEX' => $DelIndex[1]['DEL_INDEX']) );
+				if (empty( $aFields['TASK'] )) {  
+				    $_SESSION['USER_LOGGED'] = $userLoggedIni ;               
+					throw (new Exception( G::LoadTranslation( 'ID_NO_DERIVATION_RULE' ) ));
+				}	
+				else
+				{
+			        if(isset($DelIndex[1]['DEL_INDEX']) && $DelIndex[1]['DEL_INDEX'] != ''){
+	                	$queryDel = "SELECT * FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
+	                	$resDel = executeQuery($queryDel);
+	                	if(sizeof($resDel)){
+	                		if($resDel[1]['USR_UID'] == ""){
+	                    		$queryuPDel = "UPDATE APP_DELEGATION SET USR_UID = '".$userLoggedIni."' 
+	                    		WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
+	                    		$queryuPDel = executeQuery($queryuPDel);
+	                    		$userId = $userLoggedIni;
+	                  		}
+	                		elseif(isset($_SESSION['USER_LOGGED_INI']) && $_SESSION['USER_LOGGED_INI'] != '' && $DelIndex[1]['DEL_INDEX']!= 1)
+	                		{	                			
+	                    		$userId = $resDel[1]['USR_UID'];
+	                		}
+	                	}
+			        }
+			
+				}
+				try{
+				    $result = $ws->derivateCase( $userId, $fcaseUID, $DelIndex[1]['DEL_INDEX'], $beforeA );   
+				}
+				catch (Exception $e) 
+				{
+					$status_code = $result['status_code'];					
+					G::pr($result);
+					G::pr($e);
+					die("error");
+				}			
 				$sw = 1;
 			}
 			else
@@ -148,8 +163,43 @@ function frderivateCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber
 				if($totStep == 0)
 					executeTriggersMon( $processId, $fcaseUID, -1, 'BEFORE', $currentTask );
 				//$control = PMFDerivateCase($fcaseUID, $DelIndex[1]['DEL_INDEX'], false, $userId);
-				$result = $ws->derivateCase( $userId, $fcaseUID, $DelIndex[1]['DEL_INDEX'], false );   //G::pr($result)
-	    		$rpta = $result['status_code'];	
+				G::LoadClass( 'derivation' );
+				$oDerivation = new Derivation();
+				$aFields['TASK']= $oDerivation->prepareInformation( array ('USER_UID' => $userId,'APP_UID' => $fcaseUID,'DEL_INDEX' => $DelIndex[1]['DEL_INDEX']) );
+				if (empty( $aFields['TASK'] )) {     
+				    $_SESSION['USER_LOGGED'] = $userLoggedIni ;             
+					throw (new Exception( G::LoadTranslation( 'ID_NO_DERIVATION_RULE' ) ));
+				}	
+				else
+				{
+			        if(isset($DelIndex[1]['DEL_INDEX']) && $DelIndex[1]['DEL_INDEX'] != ''){
+	                	$queryDel = "SELECT * FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
+	                	$resDel = executeQuery($queryDel);
+	                	if(sizeof($resDel)){
+	                		if($resDel[1]['USR_UID'] == ""){
+	                    		$queryuPDel = "UPDATE APP_DELEGATION SET USR_UID = '".$userLoggedIni."' 
+	                    		WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
+	                    		$queryuPDel = executeQuery($queryuPDel);
+	                    		$userId = $userLoggedIni;
+	                  		}
+	                		elseif(isset($_SESSION['USER_LOGGED_INI']) && $_SESSION['USER_LOGGED_INI'] != '' && $DelIndex[1]['DEL_INDEX']!= 1)
+	                		{
+	                			$userId = $resDel[1]['USR_UID'];
+	                		}
+	                	}
+			        }
+			
+				}
+				try{
+				    $result = $ws->derivateCase( $userId, $fcaseUID, $DelIndex[1]['DEL_INDEX'], false );
+				}
+				catch (Exception $e) 
+				{
+					$status_code = $result['status_code'];					
+					G::pr($result); 
+					G::pr($e);
+					die("error");
+				}				
 				$queryDelIndex = "SELECT MAX(DEL_INDEX) AS DEL_INDEX FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."'";
 				$DelIndex = executeQuery($queryDelIndex); 
 				$queryDel = "SELECT TAS_UID FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
@@ -169,8 +219,118 @@ function frderivateCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber
 	
 }
 
+function executeTriggers($processId,$caseUID,$userId){	
 
+	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$processId."'";	//query for select all start tasks
+	$startTasks = executeQuery($query);	
+	$taskId = $startTasks[1]['TAS_UID'];
+	$queryNextTask = "SELECT ROU_NEXT_TASK FROM ROUTE WHERE PRO_UID = '".$processId."' AND TAS_UID = '".$taskId."'";
+	$taskNumber = 1;
+	$NextTask = executeQuery($queryNextTask);
+	if($NextTask[1]['ROU_NEXT_TASK'] == '-1')
+		$taskNumber = 0;
+	$userLoggedIni = $_SESSION['USER_LOGGED'];
+	if(isset($_SESSION['USER_LOGGED_INI']) && $_SESSION['USER_LOGGED_INI'] != '')
+		$userLoggedIni = $_SESSION['USER_LOGGED_INI'];
+        
+	foreach($startTasks as $rowTask){
+		updateDateAPPDATA($caseUID);
+		$taskId = $rowTask['TAS_UID'];
+		$currentTask = $taskId;
+		$process = $processId;
+		$appUid = $caseUID;    
+		$task = $taskId;	
+		frExecuteTriggersCase($processId, $currentTask , $caseUID,$userId,$taskNumber, $userLoggedIni);		//Function for derivate case
+	}
+	if($userLoggedIni !='')
+		$_SESSION['USER_LOGGED'] = $userLoggedIni ; 
+   // FredirectTypo3($caseUID);
+        
+}
 
+function frExecuteTriggersCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber, $userLoggedIni)
+{
+	try 
+	{
+		$sw = 0;
+		while($sw == 0)
+		{
+	    	$_SESSION['APPLICATION'] = $fcaseUID;
+			$queryDelIndex = "SELECT MAX(DEL_INDEX) AS DEL_INDEX FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."'";
+			$DelIndex = executeQuery($queryDelIndex);      
+			$queryNextTask = "SELECT ROU_NEXT_TASK FROM ROUTE WHERE PRO_UID = '".$processId."' AND TAS_UID = '".$currentTask."'";
+			$NextTask = executeQuery($queryNextTask);			
+			$stepsByTask = getStepsByTask($currentTask);//FORM IDS in THE TASK			
+			$caseStepRes = array();
+			if(isset($DelIndex[1]['DEL_INDEX']) && $DelIndex[1]['DEL_INDEX'] != ''){
+	            $queryDel = "SELECT * FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
+	            $resDel = executeQuery($queryDel);
+	            if(sizeof($resDel)){
+	            	if($resDel[1]['USR_UID'] == ""){
+	            		$queryuPDel = "UPDATE APP_DELEGATION SET USR_UID = '".$userLoggedIni."' 
+	            		WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
+	            		$queryuPDel = executeQuery($queryuPDel);
+	            		$userId = $userLoggedIni;
+	            	}
+	            	elseif(isset($_SESSION['USER_LOGGED_INI']) && $_SESSION['USER_LOGGED_INI'] != '' && $DelIndex[1]['DEL_INDEX']!= 1)
+	            	{	                			
+	            		$userId = $resDel[1]['USR_UID'];
+	            	}
+	            }
+			}
+			foreach ($stepsByTask as $caseStep){
+				$caseStepRes[] = 	 $caseStep->getStepUidObj();
+			}
+			//G::pr($caseStepRes);
+			$totStep = 0;
+			foreach($caseStepRes as $index)
+			{
+				$stepUid = $index;
+				executeTriggersMon($processId, $fcaseUID, $stepUid, 'BEFORE', $currentTask);	//execute trigger before form
+				executeTriggersMon($processId, $fcaseUID, $stepUid, 'AFTER', $currentTask);	//execute trigger after form	
+				$totStep++;
+			} 
+			G::LoadClass( 'wsBase' );
+	    	$ws = new wsBase();
+			if($NextTask[1]['ROU_NEXT_TASK'] == '-1')
+			{
+				$stepUid = -1;							
+				$beforeA = true;
+				if($taskNumber == 0){
+					$beforeA = false;
+				}
+				else 
+				{
+					executeTriggersMon($processId, $fcaseUID, $stepUid, 'BEFORE', $currentTask);	//execute trigger before form
+					executeTriggersMon($processId, $fcaseUID, $stepUid, 'AFTER', $currentTask);	//execute trigger after form	
+				}							
+				
+				
+				$sw = 1;
+			}
+			else
+			{
+				if($totStep == 0)
+					executeTriggersMon( $processId, $fcaseUID, -1, 'BEFORE', $currentTask );
+				
+				$queryDelIndex = "SELECT MAX(DEL_INDEX) AS DEL_INDEX FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."'";
+				$DelIndex = executeQuery($queryDelIndex); 
+				$queryDel = "SELECT TAS_UID FROM APP_DELEGATION WHERE APP_UID = '".$fcaseUID."' AND DEL_INDEX = '".$DelIndex[1]['DEL_INDEX']."' ";
+	        	$resDel = executeQuery($queryDel);
+				$currentTask = $resDel[1]['TAS_UID']; 
+			}
+				
+		}
+	} 
+	catch (Exception $e) 
+	{
+		$err = $e->getMessage();
+		$err = preg_replace("[\n|\r|\n\r]", ' ', $err);
+		die($err);
+	}			
+
+	
+}
 
 
 function updateDateAPPDATA($application){
@@ -207,7 +367,7 @@ function executeTriggersMon($process, $appUid, $stepUid, $time='BEFORE', $task){
   $triggers = $oCase->loadTriggers ( $task, $obj, $stepUid, $time );  
  /* G::pr($triggers);	
   print($task.'  '. $obj .'  '. $stepUid.'  '. $time);*/
-  $Fields['APP_DATA'] = $oCase->ExecuteTriggers($task, $type , $stepUid, $time, $Fields['APP_DATA'] ); 
+  $Fields['APP_DATA'] = $oCase->ExecuteTriggers($task, $type , $stepUid, $time, $Fields['APP_DATA'] );  
   $oCase->updateCase($appUid, $Fields);
   return true;
 }

@@ -36,6 +36,7 @@ class convergenceListPlugin extends PMPlugin
   {    
     $this->registerMenu( "cases", "newOptionCases.php");
     $this->registerPmFunction();
+    $this->copy( 'services' . PATH_SEP . 'cronCreateCases.php', PATH_CORE . 'bin' . PATH_SEP . 'plugins' . PATH_SEP . 'cronCreateCases.php', false, true ); 
   }
 
   public function install()
@@ -52,6 +53,7 @@ class convergenceListPlugin extends PMPlugin
     $roleData["ROL_STATUS"] = "1";
     $RBAC->createRole($roleData);
     $RBAC->createPermision("PM_CONVERGENCELIST");*/
+    $this->copy( 'services' . PATH_SEP . 'cronCreateCases.php', PATH_CORE . 'bin' . PATH_SEP . 'plugins' . PATH_SEP . 'cronCreateCases.php', false, true ); 
   }
   
   public function enable()

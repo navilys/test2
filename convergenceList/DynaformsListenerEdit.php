@@ -18,6 +18,7 @@ $FINDEX  ='';
 $PRO_UID ='';
 $TAS_UID ='';
 $USR_UID ='';
+$userActiveForm = 0;
 #Query To get the process, Actual user and task
 $queryAppDelegation="SELECT AD1.DEL_INDEX as FINDEX,PRO_UID, TAS_UID, USR_UID FROM APP_DELEGATION AD1 WHERE AD1.APP_UID='$APP_UID'  
 							AND AD1.DEL_INDEX IN (SELECT MAX(AD.DEL_INDEX) FROM APP_DELEGATION AD WHERE AD1.APP_UID=AD.APP_UID)  ";
@@ -37,24 +38,33 @@ $query = " SELECT DISTINCT DYN_UID FROM APP_HISTORY
            WHERE APP_HISTORY.APP_UID = '".$APP_UID."' AND (A.APP_STATUS = 'TO_DO' OR A.APP_STATUS = 'DRAFT')
            AND AD.DEL_INDEX IN (SELECT MAX(AD1.DEL_INDEX) FROM APP_DELEGATION AD1 WHERE AD1.APP_UID=AD.APP_UID)
            ORDER BY HISTORY_DATE  ASC
-               ";
+         ";
 $select = executeQuery($query);      
    
 $o = new Dynaform();
 $DYNAFORMSLIST = array();
-       
-foreach($select as $index){
-    $o->setDynUid($index['DYN_UID']);
-    $aFields['DYN_TITLE'] = $o->getDynTitle();
-    $aFields['DYN_UID'] = $index['DYN_UID'];
-    $aFields['EDIT'] = G::LoadTranslation('ID_EDIT');
-    $aFields['PRO_UID'] = $PRO_UID;
-    $aFields['APP_UID'] = $APP_UID;
-    $aFields['TAS_UID'] = $TAS_UID;
-    $DYNAFORMSLIST[] = $aFields;            
-               
-          
-} 
+if(sizeof($select))
+{       
+    foreach($select as $index){
+        $o->setDynUid($index['DYN_UID']);
+        $aFields['DYN_TITLE'] = $o->getDynTitle();
+        $aFields['DYN_UID'] = $index['DYN_UID'];
+        $aFields['EDIT'] = G::LoadTranslation('ID_EDIT');
+        $aFields['PRO_UID'] = $PRO_UID;
+        $aFields['APP_UID'] = $APP_UID;
+        $aFields['TAS_UID'] = $TAS_UID;
+        $DYNAFORMSLIST[] = $aFields;            
+    } 
+         
+    $queryAppDelegation="SELECT AD1.DEL_INDEX as FINDEX, USR_UID FROM APP_DELEGATION AD1 WHERE AD1.APP_UID='$APP_UID'  
+							AND AD1.DEL_INDEX IN (SELECT MIN(AD.DEL_INDEX) FROM APP_DELEGATION AD WHERE AD1.APP_UID=AD.APP_UID)  ";
+    $resultAppDelegation=executeQuery($queryAppDelegation);          
+    $usrUidIniCase = isset($resultAppDelegation[1]['USR_UID'])? $resultAppDelegation[1]['USR_UID']:''; 
+    if($usrUidIniCase == $_SESSION['USER_LOGGED'])
+    {
+        $userActiveForm = 1;
+    } 
+}
 # End Get Dynaforms
 
 #Update the flag typo3
@@ -91,6 +101,7 @@ $oHeadPublisher->assign('DYNAFORMSLIST', $DYNAFORMSLIST);
 $oHeadPublisher->assign('ADAPTIVEHEIGHT', $ADAPTIVEHEIGHT);
 $oHeadPublisher->assign('SHOWCOMMENT', $SHOWCOMMENT);
 $oHeadPublisher->assign('SWTAB', '');
+$oHeadPublisher->assign('ACTIVEFORMS', $userActiveForm);
 $oHeadPublisher->addExtJsScript('convergenceList/caseHistoryDynaformPageEdit', true );    //adding a javascript file .js
 $oHeadPublisher->addContent    ('convergenceList/caseHistoryDynaformPage'); //adding a html file  .html.      
 $oHeadPublisher->assign('pageSize', $conf->getEnvSetting('casesListRowNumber'));    

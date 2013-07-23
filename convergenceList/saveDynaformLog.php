@@ -97,7 +97,8 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 		$newFields['APP_DATA']['CURRENTDATETIME'] = $CURRENTDATETIME; # this is for the typo3 trigger
 		$newFields['APP_DATA']['NUM_DOSSIER'] = $APP_NUMBER_DOSSIER;
   		$newFields['APP_DATA']['FLG_INITUSERUID'] = $auxUsrUID;
-  		$newFields['APP_DATA']['FLG_INITUSERNAME'] = $auxUsruname; 
+  		$newFields['APP_DATA']['FLG_INITUSERNAME'] = $auxUsruname;
+		//$newFields['APP_DATA']['VALIDATION'] = '0'; 
 	
 		$newFields = str_replace("'","'",$newFields ['APP_DATA']);  
 	
@@ -126,6 +127,7 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
       		$_SESSION['APPLICATION_EDIT'] = $newAPP_UID;   
   			$_SESSION['USER_LOGGED'] = $auxUsrUID ;
     		$_SESSION['USR_USERNAME'] = $auxUsruname;
+    		executeTriggers($PRO_UID, $newAPP_UID ,$auxUsrUID);
 			
      	}
   		else	

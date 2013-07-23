@@ -22,10 +22,25 @@ $messageInfo = '';
 /* * * Get filter value ** */
 $sFieldValue = $_REQUEST['sFieldValue'];
 $sFieldName = $_REQUEST['sFieldName'];
-$idInbox = $_REQUEST['IdInbox'];
 /* * *** End get filter value ** */
-
+/* * * Get inbox  ** */
+$param = 'idInbox=';
+$str = $_SERVER['HTTP_REFERER'];
+$ini = strpos($str, $param);
+$ini += strlen($param);
+$len = strpos($str, '&', $ini);
+if ($len != false)
+{
+    $len = $len - $ini;
+    $idInbox = substr($str, $ini, $len);
+}
+else
+{
+    $referer = explode($param, $str);
+    $idInbox = $referer[1];    // nom de l'inbox dans la base
+}
 $path = 'exportData_' . $idInbox . date("YmdHis");
+/* * *** End get inbox *** */
 
 $sJoins = '';
 $sOrderBy = '';
@@ -128,7 +143,7 @@ $rSQL = executeQuery($sSQL);
 /* * *** End generate doc *** */
 $messageInfo .= 'Export terminé.';
 //$infoArray = exportXls($exportTitle, $rSQL, $exportDescription, $path);
-// com git
+
 exportXls($exportTitle, $rSQL, $exportDescription, $path);
 
 
