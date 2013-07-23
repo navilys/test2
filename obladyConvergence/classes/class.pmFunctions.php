@@ -447,7 +447,7 @@ function getAllDoublon($process,$app_id) {
     //recuperation des variable du formulaire
     $fields = convergence_getAllAppData($app_id);
 
-    $where = 'STATUT !=0 AND STATUT !=999 AND NUM_DOSSIER !="'.$fields['NUM_DOSSIER'].'"';
+    $where = 'STATUT !=0 AND STATUT !=999 AND NUM_DOSSIER !="'.$fields['NUM_DOSSIER'].'" AND FLAG_NON_DOUBLON IS NULL';
     
     
     $getTableName = 'SELECT * FROM PMT_CONFIG_DEDOUBLONAGE WHERE CD_PROCESS_UID="'.$process.'"';

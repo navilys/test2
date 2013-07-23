@@ -31,10 +31,10 @@ foreach($items as $item){
 			
                 }
         // Ajout du $todoAnnule == 1 pour pouvoir enlever le flag si l'adress à été modifiée
-        if ($newAdresse == 0 || $todoAnnule == 1)
-        {
+        //if ($newAdresse == 0 || $todoAnnule == 1)
+        //{
             //on met a jour le flag NPAI
-			$Fields = $oCase->loadCase ($item['APP_UID']);
+            $Fields = $oCase->loadCase ($item['APP_UID']);
             if ($todoAnnule == 1) {
                 $Fields['APP_DATA']['NPAI'] = 'N';
                 convergence_deleteCompteurPND($item['NUM_DOSSIER']);
@@ -46,18 +46,20 @@ foreach($items as $item){
                 convergence_insertCompteurPND($item['NUM_DOSSIER']);
                 insertHistoryLogPlugin($item['APP_UID'],$_SESSION['USER_LOGGED'],date('Y-m-d H:i:s'),'0','',"Classer en PND",$Fields['APP_DATA']['STATUT']);
             }                        
-			$oCase->updateCase($item['APP_UID'], $Fields);		
+            
+            $oCase->updateCase($item['APP_UID'], $Fields);		
             $flag = 1;
             $messageInfo .= "<strong>Dossier " . $item['NUM_DOSSIER'] . " : </strong> Mis a jour.<br/>";
-        }
-		if ($newAdresse == 1)
+        //}
+        
+        if ($newAdresse == 1 && $todoAnnule == 0)
         {
             $fields = convergence_getAllAppData($item['APP_UID']);                        
-            if ($messageInfo != '')
+            /*if ($messageInfo != '')
             {
                 $messageInfo .= '<br/>';                                                
-            }
-            $messageInfo .= '<strong>Dossier N°' . $item['NUM_DOSSIER'] . ' : </strong> Impossible de classer en PND car une nouvelle adresse existe pour cette demande.' . "<br/>";
+            }*/
+            $messageInfo .= '<strong>Dossier N°' . $item['NUM_DOSSIER'] . ' : </strong> Une nouvelle adresse existe pour cette demande.' . "<br/>";
         }
                 
 

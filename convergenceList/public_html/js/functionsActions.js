@@ -242,8 +242,9 @@ function exportInbox(){
     
     post(urlData, {array: idField, sFieldValue: sFieldValue, sFieldName: sFieldName, IdInbox: IdInbox});
 }
-function exportInboxNpai(npaiOrAdr, fileType) {
 
+function exportInboxNpai(npaiOrAdr, fileType) {
+    IdInbox = myApp.getIdInbox();   
     if (!npaiOrAdr)
         npaiOrAdr = 'npai';
     if (!fileType)
@@ -256,7 +257,7 @@ function exportInboxNpai(npaiOrAdr, fileType) {
         sFieldValue = Ext.getCmp('_fieldInputSpecific').getValue();
     }
     urlData = "../convergenceList/actions/exportInboxNpai.php";
-    post(urlData, {array: idField, sFieldValue: sFieldValue, sFieldName: sFieldName, type: npaiOrAdr, ext: fileType});
+    post(urlData, {array: idField, sFieldValue: sFieldValue, sFieldName: sFieldName, type: npaiOrAdr, ext: fileType, IdInbox: IdInbox});
 }
 
 function explicationStatut(appUid){
@@ -365,6 +366,11 @@ function listeTitreDemande(num_dossier)
         _dblColumns.push(column);
         _dblFields.push({name: 'PRESTAID'});
         
+        column = {id : 'DMDAPPUID',header: 'demande ID',width : 20,dataIndex : 'DMDAPPUID',hidden: true};        
+        _dblColumns.push(column);
+        _dblFields.push({name: 'DMDAPPUID'});
+        
+        
         column = {id : 'UID',header: '#',width : 20,dataIndex : 'UID',hidden: true};        
         _dblColumns.push(column);
         _dblFields.push({name: 'APP_UID'});
@@ -372,6 +378,23 @@ function listeTitreDemande(num_dossier)
         column = {id : 'THEMATIQUE_LABEL',header: '#',width : 20,dataIndex : 'THEMATIQUE_LABEL',hidden: true};        
         _dblColumns.push(column);
         _dblFields.push({name: 'THEMATIQUE_LABEL'});
+        
+        column = {
+            id : 'NUM_DOSSIER',
+            header: 'N&deg; Dossier',
+            width : 80,
+            dataIndex : 'NUM_DOSSIER',
+            renderer  : function(value, meta, record) {
+                var dmdID = record.data.DMDAPPUID;
+                if (value != null)
+                    return '<a href="#" onclick="viewForms(\''+dmdID+'\',1)">'+value+'</a>';
+                else
+                    return '';
+            },
+            hidden: false
+        };        
+        _dblColumns.push(column);
+        _dblFields.push({name: 'NUM_DOSSIER'});
         
         column = {
             id : 'COMPLEMENT_CHQ',

@@ -61,6 +61,31 @@ foreach($items as $item){
                 
             }
         }
+        else
+        {
+             foreach ($champsArray as $champsItem)
+            { 
+                $Fields['APP_DATA'][$champsItem[0]] = $champsItem[1];
+                $Fields['APP_DATA']['FLAG_ACTION'] = 'actionAjax';
+                if ($champsItem[1] == '0') 
+                {
+                  $Fields['APP_DATA']['isRefus']     = 1;     
+                  $Fields['APP_DATA']['msgRefus']    = '<br/>&nbsp;-&nbsp; Dossier refusé par votre établissement';
+                  $Fields['APP_DATA']['STATUT']      = '4';
+                  $Fields['APP_DATA']['eligible']    = 0;
+                }
+                if($champsItem[1] == '1')
+                {
+                   $Fields['APP_DATA']['STATUT']    = '2'; 
+                   $Fields['APP_DATA']['isRefus']   = 0;
+                   $Fields['APP_DATA']['eligible']  = 1;
+                }
+                $oCase->updateCase($item['APP_UID'], $Fields);
+                insertHistoryLogPlugin($item['APP_UID'], $_SESSION['USER_LOGGED'], date('Y-m-d H:i:s'), '0', '', "Modification en masse du champ " . $champsItem[0], $Fields['APP_DATA']['STATUT']);
+               
+                
+            }
+        }
       
         $flag = 1; 
     }
