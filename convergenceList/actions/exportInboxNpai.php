@@ -138,22 +138,29 @@ if ($type != 'npai')
 {
     $listeApp_uid = array();
     foreach ($rSQL as $k => $npai)
-    {
-        $query = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION LIKE "Retour de production%"';
+    {//34669712651e874bb6e5ba1068843455
+        $query = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION LIKE "Retour de production%"'; //2013-07-19 04:26:00
         $resultDate = executeQuery($query);
-        if (isset($resultDate[1]['HLOG_DATECREATED']) && $resultDate[1]['HLOG_DATECREATED'] != '')
+        $qSetPnd = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION="Classer en PND"'; //2013-07-23 06:13:06
+        $rSetPnd = executeQuery($qSetPnd);
+        if (isset($resultDate[1]['HLOG_DATECREATED']) && $resultDate[1]['HLOG_DATECREATED'] != '' && isset($rSetPnd[1]['HLOG_DATECREATED']) && $rSetPnd[1]['HLOG_DATECREATED'] != '')
         {
-            $query2 = 'SELECT count(*) as NB, HLOG_APP_UID FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_DATECREATED > "' . $resultDate[1]['HLOG_DATECREATED'] . '" AND HLOG_ACTION="Modification de l\'adresse"';
+            $query2 = 'SELECT count(*) as NB, HLOG_APP_UID FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_DATECREATED > "' . $resultDate[1]['HLOG_DATECREATED'] . '" AND HLOG_DATECREATED < "' . $rSetPnd[1]['HLOG_DATECREATED'] . '" AND HLOG_ACTION="Modification de l\'adresse"';
             $result2 = executeQuery($query2);
             if ($result2[1]['NB'] > 0)
             {
-                $listeApp_uid[] = $npai['APP_UID'];                
+                $listeApp_uid[] = $npai['APP_UID'];
+                unset($rSQL[$k]['APP_UID']);
             }
             else
             {
                 unset($rSQL[$k]);
             }
-            unset($rSQL[$k]['APP_UID']);
+            
+        }
+        else
+        {
+            unset($rSQL[$k]);
         }
     }
 }

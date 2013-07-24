@@ -98,9 +98,9 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 		$newFields['APP_DATA']['NUM_DOSSIER'] = $APP_NUMBER_DOSSIER;
   		$newFields['APP_DATA']['FLG_INITUSERUID'] = $auxUsrUID;
   		$newFields['APP_DATA']['FLG_INITUSERNAME'] = $auxUsruname;
-		//$newFields['APP_DATA']['VALIDATION'] = '0'; 
-	
-		$newFields = str_replace("'","'",$newFields ['APP_DATA']);  
+		//$newFields['APP_DATA']['VALIDATION'] = isset($newFields['APP_DATA']['VALIDATION']) ? $newFields['APP_DATA']['VALIDATION'] :'0';
+
+    $newFields = str_replace("'","'",$newFields ['APP_DATA']);  
 	
 		//$newFields['APP_DATA'] = array_replace_recursive($newFields , ( array ) $DYNAFORMDATA);
 		//$newFields['APP_DATA'] = G::array_merges($newFields , ( array ) $DYNAFORMDATA);

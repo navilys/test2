@@ -460,15 +460,18 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         $totalCases++;
     }
     # create file tmp
-     if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
-       echo "Cannot open file";  
-       exit;  
-    }  
-    if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-       echo "Cannot write to file";  
-       exit;  
-    }  
-    fclose($handle);  
+    if($csv != '')
+    {
+        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+            echo "Cannot open file";  
+            exit;  
+        }  
+        if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
+            echo "Cannot write to file";  
+            exit;  
+        }  
+        fclose($handle);  
+    }
     # end create file tmp
     
     unset($_SESSION['REQ_DATA_CSV']);
@@ -819,15 +822,18 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 
     }
      # create file tmp
-     if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
-       echo "Cannot open file";  
-       exit;  
-    }  
-    if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-       echo "Cannot write to file";  
-       exit;  
-    }  
-    fclose($handle);  
+    if($csv != '')
+    {
+        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+            echo "Cannot open file";  
+            exit;  
+        }  
+        if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
+            echo "Cannot write to file";  
+            exit;  
+        }  
+        fclose($handle);  
+    } 
     # end create file tmp
     
     unset($_SESSION['REQ_DATA_CSV']);
@@ -1179,15 +1185,18 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     }
     
      # create file tmp
-     if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
-       echo "Cannot open file";  
-       exit;  
-    }  
-    if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-       echo "Cannot write to file";  
-       exit;  
-    }  
-    fclose($handle);  
+    if($csv != '')
+    {
+        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+            echo "Cannot open file";  
+            exit;  
+        }  
+        if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
+            echo "Cannot write to file";  
+            exit;  
+        }  
+        fclose($handle);  
+    }
     # end create file tmp
     
     unset($_SESSION['REQ_DATA_CSV']);

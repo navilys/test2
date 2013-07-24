@@ -362,7 +362,7 @@ if($actionAjax== 'historyDynaformGridPreview')
 				}
 				else
 				{
-					var answer = confirm("A new case will be created. Do you like to continue?");
+        					var answer = confirm("Modifications enregistrées");
 					if (answer){
 						
 					}

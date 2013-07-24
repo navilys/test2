@@ -26,7 +26,7 @@ foreach ($items as $item)
 
 if (count($items) > 0)
 {
-    $messageInfo = "Etat des dossier modifiés en " . $title;
+    $messageInfo = "Etat des dossiers modifiés en " . $title;
 }
 else
     $messageInfo = "NO";

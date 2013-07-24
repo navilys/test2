@@ -244,6 +244,7 @@ function exportInbox(){
 }
 
 function exportInboxNpai(npaiOrAdr, fileType) {
+
     IdInbox = myApp.getIdInbox();   
     if (!npaiOrAdr)
         npaiOrAdr = 'npai';
@@ -2949,7 +2950,7 @@ function doublon(uidTask, fldNamStat, fldValStat){
                   if(typeof(resp.existCaseElected)!= 'undefined' && resp.existCaseElected ===true){
                     var _CaseElected = resp.caseElected;
 
-                    var _msg_make_dublon = totalDuplicRecords + " cases were found duplicates. <b>The case #"+ _CaseElected.APP_NUMBER+" has the status "+fldValStat+"</b>. Therefore this case is to be maintained and other cases be eliminated. Are you sure to continue this operation?";
+                                    var _msg_make_dublon = totalDuplicRecords + " demande(s) trouvée(s) en doublon(s). <b><br /> La Demande N&deg;" + _CaseElected.APP_NUMBER + " a d&eacute;j&agrave; &eacute;t&eacute; produite</b>. Cette derni&egrave;re sera conserv&eacute; et les doublons correspondants supprim&eacute;. &Ecirc;tes-vous s&ucirc;r de vouloir continuer l&acute;op&eacute;ration?";
                     PMExt.confirm(_('ID_CONFIRM'),_msg_make_dublon, function(){
                       Ext.MessageBox.show({
                           msg : 'wait while eliminating repeated cases...',
