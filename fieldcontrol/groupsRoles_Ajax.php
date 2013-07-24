@@ -173,11 +173,11 @@ switch ($_POST['action'])
                 $arrData[] = $results;
             }
         }*/
-      $totalRows ++;
-      $results['CON_VALUE'] = str_replace(array("<", ">"), array("&lt;", "&gt;"), $results['GRP_TITLE']);
-      $results['GRP_TASKS'] = isset($aTask[$results['GRP_UID']]) ? $aTask[$results['GRP_UID']] : 0;
-      $results['GRP_USERS'] = isset($aMembers[$results['GRP_UID']]) ? $aMembers[$results['GRP_UID']] : 0;
-      $arrData[] = $results;
+        $totalRows ++;
+                $results['CON_VALUE'] = str_replace(array("<", ">"), array("&lt;", "&gt;"), $results['GRP_TITLE']);
+                $results['GRP_TASKS'] = isset($aTask[$results['GRP_UID']]) ? $aTask[$results['GRP_UID']] : 0;
+                $results['GRP_USERS'] = isset($aMembers[$results['GRP_UID']]) ? $aMembers[$results['GRP_UID']] : 0;
+                $arrData[] = $results;
       
     }
     $result = new StdClass();

@@ -15,6 +15,7 @@ G::loadClass ( 'pmFunctions' );
     //$value= $_POST['function'];
     $value = get_ajax_value('action');
   }
+  $_POST['sw_pm_inbox'] = isset($_POST['sw_pm_inbox'])? $_POST['sw_pm_inbox']: 0;
 switch ($value)
 {
 	case 'RelationList':
@@ -94,6 +95,31 @@ switch ($value)
 			$delete = executeQuery ($delQuery);
 		}
 		
+		// INSERT IN PMT_PM_INBOX_ROLES (SHOW - HIDDEN INBOX PM)
+		if (isset ( $_POST ['rolID'] )) {
+			
+			$query = "SELECT PM_ID FROM PMT_PM_INBOX_ROLES WHERE PM_ROL_CODE = '".$_POST ['rolID']."' ";
+			$query1 = executeQuery($query);
+			
+			$pmId = $query1[1]['PM_ID'];
+			
+			if($pmId){ 
+				
+				$updatepm = "UPDATE PMT_PM_INBOX_ROLES SET PM_SW_INBOX = '" .$_POST ['sw_pm_inbox']."' WHERE PM_ROL_CODE = '". $_POST ['rolID'] ."' AND PM_ID = '". $pmId ."' ";
+				executeQuery($updatepm);
+			}
+			else{
+						$insertpm = "INSERT INTO PMT_PM_INBOX_ROLES (
+						PM_ROL_CODE,
+						PM_SW_INBOX ) 
+						VALUES
+						('" . $_POST ['rolID'] . "',
+						 '" . $_POST ['sw_pm_inbox'] . "')";
+						executeQuery($insertpm);
+			}
+		}
+		// END INSERT PMT_PM_INBOX_ROLES
+		
 		$data = json_decode ( $_POST ['arrayRelation'] );
 		
 		
@@ -107,7 +133,7 @@ switch ($value)
 			$positionField = $position [1] ['POSITION'];
 			$positionField = $positionField + 1;
 							
-			$insert = "INSERT INTO  PMT_INBOX_ROLES (  
+			$insert = "INSERT INTO PMT_INBOX_ROLES (  
 					ROL_CODE,
 					ID_INBOX,
 					DESCRIPTION,
@@ -126,8 +152,10 @@ switch ($value)
 			$res = true;
 		
 		}
+		
+		
 		$save = array ('success' => $res );
 		echo json_encode ( $save );
 		break;
-	
-}
+		}
+ 

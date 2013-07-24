@@ -77,6 +77,22 @@ Ext.onReady(function(){
       disabled : false
   });
   
+  var sw_checked = true;
+  
+  if(SW_INBOX == 1)
+  	sw_checked = true;
+  else
+  	sw_checked = false;
+  
+  var checkboxTool = {
+                    xtype: 'checkbox',
+                    name: 'enabled_inbox_rol',
+                    boxLabel: 'Enabled Show Inbox',
+                    id : 'enabled_inbox_rol',
+                    checked: sw_checked
+                    };
+    	
+    
     contextMenu = new Ext.menu.Menu({
         items : [deleteButton,'-',ActionButton,'-',saveButton]
     });
@@ -188,7 +204,7 @@ Ext.onReady(function(){
     store     : store,
     cm        : cmodel,
     sm        : smodel,
-    tbar      : [deleteButton,'-',ActionButton,  '-',saveButton],
+    tbar      : [deleteButton,'-',ActionButton,  '-',saveButton,'-',checkboxTool],
     bbar      : bbarpaging,
     listeners : {
     	"render": {
@@ -319,12 +335,18 @@ onMessageContextMenu = function (grid, rowIndex, e) {
 	{  
 	      Ext.MessageBox.show({ msg: _('ID_PROCESSING'), wait:true,waitConfig: {interval:200} });
 	       //gName = rowSelected.data.ID_INBOX;
+	       var enabledInbox = Ext.getCmp('enabled_inbox_rol').getValue();
+	       var sw_pm_inbox = 0;
+	       if(enabledInbox)
+	       		sw_pm_inbox = 1;
+	       
 	       Ext.Ajax.request({
 	        url: 'inboxRelation_Ajax',
 	        params: {
 	        		action: 'saveDragDropRelation',
 	        		arrayRelation : arrayRelation,
-	          		rolID :  rolID
+	          		rolID :  rolID,
+	          		sw_pm_inbox : sw_pm_inbox
 	          		},
 	        success: function(r,o){
 	          		Ext.MessageBox.hide();

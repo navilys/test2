@@ -43,15 +43,15 @@ Ext.onReady(function () {
   Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
   Ext.QuickTips.init();
 
-  	var i;
+  var i;
 	var j = 0;
 	var sw = 0;
 	var f = 1;
-	var a = '';
-	var b = '';
+	var b;
+	var a;
 	var itemsOptions ={};
 	for ( i=0;  i < arrayOptions.length;  i++) 
-	{
+	{		
 		if(arrayOptions[i].TYPE == 'DROPDOWN')
 		{
 			store = " store_" + arrayOptions[i].FIELD_NAME + " = new Ext.data.Store({ proxy : new Ext.data.HttpProxy({url: 'ajaxConfigUsers.php?fieldName=' + arrayOptions[i].FIELD_NAME}),reader : new Ext.data.JsonReader({root   : 'data',	fields : [	{name : 'ID'},	{name : 'NAME'}] }) });" + " store_" + arrayOptions[i].FIELD_NAME + ".load(); ";
