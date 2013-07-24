@@ -98,10 +98,10 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 		$newFields['APP_DATA']['NUM_DOSSIER'] = $APP_NUMBER_DOSSIER;
   		$newFields['APP_DATA']['FLG_INITUSERUID'] = $auxUsrUID;
   		$newFields['APP_DATA']['FLG_INITUSERNAME'] = $auxUsruname;
-		//$newFields['APP_DATA']['VALIDATION'] = isset($newFields['APP_DATA']['VALIDATION']) ? $newFields['APP_DATA']['VALIDATION'] :'0';
-
-    $newFields = str_replace("'","'",$newFields ['APP_DATA']);  
+		//$newFields['APP_DATA']['VALIDATION'] = isset($newFields['APP_DATA']['VALIDATION']) ? $newFields['APP_DATA']['VALIDATION'] :'0'; 
 	
+		$newFields = str_replace("'","'",$newFields ['APP_DATA']);  
+	 
 		//$newFields['APP_DATA'] = array_replace_recursive($newFields , ( array ) $DYNAFORMDATA);
 		//$newFields['APP_DATA'] = G::array_merges($newFields , ( array ) $DYNAFORMDATA);
 		$newFields["APP_DATA"] = array_merge( $newFields, $_POST['form'] );
@@ -142,6 +142,26 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
   			insertHistoryLogPlugin($APP_UID,$USR_UID,$CURRENTDATETIME,$version,$newAPP_UID,'Modification'); // PM function in aquitineProject Plugin		    
 		  	DuplicateMySQLRecord('APP_HISTORY','APP_UID',$APP_UID,$newAPP_UID);
 		  	
+		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	        $startTasks = executeQuery($query);
+	        foreach($startTasks as $rowTask){
+		        $taskId = $rowTask['TAS_UID'];
+		        $stepsByTask = getStepsByTask($taskId);
+	            foreach ($stepsByTask as $caseStep){
+				    $caseStepRes[] = 	 $caseStep->getStepUidObj();
+			    }
+			    break;
+	        }
+	        //G::pr($caseStepRes);die;
+			$totStep = 0;
+			foreach($caseStepRes as $index)
+			{
+				$stepUid = $index;
+				executeTriggersMon($PRO_UID, $newAPP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+				executeTriggersMon($PRO_UID, $newAPP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+				$totStep++;
+			} 
+			
 		  	$resInfo = PMFDerivateCase($newAPP_UID, 1,true, $USR_UID); 
 			$_SESSION['USER_LOGGED'] = $auxUsrUID ;
     		$_SESSION['USR_USERNAME'] = $auxUsruname;
