@@ -18,12 +18,12 @@
 
 //GLOBAL : recupere le role pour l'affichage des champs des formulaires
 function convergence_getUserRole($usr_uid){
-	$query = "SELECT USR_ROLE FROM USERS WHERE USR_UID='".$usr_uid."'";
+    $query = "SELECT USR_ROLE FROM USERS WHERE USR_UID='".$usr_uid."'";
     $result = executeQuery($query);
     $role='';
     if(isset($result))
         $role = $result[1]['USR_ROLE'];
-	return $role;
+    return $role;
    
 }
 
@@ -33,7 +33,7 @@ function convergence_getUserRole($usr_uid){
 function convergence_changeStatut($app_uid, $statut, $labelLog = '') {
     
     try {
-    	$oCase = new Cases ();
+        $oCase = new Cases ();
         $Fields = $oCase->loadCase ($app_uid);
         $oldStatut = $Fields['APP_DATA']['STATUT'];
         $Fields['APP_DATA']['STATUT'] = $statut;
@@ -60,7 +60,7 @@ function convergence_changeStatut($app_uid, $statut, $labelLog = '') {
 function convergence_changeStatutWithoutHistory($app_uid, $statut) {
     
     try {
-    	$oCase = new Cases ();
+        $oCase = new Cases ();
         $Fields = $oCase->loadCase ($app_uid);
         $Fields['APP_DATA']['STATUT'] = $statut;
         
@@ -121,10 +121,10 @@ function  insertHistoryLogPlugin($APP_UID,$USR_UID,$CURRENTDATETIME,$VERSION,$NE
     $qSelectVersion = executeQuery($selectVersion);
     $versionHistory = 0;
     if(sizeof($qSelectVersion))
-    	$versionHistory = $qSelectVersion[1]['VERSION'];
+        $versionHistory = $qSelectVersion[1]['VERSION'];
     
     $versionHistory = $versionHistory + 1;
-    	
+        
     $ACTION = addslashes($ACTION);
     
     $Insertdata="INSERT INTO PMT_HISTORY_LOG (
@@ -144,9 +144,9 @@ function  insertHistoryLogPlugin($APP_UID,$USR_UID,$CURRENTDATETIME,$VERSION,$NE
     $resultInsData=executeQuery($Insertdata);
     
     if ($NEWAPP_UID != '' || $NEWAPP_UID != 0) {
-	    $data = array();
-	    $data['STATUT'] = '0';
-	    convergence_updateDemande($APP_UID,$data);
+        $data = array();
+        $data['STATUT'] = '0';
+        convergence_updateDemande($APP_UID,$data);
     }
 }
 
@@ -177,31 +177,31 @@ function FredirectTypo3($APP_UID) {
     else {
         if(isset($DATA['FLAG_ACTION'])){
             
-        	if($DATA['FLAG_ACTION'] == 'actionCreateCase'){
+            if($DATA['FLAG_ACTION'] == 'actionCreateCase'){
 
-            	$query = "SELECT ID_INBOX FROM PMT_STATUT WHERE UID = '".$DATA['STATUT']."'";
-            	$result = executeQuery($query);
-            	if(count($result))
-            		$inbox = isset($result[1]['ID_INBOX'])?$result[1]['ID_INBOX']:"";
-            	
-            	if($inbox)
-            	{
-            		$node = 'NEW_OPTION_'.$inbox;
-            		echo "<html><head>
-            		<script language='javascript'> 
-            		parent.location.href = 'http://".$_SERVER['HTTP_HOST']."/sys".$DATA['SYS_SYS']."/".$DATA['SYS_LANG']."/".$DATA['SYS_SKIN']."/convergenceList/inboxDinamic.php?idInbox=".$inbox."';
-            		var treepanel = parent.parent.Ext.getCmp('tree-panel');
-            		var node = treepanel.getNodeById('".$node."');
-    				node.select();        		
-            		</script></head></html>";
-	                die(); 
-            	}else{
-            		echo "<script language='javascript'>
-            		parent.Ext.getCmp('gridNewTab').store.reload();
-	                parent.Ext.getCmp('win2').hide();
-	                </script>";		
-	                die();
-            	}  
+                $query = "SELECT ID_INBOX FROM PMT_STATUT WHERE UID = '".$DATA['STATUT']."'";
+                $result = executeQuery($query);
+                if(count($result))
+                    $inbox = isset($result[1]['ID_INBOX'])?$result[1]['ID_INBOX']:"";
+                
+                if($inbox)
+                {
+                    $node = 'NEW_OPTION_'.$inbox;
+                    echo "<html><head>
+                    <script language='javascript'> 
+                    parent.location.href = 'http://".$_SERVER['HTTP_HOST']."/sys".$DATA['SYS_SYS']."/".$DATA['SYS_LANG']."/".$DATA['SYS_SKIN']."/convergenceList/inboxDinamic.php?idInbox=".$inbox."';
+                    var treepanel = parent.parent.Ext.getCmp('tree-panel');
+                    var node = treepanel.getNodeById('".$node."');
+                    node.select();              
+                    </script></head></html>";
+                    die(); 
+                }else{
+                    echo "<script language='javascript'>
+                    parent.Ext.getCmp('gridNewTab').store.reload();
+                    parent.Ext.getCmp('win2').hide();
+                    </script>";     
+                    die();
+                }  
             }
             if($DATA['FLAG_ACTION'] == 'editForms'){
                 $DYN_UID = $DATA['DYN_UID'];
@@ -224,9 +224,9 @@ function FredirectTypo3($APP_UID) {
             }
             if($DATA['FLAG_ACTION'] == 'actionAjax'){
                 if(isset($DATA['FLG_INITUSERUID_DOUBLON']) && isset($DATA['FLG_INITUSERNAME_DOUBLON'])){
-									$_SESSION['USER_LOGGED'] = $DATA['FLG_INITUSERUID_DOUBLON'];
-									$_SESSION['USR_USERNAME'] = $DATA['FLG_INITUSERNAME_DOUBLON'];                 	
-								}                 
+                                    $_SESSION['USER_LOGGED'] = $DATA['FLG_INITUSERUID_DOUBLON'];
+                                    $_SESSION['USR_USERNAME'] = $DATA['FLG_INITUSERNAME_DOUBLON'];                  
+                                }                 
                 header ( "Content-Type: text/plain" );
                 $paging = array ('success' => true, 'messageinfo' => 'Operation Completed');
                 echo G::json_encode ( $paging );
@@ -375,8 +375,8 @@ function make_dedoublonage($process,$app_id,$debug = 0) {
 
     $doublon = 0;
     
-	if($fields['FLAG_NON_DOUBLON'] == 1)
-	     return $doublon;
+    if($fields['FLAG_NON_DOUBLON'] == 1)
+         return $doublon;
     
     $where = $whereLev = $whereSound = 'STATUT !=0 AND STATUT !=999 AND NUM_DOSSIER !="'.$fields['NUM_DOSSIER'].'"';
     
@@ -447,7 +447,7 @@ function getAllDoublon($process,$app_id) {
     //recuperation des variable du formulaire
     $fields = convergence_getAllAppData($app_id);
 
-    $where = 'STATUT !=0 AND STATUT !=999 AND NUM_DOSSIER !="'.$fields['NUM_DOSSIER'].'" AND FLAG_NON_DOUBLON IS NULL';
+    $where = 'STATUT !=0 AND STATUT !=999 AND NUM_DOSSIER !="'.$fields['NUM_DOSSIER'].'" AND ( FLAG_NON_DOUBLON IS NULL OR ( FLAG_NON_DOUBLON =1 AND "'.$fields['NUM_DOSSIER'].'" < APP_NUMBER))';
     
     
     $getTableName = 'SELECT * FROM PMT_CONFIG_DEDOUBLONAGE WHERE CD_PROCESS_UID="'.$process.'"';
@@ -480,12 +480,12 @@ function getAllDoublon($process,$app_id) {
 //GLOBAL
 function convergence_getFrenchDate()
 {
-	return date('d/m/Y');
+    return date('d/m/Y');
 }
 //GLOBAL
 function convergence_getAS400Date()
 {
-	return G::CurDate('d.m.Y');
+    return G::CurDate('d.m.Y');
 }
 
 //GLOBAL
@@ -613,7 +613,7 @@ function convergence_concatFiles($files) {
 }
 
 //GLOBAL
-function convergence_exportToAS400($process_id, $file_base, $code, $liste = null, $makeRetourProdTxtForRecette = 0) {
+function convergence_exportToAS400($process_id, $file_base, $code, $liste = null, $makeRetourProdTxtForRecette = 0, $onlyThisCodeOper = 0) {
     if(!isset($process_id)){
         return 'Le process_uid n\'est pas renseigné pour l\'export de fichier';
     }
@@ -634,27 +634,32 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
         $value = "'".implode("','", $liste)."'";
         $config['CONFIG_WHERE'] = ' AND APP_UID IN('.$value.')';
     }    
-    /*******  récupération des different code opération pour le dispositif et génération d'un fichier de production par code ***/
-     $sqlOper = 'SELECT DISTINCT(NUM_OPER) FROM PMT_LISTE_OPER';
-     $resOper = executeQuery($sqlOper);
-     $listOper = array();
-     if(isset($resOper) && count($resOper) > 0){
+    /*     * *****  récupération des different code opération pour le dispositif et génération d'un fichier de production par code ** */
+    $whereOper = ' WHERE 1';
+    // Si l'on ne souhaite lancer la production que sur un seul code opération
+    if (intval($onlyThisCodeOper) != 0)
+    {
+        $whereOper .= ' AND NUM_OPER = ' . intval($onlyThisCodeOper);
+    }
+    $sqlOper = 'SELECT DISTINCT(NUM_OPER) FROM PMT_LISTE_OPER' . $whereOper;
+    $resOper = executeQuery($sqlOper);
+    $listOper = array();
+    if(isset($resOper) && count($resOper) > 0){
          foreach($resOper as $operation){
              $listOper[] = intval($operation['NUM_OPER']);
          }        
      }else{
          G::pr('Aucun dispositif défini dans la table PMT_LISTE_OPER');die;
      }
-     //G::pr($resOper);die;
+    //G::pr($resOper);die;
     /********/    
     $app_uid = array();
     $nb_result = 0; 
     foreach($listOper as $codeOper){
-        if(count($listOper) > 1)
+        if (count($listOper) > 1 || $onlyThisCodeOper != 0)
             $whereCodeOper = ' AND CODE_OPERATION ='.$codeOper;            
         else
             $whereCodeOper = '';
-        
         $dateFile = date("YmdHis");
         $file = $file_base.$codeOper.'_'.$dateFile.'.txt';
         
@@ -772,7 +777,7 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
 function convergence_updateAllStatutDemandes($app_uid,$statutTo) {
   if(is_array($app_uid)){
     foreach($app_uid as $uid){
-	convergence_changeStatut($uid, $statutTo);
+    convergence_changeStatut($uid, $statutTo);
     }
   }
 }
@@ -785,7 +790,7 @@ function convergence_updateAllReproductionDemandes($app_uid,$flagTo) {
   if(is_array($app_uid)){
     $data['REPRODUCTION_CHQ'] = $flagTo;
     foreach($app_uid as $uid){
-	convergence_updateDemande($uid,$data);
+    convergence_updateDemande($uid,$data);
     }
   }
 }
@@ -797,7 +802,7 @@ function convergence_updateAllReproductionDemandes($app_uid,$flagTo) {
 function convergence_updateAllStatutRemboursement($app_uid,$statutTo) {
   if(is_array($app_uid)){
     foreach($app_uid as $uid){
-	convergence_changeStatut($uid, $statutTo);
+    convergence_changeStatut($uid, $statutTo);
     }
   }
 }
@@ -836,9 +841,9 @@ function convergence_checkReproduction($line_import){
             
         }
         catch (Exception $e) {
-		var_dump($e);
-		die();
-	}    
+        var_dump($e);
+        die();
+    }    
     }
     return 0;
 }
@@ -847,21 +852,21 @@ function convergence_checkReproduction($line_import){
 //GLOBAL
 function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0) {     
     if ($app_id != '') {
-	try{
-		$query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
-		    WHERE AD.APP_UID="' . $app_id . '" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
-		   AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';                
+    try{
+        $query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
+            WHERE AD.APP_UID="' . $app_id . '" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
+           AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';                
                 $result = executeQuery($query);
-		if (is_array($result) and count($result) > 0) {
-		    $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
-		}
+        if (is_array($result) and count($result) > 0) {
+            $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
+        }
         
-	}
-	catch (Exception $e) {
-		G::pr('Erreur lors de la récupération du document');
-		G::pr($e);
-		die();
-	}    
+    }
+    catch (Exception $e) {
+        G::pr('Erreur lors de la récupération du document');
+        G::pr($e);
+        die();
+    }    
 
         if (!isset($process_uid)) {
              G::pr( 'Le process_uid n\'est pas renseigné pour configurer l\'import du fichier');die;
@@ -980,7 +985,7 @@ function convergence_updateDateProd($num_prod, $update){
     try{
         $query = 'SELECT APP_UID FROM PMT_LISTE_PROD WHERE NUM_DOSSIER ='.intval($num_prod);
         $result = executeQuery($query);
-	convergence_updateDemande($result[1]['APP_UID'],$update);
+    convergence_updateDemande($result[1]['APP_UID'],$update);
     }
     catch (Exception $e) {
         var_dump($e);
@@ -996,11 +1001,11 @@ function convergence_updateListeProd($app_id, $res){
         $code = $resCode[1]['CODE_OPERATION'];
        /* $query = 'SELECT APP_NUMBER FROM PMT_LISTE_PROD WHERE APP_UID =\''.$field['APPLICATION'].'\'';
         $result = executeQuery($query);
-	$data['NUM_DOSSIER'] = $result[1]['APP_NUMBER'];*/
-	$data['CODE_OPER'] = $code;
-	$data['NB_DOSSIERS'] = count($res); //doublon
-	convergence_updateDemande($field['APPLICATION'], $data);
-	
+    $data['NUM_DOSSIER'] = $result[1]['APP_NUMBER'];*/
+    $data['CODE_OPER'] = $code;
+    $data['NB_DOSSIERS'] = count($res); //doublon
+    convergence_updateDemande($field['APPLICATION'], $data);
+    
     }
     catch (Exception $e) {
         var_dump($e);
@@ -1025,13 +1030,13 @@ function convergence_updateListeRemboursement($app_id, $res){
     $field = convergence_getAllAppData($app_id);
     try{
         $query = 'SELECT APP_NUMBER FROM PMT_LISTE_RMBT WHERE APP_UID =\''.$field['APPLICATION'].'\'';
-        $result = executeQuery($query);	
+        $result = executeQuery($query); 
         $queryCode = 'SELECT CODE_OPERATION FROM PMT_REMBOURSEMENT WHERE APP_UID = \''.$res[0].'\'';
         $resCode = executeQuery($queryCode);
         $data['CODE_OPER'] = $resCode[1]['CODE_OPERATION'];
-	$data['NB_DOSSIERS'] = count($res); //doublon
-	convergence_updateDemande($field['APPLICATION'], $data);
-	
+    $data['NB_DOSSIERS'] = count($res); //doublon
+    convergence_updateDemande($field['APPLICATION'], $data);
+    
     }
     catch (Exception $e) {
         var_dump($e);
@@ -1053,7 +1058,7 @@ function convergence_InsertLineImport($line,$config){
     }
      catch (Exception $e) {
         G::pr('Erreur : impossible d\'exécuter la requête suivante : "INSERT INTO '.$config['TABLENAME'].'('.$key.') VALUES ('.$value.')"');
-	G::pr($e);
+    G::pr($e);
         die();
     }  
 }
@@ -1073,7 +1078,7 @@ function convergence_updateTitreRmb($line,$config){
     }
      catch (Exception $e) {
         G::pr('Erreur : impossible d\'exécuter la requête');
-	G::pr($e);
+    G::pr($e);
         die();
     }  
 }
@@ -1123,12 +1128,12 @@ function convergence_changeStatutFromImport($data, $statut = 6) {
 
 //GLOBAL
 function modifyAdresseofDemande($app_uid,$case_uid_demande) {
-	//je recupere mes valeurs courantes
+    //je recupere mes valeurs courantes
     $datas = convergence_getAllAppData($app_uid);
         $noMergeDatas = array('SYS_LANG','SYS_SKIN','SYS_SYS','APPLICATION','PROCESS','TASK','INDEX','USER_LOGGED','USER_USERNAME','PIN','FLAG_ACTION','APP_NUMBER');
-	//on modifie le case de la demande
-	$oCase = new Cases ();
-	$Fields = $oCase->loadCase ($case_uid_demande);
+    //on modifie le case de la demande
+    $oCase = new Cases ();
+    $Fields = $oCase->loadCase ($case_uid_demande);
         foreach ($datas as $key => $value) {                
             if(!in_array($key, $noMergeDatas))            
                 $Fields['APP_DATA'][$key] = $value;           
@@ -1141,30 +1146,30 @@ function modifyAdresseofDemande($app_uid,$case_uid_demande) {
 
 //GLOBAL
 function modifyDateExpedition($app_uid,$case_uid_liste_prod) {
-	//jerecupere mes valeurs courantes
-	$datas = convergence_getAllAppData($app_uid);
+    //jerecupere mes valeurs courantes
+    $datas = convergence_getAllAppData($app_uid);
 
-	//on modifie le case de la demande
-	$oCase = new Cases ();
-	$Fields = $oCase->loadCase($case_uid_liste_prod);
-	$Fields['APP_DATA']['DATE_EXP'] = $datas['dateExp'];
+    //on modifie le case de la demande
+    $oCase = new Cases ();
+    $Fields = $oCase->loadCase($case_uid_liste_prod);
+    $Fields['APP_DATA']['DATE_EXP'] = $datas['dateExp'];
 
-	$oCase->updateCase($case_uid_liste_prod, $Fields);
+    $oCase->updateCase($case_uid_liste_prod, $Fields);
         
 }
 
 //GLOBAL
 function modifyDateVirement($app_uid,$case_uid_liste_rmbt) {
-	//je recupere mes valeurs courantes
-	$datas = convergence_getAllAppData($app_uid);
-	$datasForm = convergence_getAllAppData($case_uid_liste_rmbt);
+    //je recupere mes valeurs courantes
+    $datas = convergence_getAllAppData($app_uid);
+    $datasForm = convergence_getAllAppData($case_uid_liste_rmbt);
         
        
-	//on modifie le case de la demande
-	$oCase = new Cases ();
-	$Fields = $oCase->loadCase($case_uid_liste_rmbt);
-	$Fields['APP_DATA']['DATE_VIREMENT'] = $datas['dateVir'];
-	$oCase->updateCase($case_uid_liste_rmbt, $Fields);
+    //on modifie le case de la demande
+    $oCase = new Cases ();
+    $Fields = $oCase->loadCase($case_uid_liste_rmbt);
+    $Fields['APP_DATA']['DATE_VIREMENT'] = $datas['dateVir'];
+    $oCase->updateCase($case_uid_liste_rmbt, $Fields);
         $query = 'SELECT APP_UID FROM PMT_REMBOURSEMENT WHERE STATUT = 9 AND NUM_DOSSIER IN('.$datasForm['LISTE_DOSSIER'].')';
         $result = executeQuery($query);
         if(isset($result) && count($result) > 0){
@@ -1180,48 +1185,75 @@ function modifyDateVirement($app_uid,$case_uid_liste_rmbt) {
  *  $groupby      @string     le trie voulu
  */
 //LOCALE mais doit etre GLOBAL
-function convergence_countCaseToProduct($statut) {
-    //$query = 'SELECT COUNT(APP_UID) as NB, THEMATIQUE_LABEL FROM PMT_DEMANDES WHERE STATUT = '.$statut.' OR (STATUT = 6 AND REPRODUCTION_CHQ = "O") GROUP BY THEMATIQUE';
-    $query = 'SELECT APP_UID, THEMATIQUE, THEMATIQUE_LABEL FROM PMT_DEMANDES WHERE STATUT = '.$statut.' OR (STATUT = 6 AND REPRODUCTION_CHQ = "O")';
+function convergence_countCaseToProduct($statut, $codeOper) 
+{
+    $queryCodeOper = '';
+    if(isset($codeOper) && $codeOper != 0)
+    {
+        $queryCodeOper = ' AND CODE_OPERATION = '.$codeOper;
+    }
+    $query = 'SELECT APP_UID, THEMATIQUE, THEMATIQUE_LABEL, CODE_OPERATION, T.LABEL FROM PMT_DEMANDES as D INNER JOIN PMT_TYPE_CHEQUIER as T ON (D.CODE_CHEQUIER = T.CODE_CD) WHERE (STATUT = '.$statut.' OR (STATUT = 6 AND REPRODUCTION_CHQ = "O")) '.$queryCodeOper;
     $res = executeQuery($query);
-    
     $count = array();
-    if(count($res)){
+    if(count($res))
+    {
         $msg['NOTHING'] = 0;
         $msg['HTML'] = 'Vous allez lancer la production de : <br />';
-        foreach($res as $thema){
-            
+        foreach($res as $thema)
+        {
             $count[$thema['THEMATIQUE']]['label'] = $thema['THEMATIQUE_LABEL'];
-            $count[$thema['THEMATIQUE']]['total'] ++;         
+            $count[$thema['THEMATIQUE']]['total'] ++;
+            $count[$thema['THEMATIQUE']]['codeOper'] = $thema['CODE_OPERATION'];
+            $count[$thema['THEMATIQUE']][$thema['LABEL']]['chequier'] = $thema['LABEL'];
+            $count[$thema['THEMATIQUE']][$thema['LABEL']]['total'] ++;
         }
-         
-        foreach($count as $tab){
+        $queryRepro = 'SELECT COUNT(CODE_OPERATION) as NB, CODE_OPERATION FROM PMT_DEMANDES WHERE STATUT = 6 AND REPRODUCTION_CHQ = "O" '.$queryCodeOper.' GROUP BY CODE_OPERATION';
+        $resRepro = executeQuery($queryRepro);
+        if(count($resRepro))
+        {
+            $reproTab = array();
+            foreach($resRepro as $repro)
+            {
+                (intval($repro['NB']) > 1 ) ? $s = 's' : $s = '';
+                $reproTab[$repro['CODE_OPERATION']] = 'dont '.$repro['NB'].' reproduction'.$s.'<br />';
+            }
+        }
+        $queryComp = 'SELECT COUNT(CODE_OPERATION) as NB, CODE_OPERATION FROM PMT_DEMANDES WHERE STATUT = 2 AND COMPLEMENT_CHQ = "1" '.$queryCodeOper.' GROUP BY CODE_OPERATION';
+        $resComp = executeQuery($queryComp);
+        if(count($resComp))
+        {
+            $compTab = array();
+            foreach($resComp as $comp)
+            {
+                (intval($comp['NB']) > 1 ) ? $s = 's' : $s = '';
+                $compTab[$comp['CODE_OPERATION']] = 'dont '.$comp['NB'].' chéquier'.$s.' de complément<br />';
+            }
+        }
+        foreach($count as $tab)
+        {
             (intval($tab['total']) > 1) ? $s = 's' : $s = '';
             $nb = $tab['total'];
             $th = $tab['label'];
                                
             $msg['HTML'] .= "-  $nb dossier$s pour la thématique :  $th <br />" ;
+            $msg['HTML'] .= $reproTab[$tab['codeOper']];
+            $msg['HTML'] .= $compTab[$tab['codeOper']];
+            foreach($tab as $chequier)
+            {   
+                if(is_array($chequier))
+                {
+                    $nbCheq = $chequier['total'];
+                    $lbCheq = $chequier['chequier'];
+                    $msg['HTML'] .= "<span style=\"margin-left:5em\">$lbCheq : $nbCheq</span><br />" ;
+                }
+            }
         }
-        
-        $query = 'SELECT COUNT(APP_UID) as NB FROM PMT_DEMANDES WHERE STATUT = 6 AND REPRODUCTION_CHQ = "O"';
-        $res = executeQuery($query);
-        if(count($res) && isset($res[1]['NB']) && $res[1]['NB'] != 0){
-             (intval($res[1]['NB']) > 1 ) ? $s = 's' : $s = '';
-             $msg['HTML'] .= 'dont '.$res[1]['NB'].' reproduction'.$s.'<br />';
-        }
-        $query = 'SELECT COUNT(APP_UID) as NB FROM PMT_DEMANDES WHERE STATUT = 2 AND COMPLEMENT_CHQ = "1"';
-        $res = executeQuery($query);
-        if(count($res) && isset($res[1]['NB']) && $res[1]['NB'] != 0){
-             (intval($res[1]['NB']) > 1 ) ? $s = 's' : $s = '';
-             $msg['HTML'] .= 'dont '.$res[1]['NB'].' chéquier'.$s.' de complément'.$s.'<br />';
-        }
-        
-    }else{
-        $msg['HTML'] = "Ancun dossier à produire ! Veuillez annuler l'opération";
+    }
+    else
+    {
+        $msg['HTML'] = "Aucun dossier à produire ! Veuillez annuler l'opération";
         $msg['NOTHING'] = 1;
     }
-     //$msg = 'Ancun dossier à produire! Veuillez annuler l\'opération';
-     //$msg = $msg;
     return $msg;
 }
 
