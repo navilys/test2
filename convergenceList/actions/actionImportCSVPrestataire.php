@@ -214,7 +214,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     {
         $totRow = sizeof($row);
         $totIni = 1;
-        if($totalCases >= 100)
+        if($totalCases >= 5)
         {
             foreach($row as $value)
             {
@@ -571,7 +571,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     foreach ($dataCSV as $row) 
     {
         
-        if($totalCases >= 100)
+        if($totalCases >= 5)
         {
             foreach($row as $value)
             {
@@ -821,6 +821,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         $totalCases++;
 
     }
+    genDataReport($tableName);
      # create file tmp
     if($csv != '')
     {
@@ -833,7 +834,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
             exit;  
         }  
         fclose($handle);  
-    } 
+    }
     # end create file tmp
     
     unset($_SESSION['REQ_DATA_CSV']);
@@ -932,7 +933,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
     foreach ($dataCSV as $row) 
     {
-        if($totalCases >= 100)
+        if($totalCases >= 5)
         {
             foreach($row as $value)
             {
@@ -1183,7 +1184,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         
         }
     }
-    
+    genDataReport($tableName);
      # create file tmp
     if($csv != '')
     {

@@ -63,7 +63,7 @@ if(sizeof($select))
     if($usrUidIniCase == $_SESSION['USER_LOGGED'])
     {
         $userActiveForm = 1;
-    } 
+    }
 }
 # End Get Dynaforms
 

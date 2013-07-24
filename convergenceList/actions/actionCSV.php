@@ -11,6 +11,7 @@ function getProUid($tableName){
     if(is_array($aResult) && count($aResult)>0){$proUid =$aResult[1]['PRO_UID'];} 
     return $proUid;
 }
+
 function getRolUserImport(){
 	require_once ("classes/model/Users.php");
     $oUser = new Users();
@@ -211,7 +212,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         $totRow = sizeof($row);
         $totIni = 1;
        //  G::pr($items);
-        if($totalCases >= 100)
+        if($totalCases >= 5)
         {
             foreach($row as $value)
             {
@@ -550,8 +551,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     {
         $totRow = sizeof($row);
         $totIni = 1;
-       //  G::pr($items);
-        if($totalCases >= 100)
+      
+        if($totalCases >= 5) 
         {
             foreach($row as $value)
             {
@@ -570,8 +571,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
                 foreach ($items as $field)
                 { 
                     $insert = "INSERT INTO PMT_IMPORT_CSV_DATA 
-                          (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION) VALUES
-                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD')";
+                          (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION) VALUES
+                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD_DELETE', '".mysql_real_escape_string($dataDeleteEdit)."' )";
                     executeQuery($insert);
                     $swInsert = 1;
                     $maxId++;
@@ -802,7 +803,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 
         }
     }
-    
+    genDataReport($tableName);
     if($csv != '')
     {
         if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
@@ -916,7 +917,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         $totRow = sizeof($row);
         $totIni = 1;
        //  G::pr($items);
-        if($totalCases >= 100)
+        if($totalCases >= 5)
         {
             foreach($row as $value)
             {
@@ -935,8 +936,8 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 foreach ($items as $field)
                 { 
                     $insert = "INSERT INTO PMT_IMPORT_CSV_DATA 
-                          (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION) VALUES
-                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD')";
+                          (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION) VALUES
+                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD_UPDATE', '".mysql_real_escape_string($dataDeleteEdit)."')";
                     executeQuery($insert);
                     $swInsert = 1;
                     $maxId++;
@@ -1128,7 +1129,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 	        $query = "SELECT APP_UID FROM $tableName WHERE $whereUpdate ";
 	        $updateData = executeQuery($query);
 	        if(sizeof($updateData))
-	        {  //print('update  '. $totalCases);
+	        {  
 	        	foreach($updateData as $index)
 	        	{	
 	        	    $oCase = new Cases ();
@@ -1150,7 +1151,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 	        	}
 	        }
 	        else 
-	        {//print('new  '. $totalCases);
+	        {
 	            $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             	$appData['FLAG_ACTION'] = 'multipleDerivation';
             	$appData['EXEC_AUTO_DERIVATE'] = 'NO';

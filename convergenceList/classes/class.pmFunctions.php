@@ -365,10 +365,10 @@ function executeTriggersMon($process, $appUid, $stepUid, $time='BEFORE', $task){
   	$obj = 'DYNAFORM';  	
   }
   $triggers = $oCase->loadTriggers ( $task, $obj, $stepUid, $time );  
- /* G::pr($triggers);	
-  print($task.'  '. $obj .'  '. $stepUid.'  '. $time);*/
+ 
   $Fields['APP_DATA'] = $oCase->ExecuteTriggers($task, $type , $stepUid, $time, $Fields['APP_DATA'] );  
   $oCase->updateCase($appUid, $Fields);
+  //G::pr($Fields['APP_DATA']);
   return true;
 }
 

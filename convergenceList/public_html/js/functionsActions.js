@@ -1843,10 +1843,11 @@ function importCSV (_uidTask){
 		        	 boxLabel: _USE_ADD,
 		             name: 'radioGroupOption',
 		             checked: true,
+		             id: 'add',
 		             listeners: {
-		        	  	change: function(){
+		        	  	'change' : function(){
 		            	 _isCheckedOption    = 'add';
-		            	 console.log(_isCheckedOption);
+		            	 //console.log(_isCheckedOption);
 		            	}
 		          	 }
 		          },
@@ -1854,12 +1855,13 @@ function importCSV (_uidTask){
 			          boxLabel: _USE_DELETE_ADD,
 			          name: 'radioGroupOption',
 			          checked: false,
+			          id: 'deleteAdd',
 			          listeners: {
-			              change: function(){
+			              'change' : function(){
 			            	_isCheckedOption    = 'deleteAdd';
 			            	_DELETE_EDIT_FIELD 	= "Delete Field";
 			            	hiddenDeleteEdit    = false;
-			                console.log(_isCheckedOption);
+			                //console.log(_isCheckedOption);
 			              }
 		          		}
 			      },   
@@ -1867,17 +1869,35 @@ function importCSV (_uidTask){
 			          boxLabel: _USE_EDIT_ADD,
 			          name: 'radioGroupOption',
 			          checked: false,
+			          id: 'editAdd',
 			          listeners: {
-			              change: function(){
+			              'change' : function(){
 			                _isCheckedOption    = 'editAdd';
 			                _DELETE_EDIT_FIELD  = "Edit Field";
 			                hiddenDeleteEdit    = false;
-			                console.log(_isCheckedOption);
+			                //console.log(_isCheckedOption);
 			              }
 			          }
 			      }  
 		            
-		     ]   
+		     ],
+		     listeners: {
+                change: function(el,val) {
+                   // console.log(val);
+                    _isCheckedOption = val.id;
+                    if(_isCheckedOption == 'deleteAdd')
+                    {
+                        _DELETE_EDIT_FIELD 	= "Delete Field";
+			            hiddenDeleteEdit    = false;
+                    }
+                    if(_isCheckedOption == 'editAdd')
+                    {
+                        _DELETE_EDIT_FIELD  = "Edit Field";
+			            hiddenDeleteEdit    = false;
+                    }
+                    console.log(_isCheckedOption);
+                }
+            } 
 	  }); 
 	  
 	  var w = new Ext.Window({
@@ -2112,7 +2132,7 @@ function importCSV (_uidTask){
 		                                	_jsonFieldsDeleteEdit = Ext.util.JSON.encode(_dblFieldsDeleteEdit); 
 		                              
 	                                }
-	                                //console.log(_jsonFieldsDeleteEdit);
+	                                //console.log(_isCheckedOption);
 	                                
 	                                if(_isCheckedOption == 'add' || (_isCheckedOption != 'add' && _jsonFieldsDeleteEdit != '' ) )
 	                                {
@@ -2369,10 +2389,11 @@ function importCSVPrestataire (_uidTask){
 		        	 boxLabel: _USE_ADD,
 		             name: 'radioGroupOption',
 		             checked: true,
+		             id: 'add',
 		             listeners: {
-		        	  	change: function(){
+		        	  	'change' : function(){
 		            	 _isCheckedOption    = 'add';
-		            	 console.log(_isCheckedOption);
+		            	 //console.log(_isCheckedOption);
 		            	}
 		          	 }
 		          },
@@ -2380,12 +2401,13 @@ function importCSVPrestataire (_uidTask){
 			          boxLabel: _USE_DELETE_ADD,
 			          name: 'radioGroupOption',
 			          checked: false,
+			          id: 'deleteAdd',
 			          listeners: {
-			              change: function(){
+			              'change' : function(){
 			            	_isCheckedOption    = 'deleteAdd';
 			            	_DELETE_EDIT_FIELD 	= "Delete Field";
 			            	hiddenDeleteEdit    = false;
-			                console.log(_isCheckedOption);
+			                //console.log(_isCheckedOption);
 			              }
 		          		}
 			      },   
@@ -2393,17 +2415,35 @@ function importCSVPrestataire (_uidTask){
 			          boxLabel: _USE_EDIT_ADD,
 			          name: 'radioGroupOption',
 			          checked: false,
+			          id: 'editAdd',
 			          listeners: {
-			              change: function(){
+			              'change' : function(){
 			                _isCheckedOption    = 'editAdd';
 			                _DELETE_EDIT_FIELD  = "Edit Field";
 			                hiddenDeleteEdit    = false;
-			                console.log(_isCheckedOption);
+			                //console.log(_isCheckedOption);
 			              }
 			          }
 			      }  
 		            
-		     ]   
+		     ],
+		     listeners: {
+                change: function(el,val) {
+                   // console.log(val);
+                    _isCheckedOption = val.id;
+                    if(_isCheckedOption == 'deleteAdd')
+                    {
+                        _DELETE_EDIT_FIELD 	= "Delete Field";
+			            hiddenDeleteEdit    = false;
+                    }
+                    if(_isCheckedOption == 'editAdd')
+                    {
+                        _DELETE_EDIT_FIELD  = "Edit Field";
+			            hiddenDeleteEdit    = false;
+                    }
+                    console.log(_isCheckedOption);
+                }
+            } 
 	  }); 
 	  
 	  
