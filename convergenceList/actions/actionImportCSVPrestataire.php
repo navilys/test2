@@ -214,7 +214,11 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     {
         $totRow = sizeof($row);
         $totIni = 1;
+<<<<<<< HEAD
         if($totalCases >= 150)
+=======
+        if($totalCases >= 50)
+>>>>>>> d6d8aea432624fccdb393ae688736bc95fe9d4cb
         {
             foreach($row as $value)
             {
@@ -571,7 +575,11 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     foreach ($dataCSV as $row) 
     {
         
+<<<<<<< HEAD
         if($totalCases >= 150)
+=======
+        if($totalCases >= 50)
+>>>>>>> d6d8aea432624fccdb393ae688736bc95fe9d4cb
         {
             foreach($row as $value)
             {
@@ -933,7 +941,11 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
     foreach ($dataCSV as $row) 
     {
+<<<<<<< HEAD
         if($totalCases >= 150)
+=======
+        if($totalCases >= 50)
+>>>>>>> d6d8aea432624fccdb393ae688736bc95fe9d4cb
         {
             foreach($row as $value)
             {

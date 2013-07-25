@@ -787,12 +787,24 @@ function convergence_updateAllStatutDemandes($app_uid,$statutTo) {
 *
 */
 function convergence_updateAllReproductionDemandes($app_uid,$flagTo) {
-  if(is_array($app_uid)){
-    $data['REPRODUCTION_CHQ'] = $flagTo;
-    foreach($app_uid as $uid){
-    convergence_updateDemande($uid,$data);
+    if (is_array($app_uid))
+    {
+        $data['REPRODUCTION_CHQ'] = $flagTo;
+        foreach ($app_uid as $uid)
+        {
+            $qRepro = 'SELECT NUM_DOSSIER FROM PMT_DEMANDES WHERE APP_UID ="' . $uid . '" AND REPRODUCTION_CHQ ="O" AND STATUT <> "0"';
+            $rRepro = executeQuery($qRepro);
+            // si c'est une demande de reproduction
+            if (isset($rRepro) && count($rRepro) > 0)
+            {
+                //on annule tout les chèques des productions précédente pour cette demande et on incrémente le nombre de reproduction.
+                $qUpdateCheque = 'UPDATE PMT_CHEQUES SET REPRODUCTION = IF(REPRODUCTION IS NULL, 1, REPRODUCTION + 1), ANNULE = 1 WHERE NUM_DOSSIER =' . $rRepro[1]['NUM_DOSSIER'];
+                $rUpdateCheque = executeQuery($qUpdateCheque);
+                //on met à jour le flag de reproduction de la demande
+                convergence_updateDemande($uid, $data);
+            }
+        }
     }
-  }
 }
 /****** //GLOBAL
 *  Met le statut En cours de remboursement sur les demandes pour les export de remboursement
@@ -821,6 +833,8 @@ function convergence_getDossiers($res, $table, $export = true){
     $liste = implode(',', $unique);    
     return $liste;
 }
+
+// n'est plus utilisé, mais après modification, peut servir pour les réédition, même num_titre et bconstante
 function convergence_checkReproduction($line_import){
     $repro = 0;
    // G::pr('-------line_import in the function --------');G::pr($line_import);
@@ -925,10 +939,7 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
             //$data contien tous les importLine
             if($childProc == 1)
                 new_case_for_import($importLine, $config);
-        }
-        // Added By Gary Meyer
-        /*if($childProc == 1)
-            $resInfo = PMFDerivateCase($app_id, 1,false, $_SESSION['USER_LOGGED']);*/
+        }       
         return $data;
     } else {
         return;
@@ -992,7 +1003,7 @@ function convergence_updateDateProd($num_prod, $update){
         die();
     }  
 }
-//GLOBAL
+//GLOBAL Inutilisé, voir pour la supprimer
 function convergence_updateListeProd($app_id, $res){
     $field = convergence_getAllAppData($app_id);
     try{// à changer et recup de la table dispositif  CODE_OPER et CODE_CHEQUIER dans demandes
@@ -1012,7 +1023,6 @@ function convergence_updateListeProd($app_id, $res){
         die();
     }  
 }
-
 //GLOBAL
 function convergence_getNumDossier($app_id){
     try{

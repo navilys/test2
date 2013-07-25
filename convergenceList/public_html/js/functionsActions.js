@@ -1811,8 +1811,8 @@ function importCSV (_uidTask){
     var _FIELD_NAME_PROCESS = 'Nom du champ (Formulaire)';
     var _COLUMN_CSV = 'Colonne (Fichier CSV)';
     var _DATA_SAVED_OK = 'Données sauvegardées avec succés!';
-    var _MSG_CASE_CREATED = 'Les cas se sont terminés avec succés.';
-    var _OPERATION_NO_COMPLETED = 'Un problème a été rencontré, l\'import n\'est peut être pas complet!';
+    var _MSG_CASE_CREATED = ' cas se sont terminés avec succés.';
+    var _OPERATION_NO_COMPLETED = 'Un problème a été rencontré, l\'import ne s\'est peut être pas effectué complètement !';
     var _MSG_ERROR = 'Une erreur est survenue lors de l\'import!';
     var _MSG_TITLE_MESSAGE      = 'Message';
     var _MSG_IMPORT_LOAD_DATA_SUCCESSFULLY = 'Import terminé avec succés!';

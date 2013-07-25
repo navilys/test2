@@ -1,7 +1,7 @@
 <?php
 
-//ini_set('error_reporting', E_ALL);
-//ini_set('display_errors', True);
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', True);
 G::LoadClass("case");
 G::LoadClass("pmFunctions");
 require_once ("classes/model/AppHistory.php");
@@ -127,7 +127,7 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
       		$_SESSION['APPLICATION_EDIT'] = $newAPP_UID;   
   			$_SESSION['USER_LOGGED'] = $auxUsrUID ;
     		$_SESSION['USR_USERNAME'] = $auxUsruname;
-    		executeTriggers($PRO_UID, $newAPP_UID ,$auxUsrUID);
+    		//executeTriggers($PRO_UID, $newAPP_UID ,$auxUsrUID);
 			
      	}
   		else	
@@ -175,5 +175,5 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 	$url = '../convergenceList/casesHistoryDynaformPage_Ajax.php?ACTIONTYPE=edit&actionAjax=historyDynaformGridPreview&DYN_UID='.$DYN_UID.'&APP_UID='.$APP_UID.'&PRO_UID='.$PRO_UID.'&CURRENTDATETIME='.$CURRENTDATETIME;
 	echo "<script language='javascript'> location.href = '".$url."'; </script>";
 	die();
-} 
+}   
 ?>
