@@ -30,7 +30,8 @@ function genDataReport ($tableName){
     $table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
     if ($table['PRO_UID'] != '') {
     	$truncateRPTable = "TRUNCATE TABLE  ".$tableName." ";
-	    $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);    		 			
+	    $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);   
+	   // print( $table['ADD_TAB_NAME'].' user '. pmTable::resolveDbSource( $table['DBS_UID'] ).' type '. $table['ADD_TAB_TYPE']. 'process'.$table['PRO_UID'].'  tabgrid '.$table['ADD_TAB_GRID']. 'tab id'.$table['ADD_TAB_UID'] ); 		 			
         $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
     }
 }
@@ -212,7 +213,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         $totRow = sizeof($row);
         $totIni = 1;
        //  G::pr($items);
-        if($totalCases >= 5)
+        if($totalCases >= 150)
         {
             foreach($row as $value)
             {
@@ -552,7 +553,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         $totRow = sizeof($row);
         $totIni = 1;
       
-        if($totalCases >= 5) 
+        if($totalCases >= 150) 
         {
             foreach($row as $value)
             {
@@ -917,7 +918,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         $totRow = sizeof($row);
         $totIni = 1;
        //  G::pr($items);
-        if($totalCases >= 5)
+        if($totalCases >= 150)
         {
             foreach($row as $value)
             {
