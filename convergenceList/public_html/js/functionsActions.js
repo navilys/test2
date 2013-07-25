@@ -1835,71 +1835,74 @@ function importCSV (_uidTask){
 	    Ext.getBody().unmask();
 	  };
 	  
-	  var radiosGroup = new Ext.form.RadioGroup({   
+var radiosGroup = new Ext.form.RadioGroup({   
         
-		     columns: 1, //display the radiobuttons in two columns   
-		     items: [   
-		          {
-		        	 boxLabel: _USE_ADD,
-		             name: 'radioGroupOption',
-		             checked: true,
-		             id: 'add',
-		             listeners: {
-		        	  	'change' : function(){
-		            	 _isCheckedOption    = 'add';
-		            	 //console.log(_isCheckedOption);
-		            	}
-		          	 }
-		          },
-		          { 
-			          boxLabel: _USE_DELETE_ADD,
-			          name: 'radioGroupOption',
-			          checked: false,
-			          id: 'deleteAdd',
-			          listeners: {
-			              'change' : function(){
-			            	_isCheckedOption    = 'deleteAdd';
-			            	_DELETE_EDIT_FIELD 	= "Delete Field";
-			            	hiddenDeleteEdit    = false;
-			                //console.log(_isCheckedOption);
-			              }
-		          		}
-			      },   
-		          { 
-			          boxLabel: _USE_EDIT_ADD,
-			          name: 'radioGroupOption',
-			          checked: false,
-			          id: 'editAdd',
-			          listeners: {
-			              'change' : function(){
-			                _isCheckedOption    = 'editAdd';
-			                _DELETE_EDIT_FIELD  = "Edit Field";
-			                hiddenDeleteEdit    = false;
-			                //console.log(_isCheckedOption);
-			              }
-			          }
-			      }  
-		            
-		     ],
-		     listeners: {
+       columns: 1, //display the radiobuttons in two columns   
+       items: [   
+            {
+            boxLabel: _USE_ADD,
+               name: 'radioGroupOption',
+               checked: true,
+               id: 'add',
+               listeners: {
+              'change' : function(){
+                _isCheckedOption    = 'add';
+                hiddenDeleteEdit    = true;
+               }
+              }
+            },
+            { 
+             boxLabel: _USE_DELETE_ADD,
+             name: 'radioGroupOption',
+             checked: false,
+             id: 'deleteAdd',
+             listeners: {
+                 'change' : function(){
+                _isCheckedOption    = 'deleteAdd';
+                _DELETE_EDIT_FIELD  = "Delete Field";
+                hiddenDeleteEdit    = false;
+                   //console.log(_isCheckedOption);
+                 }
+              }
+         },   
+            { 
+             boxLabel: _USE_EDIT_ADD,
+             name: 'radioGroupOption',
+             checked: false,
+             id: 'editAdd',
+             listeners: {
+                 'change' : function(){
+                   _isCheckedOption    = 'editAdd';
+                   _DELETE_EDIT_FIELD  = "Edit Field";
+                   hiddenDeleteEdit    = false;
+                   //console.log(_isCheckedOption);
+                 }
+             }
+         }  
+              
+       ],
+       listeners: {
                 change: function(el,val) {
                    // console.log(val);
                     _isCheckedOption = val.id;
                     if(_isCheckedOption == 'deleteAdd')
                     {
-                        _DELETE_EDIT_FIELD 	= "Delete Field";
-			            hiddenDeleteEdit    = false;
+                        _DELETE_EDIT_FIELD  = "Delete Field";
+               hiddenDeleteEdit    = false;
                     }
                     if(_isCheckedOption == 'editAdd')
                     {
                         _DELETE_EDIT_FIELD  = "Edit Field";
-			            hiddenDeleteEdit    = false;
+               hiddenDeleteEdit    = false;
+                    }
+                    if(_isCheckedOption == 'add')
+                    {
+               hiddenDeleteEdit    = true;
                     }
                     console.log(_isCheckedOption);
                 }
             } 
-	  }); 
-	  
+   });	  
 	  var w = new Ext.Window({
 	    title       : '',
 	    width       : 440,
@@ -2381,71 +2384,74 @@ function importCSVPrestataire (_uidTask){
 	    Ext.getBody().unmask();
 	  };
 	  
-	  var radiosGroup = new Ext.form.RadioGroup({   
+var radiosGroup = new Ext.form.RadioGroup({   
         
-		     columns: 1, //display the radiobuttons in two columns   
-		     items: [   
-		          {
-		        	 boxLabel: _USE_ADD,
-		             name: 'radioGroupOption',
-		             checked: true,
-		             id: 'add',
-		             listeners: {
-		        	  	'change' : function(){
-		            	 _isCheckedOption    = 'add';
-		            	 //console.log(_isCheckedOption);
-		            	}
-		          	 }
-		          },
-		          { 
-			          boxLabel: _USE_DELETE_ADD,
-			          name: 'radioGroupOption',
-			          checked: false,
-			          id: 'deleteAdd',
-			          listeners: {
-			              'change' : function(){
-			            	_isCheckedOption    = 'deleteAdd';
-			            	_DELETE_EDIT_FIELD 	= "Delete Field";
-			            	hiddenDeleteEdit    = false;
-			                //console.log(_isCheckedOption);
-			              }
-		          		}
-			      },   
-		          { 
-			          boxLabel: _USE_EDIT_ADD,
-			          name: 'radioGroupOption',
-			          checked: false,
-			          id: 'editAdd',
-			          listeners: {
-			              'change' : function(){
-			                _isCheckedOption    = 'editAdd';
-			                _DELETE_EDIT_FIELD  = "Edit Field";
-			                hiddenDeleteEdit    = false;
-			                //console.log(_isCheckedOption);
-			              }
-			          }
-			      }  
-		            
-		     ],
-		     listeners: {
+       columns: 1, //display the radiobuttons in two columns   
+       items: [   
+            {
+            boxLabel: _USE_ADD,
+               name: 'radioGroupOption',
+               checked: true,
+               id: 'add',
+               listeners: {
+              'change' : function(){
+                _isCheckedOption    = 'add';
+                hiddenDeleteEdit    = true;
+               }
+              }
+            },
+            { 
+             boxLabel: _USE_DELETE_ADD,
+             name: 'radioGroupOption',
+             checked: false,
+             id: 'deleteAdd',
+             listeners: {
+                 'change' : function(){
+                _isCheckedOption    = 'deleteAdd';
+                _DELETE_EDIT_FIELD  = "Delete Field";
+                hiddenDeleteEdit    = false;
+                   //console.log(_isCheckedOption);
+                 }
+              }
+         },   
+            { 
+             boxLabel: _USE_EDIT_ADD,
+             name: 'radioGroupOption',
+             checked: false,
+             id: 'editAdd',
+             listeners: {
+                 'change' : function(){
+                   _isCheckedOption    = 'editAdd';
+                   _DELETE_EDIT_FIELD  = "Edit Field";
+                   hiddenDeleteEdit    = false;
+                   //console.log(_isCheckedOption);
+                 }
+             }
+         }  
+              
+       ],
+       listeners: {
                 change: function(el,val) {
                    // console.log(val);
                     _isCheckedOption = val.id;
                     if(_isCheckedOption == 'deleteAdd')
                     {
-                        _DELETE_EDIT_FIELD 	= "Delete Field";
-			            hiddenDeleteEdit    = false;
+                        _DELETE_EDIT_FIELD  = "Delete Field";
+               hiddenDeleteEdit    = false;
                     }
                     if(_isCheckedOption == 'editAdd')
                     {
                         _DELETE_EDIT_FIELD  = "Edit Field";
-			            hiddenDeleteEdit    = false;
+               hiddenDeleteEdit    = false;
+                    }
+                    if(_isCheckedOption == 'add')
+                    {
+               hiddenDeleteEdit    = true;
                     }
                     console.log(_isCheckedOption);
                 }
             } 
-	  }); 
-	  
+   });	  
 	  
 	  var w = new Ext.Window({
 	    title       : '',
