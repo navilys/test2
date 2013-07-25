@@ -212,7 +212,8 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         $totRow = sizeof($row);
         $totIni = 1;
        //  G::pr($items);
-        if($totalCases >= 5)
+        if($totalCases >= 50)
+       // if ($totalCases >= 1000)
         {
             foreach($row as $value)
             {
@@ -552,7 +553,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         $totRow = sizeof($row);
         $totIni = 1;
       
-        if($totalCases >= 5) 
+        if($totalCases >= 50)
+      //  if ($totalCases >= 5000)
         {
             foreach($row as $value)
             {
@@ -917,7 +919,8 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         $totRow = sizeof($row);
         $totIni = 1;
        //  G::pr($items);
-        if($totalCases >= 5)
+        if($totalCases >= 50)
+      //  if ($totalCases >= 5000)
         {
             foreach($row as $value)
             {

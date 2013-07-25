@@ -147,7 +147,7 @@ function frderivateCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber
 			
 				}
 				try{
-				    $result = $ws->derivateCase( $userId, $fcaseUID, $DelIndex[1]['DEL_INDEX'], $beforeA );   
+				    $result = $ws->derivateCase( $userId, $fcaseUID, $DelIndex[1]['DEL_INDEX'], $beforeA );  
 				}
 				catch (Exception $e) 
 				{
@@ -190,7 +190,7 @@ function frderivateCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber
 			        }
 			
 				}
-				try{
+				try{ 
 				    $result = $ws->derivateCase( $userId, $fcaseUID, $DelIndex[1]['DEL_INDEX'], false );
 				}
 				catch (Exception $e) 
