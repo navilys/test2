@@ -135,7 +135,7 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
   			$end_date =  Date("m-d-Y H:i:s");
        		$update = executeQuery("UPDATE PMT_USER_CONTROL_CASES SET USR_CTR_CAS_END_DATE = '$end_date' 
        							    WHERE APP_UID = '$APP_UID' AND USR_UID = '$auxUsrUID' "); 
-       		
+       		$delete = executeQuery("DELETE FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID = '".$_SESSION['USER_LOGGED']."' ");
 			$_SESSION['APPLICATION'] = $newAPP_UID;
      		$_SESSION['APPLICATION_EDIT'] = $newAPP_UID;
   			$_SESSION['USER_LOGGED_INI'] = $auxUsrUID ;

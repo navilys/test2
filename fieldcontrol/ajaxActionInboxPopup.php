@@ -11,11 +11,10 @@
 	$array = Array();
 	if(isset($_GET['idAction']) && $_GET['idAction'] != '')
 	{
-		$sQuery = "SELECT F.FLD_UID AS ID, F.ID_INBOX, A.NAME_ACTION, A.ID_ACTION,  F.DESCRIPTION ,F.FIELD_NAME AS NAME_FIELD, F.ID_TABLE, BF.PARAMETERS_BY_FIELD, BF.OPERATOR
+		$sQuery = "SELECT F.FLD_UID AS ID, F.ID_INBOX, A.NAME_ACTION, A.ID_ACTION,  F.DESCRIPTION ,F.FIELD_NAME AS NAME_FIELD, F.ID_TABLE
                FROM PMT_INBOX_ACTIONS  A 
                INNER JOIN PMT_INBOX_FIELDS F on (F.ID_INBOX = A.ID_INBOX)
-			   LEFT JOIN PMT_CONDITION_BY_FIELDS BF on (BF.FLD_UID = F.FLD_UID  AND  A.ID_ACTION = BF.ID_ACTION)
-               WHERE 1 
+			   WHERE 1 
 			   AND F.ID_INBOX = '".$_GET['actionInbox_id']."' 
 			   AND F.ROL_CODE = '".$_GET['rolID']."'
 			   AND A.ID_ACTION = '".$_GET['idAction']."'
@@ -24,11 +23,21 @@
 		$aDatos = executeQuery ($sQuery);
 		foreach($aDatos as $valor)
 		{        
-	    	if(isset($valor['PARAMETERS_BY_FIELD']) &&  $valor['PARAMETERS_BY_FIELD'] != '')
-	    		$valor['INCLUDE_SELECT'] = true;
-	    	else
-	    		$valor['INCLUDE_SELECT'] = false;
-	    	
+	    	$query = "SELECT PARAMETERS_BY_FIELD, OPERATOR FROM PMT_CONDITION_BY_FIELDS 
+	    	          WHERE ROL_CODE = '".$_GET['rolID']."' 
+	    	          AND ID_INBOX = '".$_GET['actionInbox_id']."' 
+	    	          AND ID_ACTION = '".$_GET['idAction']."'
+	    	          AND FLD_UID = '".$valor['NAME_FIELD']."' ";
+	    	$data = executeQuery($query);
+	    	foreach($data as $row)
+	    	{
+	    	    $valor['PARAMETERS_BY_FIELD'] = $row['PARAMETERS_BY_FIELD'];
+	    	    $valor['OPERATOR'] = $row['OPERATOR'];
+	    	    if(isset($row['PARAMETERS_BY_FIELD']) &&  $row['PARAMETERS_BY_FIELD'] != '')
+	    		    $valor['INCLUDE_SELECT'] = true;
+	    	    else
+	    		    $valor['INCLUDE_SELECT'] = false;
+	    	}
 
 			$array[] = $valor;
 		}
