@@ -32,7 +32,7 @@ Ext.onReady(function()
 	var nameTab = tableDef[0].DESCRIPTION_INBOX;
 	var sw = 0;
 	var f = 1;
-	_itemsFilters.push(new Array('ALL','All Fields...'));
+	_itemsFilters.push(new Array('ALL', 'Tous les champs...'));
 	for ( i=0;  i < tableDef.length;  i++) 
 	{		
 		if(j == 0)

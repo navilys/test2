@@ -164,8 +164,8 @@ if ($type != 'npai')
         }
     }
 }
+$rSQL = array_values($rSQL);
 /* * *** End generate doc *** */
 $messageInfo .= 'Export terminé.';
-$ext = 'xls';
 exportXls($exportTitle, $rSQL, $exportDescription, $path, $ext);
 ?>

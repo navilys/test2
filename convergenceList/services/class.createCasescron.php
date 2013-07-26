@@ -16,6 +16,7 @@
 			G::LoadClass('plugin');
 		    require_once(PATH_PLUGINS.'convergenceList/classes/class.pmFunctions.php');
 		    require_once(PATH_PLUGINS.'obladyConvergence/classes/class.pmFunctions.php');
+		    require_once(PATH_PLUGINS.'NordPDC/classes/class.pmFunctions.php');
 		    require_once(PATH_PLUGINS.'pmBusinessRules/classes/class.pmFunctions.php');
 		    set_include_path(PATH_PLUGINS . 'pmBusinessRules' . PATH_SEPARATOR . get_include_path());		
 	       define( 'PATH_WORKSPACE', PATH_DB . SYS_SYS . PATH_SEP );
@@ -116,10 +117,10 @@
 		if(file_exists($dir)) 
 		{ 
 		if(unlink($dir)) 
-		print "El archivo fue borrado"; 
+		print "File Deleted"; 
 		} 
 		else 
-		print "Este archivo no existe"; 
+		print "The file is not present."; 
 		}
 	    function importCreateCaseCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV)
 	    {

@@ -4445,3 +4445,223 @@ function actionAddComment(app_uid) {
             ]});
     w.show();
 }
+function listeChequierDemande(num_dossier)
+{
+    var adaptiveHeight = getDocHeight() - 50;
+
+    var _dblColumns = new Array();
+    var _dblFields = new Array();
+    var storeChequier;
+    var _CLOSE = 'Fermer';
+    var _WINTITLE_DOUBLON = "Liste des chéquiers de ce dossier";
+    
+    column = {id: 'DMDAPPUID', header: 'demande ID', width: 20, dataIndex: 'DMDAPPUID', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'DMDAPPUID'});
+
+
+    column = {id: 'UID', header: '#', width: 20, dataIndex: 'UID', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'APP_UID'});
+
+    column = {id: 'THEMATIQUE_LABEL', header: '#', width: 20, dataIndex: 'THEMATIQUE_LABEL', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'THEMATIQUE_LABEL'});
+
+    column = {
+        id: 'NUM_DOSSIER',
+        header: 'N&deg; Dossier',
+        width: 80,
+        dataIndex: 'NUM_DOSSIER',
+        renderer: function(value, meta, record) {
+            var dmdID = record.data.DMDAPPUID;
+            if (value != null)
+                return '<a href="#" onclick="viewForms(\'' + dmdID + '\',1)">' + value + '</a>';
+            else
+                return '';
+        },
+        hidden: false
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'NUM_DOSSIER'});
+
+    column = {
+        id: 'COMPLEMENT_CHQ',
+        header: 'Type',
+        width: 120,
+        dataIndex: 'COMPLEMENT_CHQ',
+        renderer: function(value, meta, record) {
+            var thema = record.data.THEMATIQUE_LABEL;
+            if (value == '1')
+                return 'Ch&eacute;quier compl&eacute;mentaire';
+            else
+                return thema;
+        },
+        hidden: false
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'COMPLEMENT_CHQ'});
+
+    column = {
+        id: 'CHQ',
+        header: 'Ch&eacute;quier',
+        width: 120, //30,req
+        dataIndex: 'CHQ'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'CHQ'});
+
+    column = {
+        id: 'BCONSTANTE',
+        header: 'Num&eacute;ro ch&eacute;quier',
+        width: 120, //30,req
+        dataIndex: 'BCONSTANTE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'BCONSTANTE'});
+
+    column = {
+        id: 'VN',
+        header: 'Valeur',
+        width: 100,
+        renderer: function(value) {
+
+            return value + ' &euro;';
+        },
+        dataIndex: 'VN'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'VN'});
+
+    column = {
+        id: 'DEBUT_VALIDITE',
+        header: 'D&eacute;but de validit&eacute;',
+        width: 120, //30,req
+        dataIndex: 'DEBUT_VALIDITE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'DEBUT_VALIDITE'});
+
+    column = {
+        id: 'FIN_VALIDITE',
+        header: 'Fin de validit&eacute;',
+        width: 120, //30,req
+        dataIndex: 'FIN_VALIDITE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'FIN_VALIDITE'});
+
+    column = {
+        id: 'ANNULE',
+        header: 'Annul&eacute; ?',
+        width: 100,
+        renderer: function(value) {
+
+            if (value == 1)
+                value = 'Oui';
+            else
+                value = 'Non'
+
+            return value;
+        },
+        dataIndex: 'ANNULE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'ANNULE'});
+
+    column = {
+        id: 'REPRODUCTION',
+        header: 'NB de reproduction',
+        width: 120, //30,req
+        dataIndex: 'REPRODUCTION'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'REPRODUCTION'});
+    
+    storeChequier = new Ext.data.JsonStore({
+        url: '../convergenceList/actions/listeChequierDossier.php?num_dossier=' + num_dossier,
+        root: 'data',
+        totalProperty: 'total',
+        autoWidth: true,
+        fields: _dblFields
+    });
+    storeChequier.load();
+
+    var cmChequier = new Ext.grid.ColumnModel({
+        defaults: {
+            width: 20,
+            sortable: true
+        },
+        columns: _dblColumns
+    });
+    cmChequier.defaultSortable = true;
+
+    var gridChequier = new Ext.grid.GridPanel({
+        store: storeChequier,
+        cm: cmChequier,
+        stripeRows: true,
+        columnLines: true,
+        autoScroll: true,
+        autoWidth: true,
+        stateful: true,
+        id: 'gridChequier',
+        layout: 'fit',
+        viewConfig: {
+            forceFit: false,
+            emptyText: (_('ID_NO_RECORDS_FOUND'))
+        },
+        /*bbar: new Ext.PagingToolbar({
+         pageSize: 300,
+         store: storeChequier,
+         displayInfo: true,
+         displayMsg: _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
+         emptyMsg: _('ID_DISPLAY_EMPTY')
+         }),*/
+        listeners: {
+            render: function(grid) {
+
+            },
+            afterrender: function() {
+
+            },
+            cellcontextmenu: function(grid, rowIndex, cellIndex, event) {
+
+
+            }
+        },
+        tbar: [{
+                text: _CLOSE,
+                iconCls: 'button_menu_ext ss_sprite ss_accept',
+                handler: function() {
+                    winTitre.close();
+                }
+            }]
+    });
+    ///////////// end grid
+    winTitre = new Ext.Window({
+        closeAction: 'hide',
+        autoDestroy: true,
+        maximizable: true,
+        id: 'winDoublon',
+        title: _WINTITLE_DOUBLON,
+        width: 900,
+        height: 400,
+        modal: true,
+        closable: true,
+        constrain: true,
+        autoScroll: true,
+        layout: 'fit',
+        items: gridChequier
+    });
+
+    winTitre.show();
+    //winTitre.maximize();
+    winTitre.toFront();
+}
