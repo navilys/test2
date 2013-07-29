@@ -55,7 +55,14 @@ else
 	$_SESSION['TASK'] = $_REQUEST['task'];
 	$_SESSION['STEP_POSITION'] = 0;
 // Redirect to cases steps
-//G::pr($_SESSION['USER_LOGGED']); 
+    $query = "SELECT * FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '".$_REQUEST['APP_UID']."' AND USR_UID != '".$_SESSION['USER_LOGGED']."'  ";
+	    $dataUsrCase = executeQuery($query);
+        if(sizeof($dataUsrCase) > 0)
+	    {
+	        $totalUsers = sizeof($dataUsrCase);
+	        G::SendTemporalMessage ("Une autre personne est en train d&#39;&eacute;diter cet enregistrement. Voulez-vous quand m&#233;me l&#39;&eacute;diter ?", "warning");
+	        $swCase = 1;
+	    }
 	$eventInstance->createAppEvents($_SESSION['PROCESS'], $_SESSION['APPLICATION'], $_SESSION['INDEX'], $_SESSION['TASK']);
 	$nextStep = $caseInstance->getNextStep($_SESSION['PROCESS'], $_SESSION['APPLICATION'], $_SESSION['INDEX'], $_SESSION['STEP_POSITION']);
 //G::pr($nextStep); die;

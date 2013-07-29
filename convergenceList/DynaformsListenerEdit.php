@@ -76,11 +76,12 @@ $oCase->updateCase($APP_UID, $olfFields);
 # End Update the flag typo3      
 
 # control user case
+
+$date_start = Date("m-d-Y H:i:s");
+$delete = executeQuery("DELETE FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID = '".$_SESSION['USER_LOGGED']."' ");
 $queryId = "SELECT max(USR_CTR_CAS_ID) AS MAX_ID FROM  PMT_USER_CONTROL_CASES  "; 
 $maxId = executeQuery ( $queryId );
 $sgtIdIn = $maxId[1]['MAX_ID'] + 1;
-$date_start = Date("m-d-Y H:i:s");
-$delete = executeQuery("DELETE FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID = '".$_SESSION['USER_LOGGED']."' ");
 $insert = "INSERT INTO PMT_USER_CONTROL_CASES (
 		       USR_CTR_CAS_ID, APP_UID, USR_UID, USR_CTR_CAS_START_DATE, USR_CTR_CAS_END_DATE )
 		       VALUES(

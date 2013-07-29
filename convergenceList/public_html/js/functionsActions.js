@@ -146,8 +146,15 @@ function windowTabs(idField,urlData,appNumber)
 
         win2.show();
         win2.maximize();
-        win2.on('hide',function(){            
-            Ext.getCmp('gridNewTab').store.reload();
+        win2.on('hide',function(){  
+            urlData = "../convergenceList/controlUserCases.php";      
+            Ext.Ajax.request({
+                url : urlData,
+                params : {
+                    appUid  : idField
+                }
+            });    
+            Ext.getCmp('gridNewTab').store.reload(); 
         });
 }
 
