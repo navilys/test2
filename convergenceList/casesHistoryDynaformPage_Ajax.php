@@ -11,6 +11,7 @@ $ACTIONTYPE = isset($_GET['ACTIONTYPE'])?$_GET['ACTIONTYPE']:null;
 $ADAPTIVEHEIGHT = isset($_GET['adaptiveHeight'])?$_GET['adaptiveHeight']:null;
 $NUM_DOSSIER = isset($_GET['num_dossier'])?$_GET['num_dossier']:null;
 $TABLE = isset($_GET['table'])?$_GET['table']:null;
+  
 
 if($actionAjax=="HistoryLog"){    
     global $G_PUBLISH;        
@@ -278,24 +279,23 @@ if($actionAjax== 'historyDynaformGridPreview')
       
       $_SESSION['DYN_UID_PRINT'] = $_POST['DYN_UID'];
       $postInfo = '';
-      
+      //G::pr($Fields['APP_DATA']);
       if($ACTIONTYPE == 'edit')
         $postInfo = 'saveDynaformLog.php?APP_UID='.$APP_UID.'&CURRENTDATETIME='.$CURRENTDATETIME.'&DYN_UID='.$_POST['DYN_UID'].'&PROCESS='.$PRO_UID;
       
       $_SESSION['APPLICATION'] = $APP_UID;
       $PRO_UID = $_SESSION['PROCESS'];
-     
-	  $swaction = $ACTIONTYPE;
-	  $swCase = 0;
-      $query = "SELECT * FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID != '".$_SESSION['USER_LOGGED']."'  ";
+      // print($PRO_UID. 'process'); 
+      $swCase = 0;
+      $query = "SELECT * FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID != '".$_SESSION['USER_LOGGED']."' AND USR_CTR_CAS_END_DATE = '' ";
 	  $dataUsrCase = executeQuery($query);
-      if(sizeof($dataUsrCase) > 0)
+	  
+	  if(sizeof($dataUsrCase) > 0)
 	  {
-	     $totalUsers = sizeof($dataUsrCase);
-	     G::SendTemporalMessage ("Une autre personne est en train d&#39;&eacute;diter cet enregistrement. Voulez-vous quand m&#233;me l&#39;&eacute;diter ?", "warning");
-	     $swCase = 1;
+	  	$totalUsers = sizeof($dataUsrCase);
+	  	$swCase = 1;
 	  }
-	    
+	  $swaction = $ACTIONTYPE;
 	  
 	  // load Dynaforms of process
 		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$PRO_UID ."'";
@@ -321,7 +321,6 @@ if($actionAjax== 'historyDynaformGridPreview')
 				}
 			}
 		}
-		
 		
 // end load dynaforms process 
       $G_PUBLISH->AddContent('dynaform', 'xmlform', $PRO_UID . '/' . $_POST['DYN_UID'], '', $Fields['APP_DATA'], $postInfo,'', $ACTIONTYPE);
@@ -350,7 +349,7 @@ if($actionAjax== 'historyDynaformGridPreview')
 ?>
 			function confirmCreationNewForm()
 			{
-				var swcase = <?php echo $swCase ?>; 
+				var swcase = <?php echo $swCase?>; 
 				if(swcase == 1)
 				{
 			    	var answer = confirm("Une autre personne est en train d\u0027\u00E9diter cet enregistrement. Voulez-vous quand m\u00E9me l\u0027\u00E9diter ? ");
