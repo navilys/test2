@@ -293,7 +293,7 @@ function explicationStatut(appUid){
                 test.hide();
                         
                          Ext.MessageBox.show({
-                            title : 'Explication du statut - Dossier '+response.num_dossier,
+                            title : 'Explication du statut - Dossier n°'+response.num_dossier,
                             msg : response.messageinfo,
                             width : 400,                            
                             icon: Ext.MessageBox.INFO
@@ -4424,7 +4424,7 @@ function actionAddComment(app_uid) {
                     params:
                             {
                                 options: 'save',
-                            APP_UID: app_uid,
+                                APP_UID: app_uid,
                                 Note: Ext.getCmp('caseNoteText').getValue()
                             },
                     success: function(result, request)

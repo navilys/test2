@@ -116,7 +116,6 @@ function convergence_updateDemande($app_uid, $data) {
 //GLOBAL : Insertio ndes données dans l'historique
 
 function  insertHistoryLogPlugin($APP_UID,$USR_UID,$CURRENTDATETIME,$VERSION,$NEWAPP_UID,$ACTION,$STATUT=""){
-    
     $selectVersion = "SELECT MAX(HLOG_VERSION) AS VERSION FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID = '". $APP_UID ."'";
     $qSelectVersion = executeQuery($selectVersion);
     $versionHistory = 0;
@@ -864,6 +863,13 @@ function convergence_checkReproduction($line_import){
 
 
 //GLOBAL
+/* * ***
+ * Lecture d'un fichier plat provenant de l'AS400
+ *
+ * $process_uid     @string    uid du process courant
+ * $app_id          @array     app_uid du cas courant
+ * $childProc       @array     0 on ne lance pas le process de traitement des données
+ */
 function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0) {     
     if ($app_id != '') {
     try{
@@ -895,7 +901,7 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
                 G::pr('Le uid_process n\'est pas renseigné pour traiter les données importées');die();
             }
         } else {
-             G::pr( 'Aucun process uid correcpondant dans la table AS400 Config !');die;
+             G::pr( 'Aucun process uid correspondant dans la table AS400 Config !');die;
         }
         $query_fields = 'SELECT * FROM PMT_COLUMN_AS400 WHERE ID_CONFIG_AS = ' . $config['ID'] . ' ORDER BY ORDER_FIELD';
 
@@ -946,10 +952,106 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
         ////autre méthode
     }
 }
+
+//GLOBAL
+/* * ***
+ * Lecture d'un fichier csv provenant de l'AS400
+ *
+ * $process_uid     @string    uid du process courant
+ * $app_id          @array     app_uid du cas courant
+ * $childProc       @array     0 on ne lance pas le process de traitement des données
+ *
+ */
+function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
+    if ($app_id != '') {
+    try{
+        $query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
+            WHERE AD.APP_UID="' . $app_id . '" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
+           AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';
+                $result = executeQuery($query);
+        if (is_array($result) and count($result) > 0) {
+            $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
+        }
+
+    }
+    catch (Exception $e) {
+        G::pr('Erreur lors de la récupération du document');
+        G::pr($e);
+        die();
+    }
+
+        if (!isset($process_uid)) {
+             G::pr( 'Le process_uid n\'est pas renseigné pour configurer l\'import du fichier');die;
+        }
+        $query_config = 'SELECT * FROM PMT_AS400_CONFIG WHERE PROCESS_UID ="'.$process_uid.'"';
+
+        $res_config = executeQuery($query_config);
+        if (isset($res_config) && count($res_config) > 0) {
+            $config = $res_config[1];
+            ($config['TOKEN_CSV'] == '') ? $token = ';' : $token = $config['TOKEN_CSV'];
+            if ($config['TASK_UID'] == '' || is_null($config['TASK_UID'])) {
+                G::pr('Le uid_process n\'est pas renseigné pour traiter les données importées');die();
+            }
+        } else {
+             G::pr( 'Aucun process uid correspondant dans la table AS400 Config !');die;
+        }
+        $query_fields = 'SELECT * FROM PMT_COLUMN_AS400 WHERE ID_CONFIG_AS = ' . $config['ID'] . ' ORDER BY ORDER_FIELD';
+
+        $select = executeQuery($query_fields);
+        $mode = 'r';
+        $ftic = fopen($filePath, $mode);
+        $data = array();
+
+        while (($current_line = fgets($ftic)) !== false) {
+            $explodeLine = array();
+            $explodeLine = explode($token, $current_line);
+            //$i = 0;
+            $importLine = array();
+            foreach ($select as $field) {
+                switch ($field['AS400_TYPE']) {
+                    case 'Integer':
+                    case 'Entier':
+                       // $importLine[$field['FIELD_NAME']] = intval(trim($explodeLine[$i], $token));
+                        $importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD']]);
+                        break;
+                    case 'Ignore':
+                        //$forget = trim(substr($current_line, 0, $field['LENGTH']), $token);
+                        break;
+                    case 'Decimal':
+                        $importLine[$field['FIELD_NAME']]  = floatval(substr_replace($explodeLine[$field['ORDER_FIELD']],'.',-2,0));
+                        break;
+                    case 'Telephone':
+                        $stringTel = $explodeLine[$field['ORDER_FIELD']];
+                        $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
+                        break;
+                    case 'Date':
+                         $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD']]);
+                        break;
+                    default:
+                        $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD']];
+                        break;
+                }
+              //  $i++;
+            }
+            $data[] = $importLine;
+
+            //lancer le process ici $start_process_uid
+            // /!\ lancer un ou plusieur process enfant depuis un process parent doit toujours ce faire en dernier dans le workflow du process parent
+            // $importLine contien un array assoc FIELD => VALUE
+            //$data contien tous les importLine
+            if($childProc == 1)
+                new_case_for_import($importLine, $config);
+        }
+        return $data;
+         } else {
+        return;
+        ////autre méthode
+    }
+}
+
 /* * ***
  * Execution d'un nouveau process suite à un import de l'AS400
  *
- * $task    @string    uid de la tache à exécuter
  * $line    @array     tableau contenant les champs => valeur à traiter
  * $config  @array     tableau contenant le nom de la table
  */
