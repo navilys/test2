@@ -672,50 +672,68 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
         $ftic = fopen($file, $mode);
             foreach ($result as $row) {
                 $line = '';
+                $error = false;
                 foreach ($select as $field) {
-                    //if($field['FIELD_DESCRIPTION'] != '') $field['FIELD_NAME'] = $field['FIELD_DESCRIPTION'];
-                    switch ($field['AS400_TYPE']) {
-                        case 'Integer':
-                        case 'Entier':
-                            $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                            break;
-                        case 'Date':
-                            $char = array('-','/');
-                            $line .= substr(str_pad(str_replace($char, '.', $row[$field['FIELD_NAME']]), $field['LENGTH'], $token), 0, $field['LENGTH']);
-                            break;
-                        case 'Decimal'://0000000.00
-                            $char = array('.',',');
-                            $count = count(explode('.', $row[$field['FIELD_NAME']]));
-                            ($count > 1) ? $dec = $row[$field['FIELD_NAME']] : $dec = $row[$field['FIELD_NAME']].'00' ;
-                            $line .= substr(str_pad(str_replace($char, '', $dec), $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                            break;
-                        case 'Telephone':
-                            $char = array('-','.',' ');
-                            $line .= substr(str_pad(str_replace($char, '', $row[$field['FIELD_NAME']]), $field['LENGTH'], $token), 0, $field['LENGTH']);
-                            break;
-                        case 'Yesno':
-                            $yes = array('oui','yes', 'o', 1);
-                            (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ?  $yesno ='O' : $yesno = 'N';
-                            $line .= $yesno;
-                            break;
-                        case 'NCommande':
-                            // numéro de commande à récupérer en amont et passer en paramètre
-                            $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                            break;
-                        case 'codeOper':
-                            // code opération
-                            $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                            break;
-                        // ajouter les autres cas possible, par defaut les champs sont comblés avec des espaces à droite
-                        default:
-                            $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], $token), 0, $field['LENGTH']);
-                            break;
+                    if ($field['CONSTANT'] != '')
+                        $row[$field['FIELD_NAME']] = $field['CONSTANT'];
+                    if ($field['REQUIRED'] == 'no' || ($field['REQUIRED'] == 'yes' && isset($row[$field['FIELD_NAME']]) && $row[$field['FIELD_NAME']] != ''))
+                    {
+                        switch ($field['AS400_TYPE']) {
+                            case 'Integer':
+                            case 'Entier':
+                                $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                                break;
+                            case 'Date':
+                                $char = array('-', '/');
+                                $line .= substr(str_pad(str_replace($char, '.', $row[$field['FIELD_NAME']]), $field['LENGTH'], $token), 0, $field['LENGTH']);
+                                break;
+                            case 'Decimal'://0000000.00
+                                $char = array('.', ',');
+                                $count = count(explode('.', $row[$field['FIELD_NAME']]));
+                                ($count > 1) ? $dec = $row[$field['FIELD_NAME']] : $dec = $row[$field['FIELD_NAME']] . '00';
+                                $line .= substr(str_pad(str_replace($char, '', $dec), $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                                break;
+                            case 'Telephone':
+                                $char = array('-', '.', ' ');
+                                $line .= substr(str_pad(str_replace($char, '', $row[$field['FIELD_NAME']]), $field['LENGTH'], $token), 0, $field['LENGTH']);
+                                break;
+                            case 'Yesno':
+                                $yes = array('oui', 'yes', 'o', 1);
+                                (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
+                                $line .= $yesno;
+                                break;
+                            case 'binaire':
+                                $zero = array('oui', 'yes', 'o', 1);
+                                (in_array(strtolower($row[$field['FIELD_NAME']], $zero))) ? $bin = '1' : $bin = '0';
+                                $line .= $bin;
+                                break;
+                            case 'NCommande':
+                                // numéro de commande à récupérer en amont et passer en paramètre
+                                $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                                break;
+                            case 'codeOper':
+                                // code opération
+                                $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                                break;
+                            // ajouter les autres cas possible, par defaut les champs sont comblés avec des espaces à droite
+                            default:
+                                $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], $token), 0, $field['LENGTH']);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        $error = true;
                     }
                 }
-                fwrite($ftic, $line."\n"); // voir si l'as400 supporte la dernière ligne vide
-                $nb_result++;
-                if(isset($row['APP_UID'])){
-                    $app_uid[]= $row['APP_UID'];
+                if (!$error)
+                {
+                    fwrite($ftic, $line."\n"); // voir si l'as400 supporte la dernière ligne vide
+                    $nb_result++;
+                    if (isset($row['APP_UID']))
+                    {
+                        $app_uid[] = $row['APP_UID'];
+                    }
                 }
             }
             fclose($ftic);
@@ -931,6 +949,19 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
                     case 'Date':
                          $importLine[$field['FIELD_NAME']] = str_replace('.', '-', trim(substr($current_line, 0, $field['LENGTH']), $token));
                         break;
+                  /*  case 'Yesno':
+                      $yes = array('oui', 'yes', 'o', 1);
+                      (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
+                      $line .= $yesno;
+                      break;
+                      case 'NCommande':
+                      // numéro de commande à récupérer en amont et passer en paramètre
+                      $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                      break;
+                      case 'codeOper':
+                      // code opération
+                      $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                      break; */
                     default:
                         $importLine[$field['FIELD_NAME']] = trim(substr($current_line, 0, $field['LENGTH']), $token);
                         break;
@@ -1012,23 +1043,36 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
                     case 'Integer':
                     case 'Entier':
                        // $importLine[$field['FIELD_NAME']] = intval(trim($explodeLine[$i], $token));
-                        $importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD']]);
+                        $importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD'] + 1]);
                         break;
                     case 'Ignore':
                         //$forget = trim(substr($current_line, 0, $field['LENGTH']), $token);
                         break;
                     case 'Decimal':
-                        $importLine[$field['FIELD_NAME']]  = floatval(substr_replace($explodeLine[$field['ORDER_FIELD']],'.',-2,0));
+                        $importLine[$field['FIELD_NAME']] = floatval(substr_replace($explodeLine[$field['ORDER_FIELD'] + 1], '.', -2, 0));
                         break;
                     case 'Telephone':
-                        $stringTel = $explodeLine[$field['ORDER_FIELD']];
+                        $stringTel = $explodeLine[$field['ORDER_FIELD'] + 1];
                         $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
                         break;
                     case 'Date':
-                         $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD']]);
+                         $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD'] + 1]);
                         break;
+                 /*   case 'Yesno':
+                      $yes = array('oui', 'yes', 'o', 1);
+                      (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
+                      $line .= $yesno;
+                      break;
+                      case 'NCommande':
+                      // numéro de commande à récupérer en amont et passer en paramètre
+                      $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                      break;
+                      case 'codeOper':
+                      // code opération
+                      $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                      break; */
                     default:
-                        $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD']];
+                        $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD'] + 1];
                         break;
                 }
               //  $i++;
@@ -1047,6 +1091,113 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
         return;
         ////autre méthode
     }
+}
+
+/* * ***
+ * Teste la validitée des champs importés
+ *
+ * $value   @array      tableau contenant la valeur à traiter
+ * $params  @array      tableau contenant les paramètres de conformité pour $value
+ * $type    @string     type d'import fichier plat as400 ou csv
+ */
+
+//GLOBAL
+function convergence_checkFieldLog($value, $params, $type) {
+    $log = '';
+    (isset($params['FIELD_DESCRIPTION']) && $params['FIELD_DESCRIPTION'] != '') ? $field = $params['FIELD_DESCRIPTION'] : $field = $params['FIELD_NAME'];
+    $length = $params['LENGTH'];
+    $lengthValue = strlen($value);
+    if ($params['REQUIRED'] == 'yes')
+    {
+        if (isset($value))
+        {
+            if ($length != 0 && $length != strlen($lengthValue) && $type == 'csv')
+                $log = 'bad length';
+            switch ($params['AS400_TYPE'])
+            {
+                case 'Integer':
+                case 'Entier':
+                    //$importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD'] + 1]);
+                    if (!is_int($value))
+                        $log = 'type error';
+                    break;
+                case 'Ignore':                    
+                    break;
+                case 'Decimal':
+                    if (!is_float($value))
+                        $log = 'type error';
+                    break;
+                case 'Telephone': //  ^0[0-9]([-. ]?[0-9]{2}){4}$
+                    $stringTel = $explodeLine[$field['ORDER_FIELD'] + 1];
+                    $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
+                    break;
+                case 'Date':
+                    $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD'] + 1]);
+                    break;
+                /*   case 'Yesno':
+                  $yes = array('oui', 'yes', 'o', 1);
+                  (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
+                  $line .= $yesno;
+                  break;
+                  case 'NCommande':
+                  // numéro de commande à récupérer en amont et passer en paramètre
+                  $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                  break;
+                  case 'codeOper':
+                  // code opération
+                  $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+                  break; */
+                default:
+                    $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD'] + 1];
+                    break;
+            }
+        }
+        else
+        {
+            $log = 'required fields';
+        }
+    }
+    else if ($params['REQUIRED'] == 'no')
+    {
+  switch ($params['AS400_TYPE'])
+        {
+            case 'Integer':
+            case 'Entier':
+                // $importLine[$field['FIELD_NAME']] = intval(trim($explodeLine[$i], $token));
+                $importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD'] + 1]);
+                break;
+            case 'Ignore':
+                //$forget = trim(substr($current_line, 0, $field['LENGTH']), $token);
+                break;
+            case 'Decimal':
+                $importLine[$field['FIELD_NAME']] = floatval(substr_replace($explodeLine[$field['ORDER_FIELD'] + 1], '.', -2, 0));
+                break;
+            case 'Telephone':
+                $stringTel = $explodeLine[$field['ORDER_FIELD'] + 1];
+                $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
+                break;
+            case 'Date':
+                $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD'] + 1]);
+                break;
+            /*   case 'Yesno':
+              $yes = array('oui', 'yes', 'o', 1);
+              (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
+              $line .= $yesno;
+              break;
+              case 'NCommande':
+              // numéro de commande à récupérer en amont et passer en paramètre
+              $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+              break;
+              case 'codeOper':
+              // code opération
+              $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
+              break; */
+            default:
+                $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD'] + 1];
+                break;
+        }
+    }
+    return 1;
 }
 
 /* * ***
