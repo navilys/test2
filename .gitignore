@@ -44,3 +44,4 @@ enterprise.php
 enterprise/
 externalRegistration.php
 externalRegistration/
+.DS_Store
