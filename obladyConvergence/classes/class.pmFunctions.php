@@ -698,14 +698,24 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                                 $line .= substr(str_pad(str_replace($char, '', $row[$field['FIELD_NAME']]), $field['LENGTH'], $token), 0, $field['LENGTH']);
                                 break;
                             case 'Yesno':
-                                $yes = array('oui', 'yes', 'o', 1);
+                                $yes = array('oui', 'yes', 'o', '0', '1', 'Oui', 'Yes', 'YES', 'OUI', 1);
                                 (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
                                 $line .= $yesno;
                                 break;
+                            case 'OuiNon':
+                                $yes = array('oui', 'yes', 'o', '0', '1', 'Oui', 'Yes', 'YES', 'OUI', 1);
+                                (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'oui' : $yesno = 'non';
+                                $line .= $yesno;
+                                break;
                             case 'binaire':
-                                $zero = array('oui', 'yes', 'o', 1);
+                                $zero = array('oui', 'yes', 'o', '0', '1', 'Oui', 'Yes', 'YES', 'OUI', 1);
                                 (in_array(strtolower($row[$field['FIELD_NAME']], $zero))) ? $bin = '1' : $bin = '0';
                                 $line .= $bin;
+                                break;
+                            case 'AI':
+                                $aiArray = array('oui', 'yes', 'o', '0', '1', 'Oui', 'Yes', 'YES', 'OUI', 'Actif', 'ACTIF', 'actif', 'A', 'a', 1);
+                                (in_array(strtolower($row[$field['FIELD_NAME']], $aiArray))) ? $ai = 'A' : $ai = 'I';
+                                $line .= $ai;
                                 break;
                             case 'NCommande':
                                 // numéro de commande à récupérer en amont et passer en paramètre
@@ -1032,52 +1042,38 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
         $mode = 'r';
         $ftic = fopen($filePath, $mode);
         $data = array();
-
+        $logField = array();
+        $nbcurrentLine = 0;
         while (($current_line = fgets($ftic)) !== false) {
             $explodeLine = array();
+            $checkLog = array();
             $explodeLine = explode($token, $current_line);
-            //$i = 0;
-            $importLine = array();
-            foreach ($select as $field) {
-                switch ($field['AS400_TYPE']) {
-                    case 'Integer':
-                    case 'Entier':
-                       // $importLine[$field['FIELD_NAME']] = intval(trim($explodeLine[$i], $token));
-                        $importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD'] + 1]);
-                        break;
-                    case 'Ignore':
-                        //$forget = trim(substr($current_line, 0, $field['LENGTH']), $token);
-                        break;
-                    case 'Decimal':
-                        $importLine[$field['FIELD_NAME']] = floatval(substr_replace($explodeLine[$field['ORDER_FIELD'] + 1], '.', -2, 0));
-                        break;
-                    case 'Telephone':
-                        $stringTel = $explodeLine[$field['ORDER_FIELD'] + 1];
-                        $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
-                        break;
-                    case 'Date':
-                         $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD'] + 1]);
-                        break;
-                 /*   case 'Yesno':
-                      $yes = array('oui', 'yes', 'o', 1);
-                      (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
-                      $line .= $yesno;
-                      break;
-                      case 'NCommande':
-                      // numéro de commande à récupérer en amont et passer en paramètre
-                      $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                      break;
-                      case 'codeOper':
-                      // code opération
-                      $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                      break; */
-                    default:
-                        $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD'] + 1];
-                        break;
+            $logLine = '';
+            $nbcurrentLine++;
+            foreach ($select as $field)
+            {
+                $checkLog = convergence_checkFieldLog($explodeLine[$field['ORDER_FIELD'] - 1], $field, 'csv');
+                if ($checkLog != 1)
+                {
+                    $logLine .= implode(', ', $checkLog);
                 }
-              //  $i++;
             }
-            $data[] = $importLine;
+            unset($field);
+            $importLine = array();
+            if ($logLine == '')
+            {
+                // on ne modifie pas les champs lors de l'import csv
+                foreach ($select as $field)
+                {
+                    $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD'] - 1];
+                }
+                unset($field);
+                $data[] = $importLine;
+            }
+            else
+            {
+                $logField[$nbcurrentLine] = $logLine;
+            }
 
             //lancer le process ici $start_process_uid
             // /!\ lancer un ou plusieur process enfant depuis un process parent doit toujours ce faire en dernier dans le workflow du process parent
@@ -1085,14 +1081,18 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
             //$data contien tous les importLine
             if($childProc == 1)
                 new_case_for_import($importLine, $config);
+            unset($importLine);
+            unset($explodeLine);
         }
+        fclose($ftic);
+        unset($select);
+        unset($config);
         return $data;
          } else {
         return;
         ////autre méthode
     }
 }
-
 /* * ***
  * Teste la validitée des champs importés
  *
@@ -1100,106 +1100,101 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
  * $params  @array      tableau contenant les paramètres de conformité pour $value
  * $type    @string     type d'import fichier plat as400 ou csv
  */
-
 //GLOBAL
 function convergence_checkFieldLog($value, $params, $type) {
-    $log = '';
+    $log = array();
     (isset($params['FIELD_DESCRIPTION']) && $params['FIELD_DESCRIPTION'] != '') ? $field = $params['FIELD_DESCRIPTION'] : $field = $params['FIELD_NAME'];
     $length = $params['LENGTH'];
     $lengthValue = strlen($value);
-    if ($params['REQUIRED'] == 'yes')
+    if (isset($value))
     {
-        if (isset($value))
-        {
-            if ($length != 0 && $length != strlen($lengthValue) && $type == 'csv')
-                $log = 'bad length';
-            switch ($params['AS400_TYPE'])
-            {
-                case 'Integer':
-                case 'Entier':
-                    //$importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD'] + 1]);
-                    if (!is_int($value))
-                        $log = 'type error';
-                    break;
-                case 'Ignore':                    
-                    break;
-                case 'Decimal':
-                    if (!is_float($value))
-                        $log = 'type error';
-                    break;
-                case 'Telephone': //  ^0[0-9]([-. ]?[0-9]{2}){4}$
-                    $stringTel = $explodeLine[$field['ORDER_FIELD'] + 1];
-                    $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
-                    break;
-                case 'Date':
-                    $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD'] + 1]);
-                    break;
-                /*   case 'Yesno':
-                  $yes = array('oui', 'yes', 'o', 1);
-                  (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
-                  $line .= $yesno;
-                  break;
-                  case 'NCommande':
-                  // numéro de commande à récupérer en amont et passer en paramètre
-                  $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                  break;
-                  case 'codeOper':
-                  // code opération
-                  $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-                  break; */
-                default:
-                    $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD'] + 1];
-                    break;
-            }
-        }
-        else
-        {
-            $log = 'required fields';
-        }
-    }
-    else if ($params['REQUIRED'] == 'no')
-    {
-  switch ($params['AS400_TYPE'])
+        switch ($params['AS400_TYPE'])
         {
             case 'Integer':
             case 'Entier':
-                // $importLine[$field['FIELD_NAME']] = intval(trim($explodeLine[$i], $token));
-                $importLine[$field['FIELD_NAME']] = intval($explodeLine[$field['ORDER_FIELD'] + 1]);
+                if (!is_int($value))
+                    $log[] = "La valeur $value du champs '$field' n'est pas de type 'Entier'";
                 break;
             case 'Ignore':
-                //$forget = trim(substr($current_line, 0, $field['LENGTH']), $token);
                 break;
             case 'Decimal':
-                $importLine[$field['FIELD_NAME']] = floatval(substr_replace($explodeLine[$field['ORDER_FIELD'] + 1], '.', -2, 0));
+                if (!is_float($value))
+                    $log[] = "La valeur $value du champs '$field' n'est pas de type 'Décimal'";
                 break;
-            case 'Telephone':
-                $stringTel = $explodeLine[$field['ORDER_FIELD'] + 1];
-                $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
+            case 'Telephone': //  ^0[0-9]([-. ]?[0-9]{2}){4}$
+                if (preg_match('#^0[0-9]([-. ]?[0-9]{2}){4}$#', $value) != 1)
+                {
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'Téléphone' attendu";
+                }
                 break;
-            case 'Date':
-                $importLine[$field['FIELD_NAME']] = str_replace('.', '-', $explodeLine[$field['ORDER_FIELD'] + 1]);
+            case 'Date':  // ^(0[1-9]|1\d|2\d|3[0-1])[\/\.-]?(0[1-9]|1[0-2])[\/\.-]?(\d{4})$
+                if (preg_match('#^(0[1-9]|1\d|2\d|3[0-1])[\/\.-]?(0[1-9]|1[0-2])[\/\.-]?(\d{4})$#', $value, $match) == 1)
+                {
+                    if (!checkdate($match[2], $match[1], $match[3]))
+                    {
+                        $log[] = 'la valeur du champ date xxx n\'existe pas dans le calendrier';
+                    }
+                }
+                else
+                {
+                    $log[] = 'le format date du champ xxx est invalide';
+                }
                 break;
-            /*   case 'Yesno':
-              $yes = array('oui', 'yes', 'o', 1);
-              (in_array(strtolower($row[$field['FIELD_NAME']], $yes))) ? $yesno = 'O' : $yesno = 'N';
-              $line .= $yesno;
-              break;
-              case 'NCommande':
-              // numéro de commande à récupérer en amont et passer en paramètre
-              $line .= substr(str_pad($code, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-              break;
-              case 'codeOper':
-              // code opération
-              $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
-              break; */
-            default:
-                $importLine[$field['FIELD_NAME']] = $explodeLine[$field['ORDER_FIELD'] + 1];
+            case 'Yesno':
+                if (strtoupper($value) != 'O' && strtoupper($value) != 'N')
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'O / N'";
+                break;
+            case 'OuiNon':
+                if (strtolower($value) != 'oui' && strtolower($value) != 'non')
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'oui / non'";
+                break;
+            case 'binaire':
+                if ($value != 1 && $value != 0)
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format '1 / 0'";
+                break;
+            case 'AI':
+                if ($value != 'A' || $value != 'I')
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format Actif/Inactif 'A / I'";
+                break;
+
+            case 'NCommande':
+                if (!is_int($value))
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'Numéro de commande'";
+                break;
+
+            case 'cp': // #^[0-9]{5}$#
+                if (preg_match('#^[0-9]{5}$#', $value) != 1)
+                {
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au type 'Code postal'";
+                }
+                break;
+
+            case 'codeOper': // modifier
+                if (!is_int($value))
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format du Code opération";
+                break;
+
+            default: // chaine de caractères
+                if (!is_string($value))
+                    $log[] = "La valeur $value du champs '$field' n'est pas de type 'Chaine de caractère'";
                 break;
         }
+        if ($length != 0 && $length != strlen($lengthValue) && $type == 'csv')
+            $log[] = "La taille de la valeur $value du champ '$field' ne correspond pas à celle attendue ($length)";
     }
-    return 1;
+    else if ($params['REQUIRED'] == 'yes')
+    {
+        $log[] = "Aucune valeur renseignée pour le champ requis '$field'";
+    }
+    if (count($log) > 0)
+    {
+        return $log;
+    }
+    else
+    {
+        return 1;
+    }
 }
-
 /* * ***
  * Execution d'un nouveau process suite à un import de l'AS400
  *
@@ -1239,7 +1234,6 @@ function new_case_for_import($line, $config) {
 //G::header('Location: ../../cases/' . $nextStep['PAGE']);
 //G::header('Location: ../../cases/open?APP_UID=' . $_SESSION['APPLICATION'].'&DEL_INDEX='.$_SESSION['INDEX']);
 }
-
 /***
  * Mise a jour de DATE_PROD dans PMT_LISTE_PROD et des dossiers produits
  * 

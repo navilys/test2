@@ -614,8 +614,12 @@ Ext.onReady(function()
 	                    ["Date","Date"],		
 	                    ["Decimal","Decimal"],
 	                    ["Telephone","Telephone"],
-	                    ["Yesno","Oui / Non"],
-	                    ["NCommande","Num Commande"],
+            ["AI", "Actif / Inactif"],
+            ["cp", "Code postal"],
+            ["Yesno", "O ou N"],
+            ["OuiNon", "Oui / Non"],
+            ["binaire", "0 ou 1"],
+            ["NCommande", "Numéro Commande"],
 	                    ["codeOper","Code Opération"],
 	                    ["Ignore","Ignorer cette donnée"]
 	                   ]
