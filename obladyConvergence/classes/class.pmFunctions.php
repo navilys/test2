@@ -1003,7 +1003,7 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
  * $childProc       @array     0 on ne lance pas le process de traitement des données
  *
  */
-function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
+function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
     if ($app_id != '') {
     try{
         $query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
@@ -1047,20 +1047,20 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
         while (($current_line = fgets($ftic)) !== false) {
             $explodeLine = array();
             $checkLog = array();
-            $explodeLine = explode($token, $current_line);
-            $logLine = '';
+            $logLine = array();
+            $explodeLine = explode($token, $current_line);            
             $nbcurrentLine++;
             foreach ($select as $field)
             {
                 $checkLog = convergence_checkFieldLog($explodeLine[$field['ORDER_FIELD'] - 1], $field, 'csv');
                 if ($checkLog != 1)
                 {
-                    $logLine .= implode(', ', $checkLog);
+                    $logLine[] = implode(', ', $checkLog);
                 }
             }
             unset($field);
             $importLine = array();
-            if ($logLine == '')
+            if (empty($logLine))          
             {
                 // on ne modifie pas les champs lors de l'import csv
                 foreach ($select as $field)
@@ -1072,7 +1072,8 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
             }
             else
             {
-                $logField[$nbcurrentLine] = $logLine;
+                $logField[$nbcurrentLine] = implode(', ', $logLine);
+                mail('nicolas@oblady.fr', '$logdebug mail ', var_export($logField, true));
             }
 
             //lancer le process ici $start_process_uid
@@ -1096,29 +1097,36 @@ function convergence_importCsvFromAS400($process_uid, $childProc = 0) {
 /* * ***
  * Teste la validitée des champs importés
  *
- * $value   @array      tableau contenant la valeur à traiter
+ * $value   @string     variable contenant la valeur à traiter
  * $params  @array      tableau contenant les paramètres de conformité pour $value
  * $type    @string     type d'import fichier plat as400 ou csv
  */
 //GLOBAL
 function convergence_checkFieldLog($value, $params, $type) {
     $log = array();
+
     (isset($params['FIELD_DESCRIPTION']) && $params['FIELD_DESCRIPTION'] != '') ? $field = $params['FIELD_DESCRIPTION'] : $field = $params['FIELD_NAME'];
+    if (isset($params['CONSTANT']) && $params['CONSTANT'] != 0)
+        $value = $params['CONSTANT'];
     $length = $params['LENGTH'];
     $lengthValue = strlen($value);
-    if (isset($value))
+    if (isset($value) && $value != '')
     {
         switch ($params['AS400_TYPE'])
         {
             case 'Integer':
             case 'Entier':
-                if (!is_int($value))
+                $val = $value + 0;
+                $val = "$val";
+                if ($value != $val)
                     $log[] = "La valeur $value du champs '$field' n'est pas de type 'Entier'";
                 break;
             case 'Ignore':
                 break;
             case 'Decimal':
-                if (!is_float($value))
+                $val = $value + 0.0;
+                $val = "$val";
+                if ($value != $val)
                     $log[] = "La valeur $value du champs '$field' n'est pas de type 'Décimal'";
                 break;
             case 'Telephone': //  ^0[0-9]([-. ]?[0-9]{2}){4}$
@@ -1127,17 +1135,23 @@ function convergence_checkFieldLog($value, $params, $type) {
                     $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'Téléphone' attendu";
                 }
                 break;
+            case 'mail': //^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$
+                if (preg_match('#^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$#', $value) != 1)
+                {
+                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'E-mail' attendu";
+                }
+                break;
             case 'Date':  // ^(0[1-9]|1\d|2\d|3[0-1])[\/\.-]?(0[1-9]|1[0-2])[\/\.-]?(\d{4})$
                 if (preg_match('#^(0[1-9]|1\d|2\d|3[0-1])[\/\.-]?(0[1-9]|1[0-2])[\/\.-]?(\d{4})$#', $value, $match) == 1)
                 {
                     if (!checkdate($match[2], $match[1], $match[3]))
                     {
-                        $log[] = 'la valeur du champ date xxx n\'existe pas dans le calendrier';
+                        $log[] = "la valeur $value du champ date $field n\'existe pas dans le calendrier";
                     }
                 }
                 else
                 {
-                    $log[] = 'le format date du champ xxx est invalide';
+                    $log[] = "le format date du champ $field est invalide";
                 }
                 break;
             case 'Yesno':
@@ -1153,36 +1167,34 @@ function convergence_checkFieldLog($value, $params, $type) {
                     $log[] = "La valeur $value du champs '$field' ne correspond pas au format '1 / 0'";
                 break;
             case 'AI':
-                if ($value != 'A' || $value != 'I')
+                if ($value != 'A' && $value != 'I')
                     $log[] = "La valeur $value du champs '$field' ne correspond pas au format Actif/Inactif 'A / I'";
                 break;
-
             case 'NCommande':
                 if (!is_int($value))
                     $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'Numéro de commande'";
                 break;
-
             case 'cp': // #^[0-9]{5}$#
                 if (preg_match('#^[0-9]{5}$#', $value) != 1)
                 {
                     $log[] = "La valeur $value du champs '$field' ne correspond pas au type 'Code postal'";
                 }
                 break;
-
             case 'codeOper': // modifier
                 if (!is_int($value))
                     $log[] = "La valeur $value du champs '$field' ne correspond pas au format du Code opération";
                 break;
-
             default: // chaine de caractères
                 if (!is_string($value))
                     $log[] = "La valeur $value du champs '$field' n'est pas de type 'Chaine de caractère'";
                 break;
         }
-        if ($length != 0 && $length != strlen($lengthValue) && $type == 'csv')
+        if ($length != 0 && $length != $lengthValue && $type == 'csv')
+        {
             $log[] = "La taille de la valeur $value du champ '$field' ne correspond pas à celle attendue ($length)";
+        }
     }
-    else if ($params['REQUIRED'] == 'yes')
+    elseif ($params['REQUIRED'] == 'yes')
     {
         $log[] = "Aucune valeur renseignée pour le champ requis '$field'";
     }
