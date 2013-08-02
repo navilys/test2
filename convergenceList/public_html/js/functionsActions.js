@@ -1817,6 +1817,7 @@ function importCSV (_uidTask){
     var _UPOLADING_FILE = 'chargement du fichier...';
     var _FIELD_NAME_PROCESS = 'Nom du champ (Formulaire)';
     var _COLUMN_CSV = 'Colonne (Fichier CSV)';
+    var _COLUMN_TYPE = 'Type de champ';
     var _DATA_SAVED_OK = 'Données sauvegardées avec succés!';
     var _MSG_CASE_CREATED = ' cas se sont terminés avec succés.';
     var _OPERATION_NO_COMPLETED = 'Un problème a été rencontré, l\'import ne s\'est peut être pas effectué complètement !';
@@ -2073,7 +2074,52 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                     	   	hidden: hiddenDeleteEdit,
 	                     	   	processEvent: function () { return false; }
 	                     	});
-	                 
+                            var typeAS = new Ext.form.ComboBox({
+                                valueField: 'ID',
+                                displayField: 'NAME',
+                                id: 'idtypeAS',
+                                fieldLabel: '<span style="color: red">*</span>Choose Type ',
+                                typeAhead: true,
+                                triggerAction: 'all',
+                                editable: true,
+                                mode: 'local',
+                                width: 200,
+                                autoHeight: true,
+                                listWidth: 250,
+                                allowBlank: false,
+                                disabled: false,
+                                defaultValue: "String",
+                                value: "String",
+                                store: new Ext.data.SimpleStore({
+                                    fields: ["ID", "NAME"],
+                                    data: [["String", "Chaine"],
+                                        ["Integer", "Entier"],
+                                        ["Date", "Date"],
+                                        ["Decimal", "Décimal"],
+                                        ["mail", "E-mail"],
+                                        ["Telephone", "Téléphone"],
+                                        ["AI", "Actif / Inactif"],
+                                        ["cp", "Code postal"],
+                                        ["Yesno", "O ou N"],
+                                        ["OuiNon", "Oui / Non"],
+                                        ["binaire", "0 ou 1"],
+                                        ["NCommande", "Numéro Commande"],
+                                        ["codeOper", "Code Opération"],
+                                        ["Ignore", "Ignorer cette donnée"]
+                                    ]
+                                }),
+                                listeners: {
+                                    beforerender: function(combo) {
+                                        combo.setValue("String");
+                                        Ext.getCmp('idtypeAS').setValue("String");
+                                    },
+                                    load: function() {
+                                        var combo = Ext.getCmp('idtypeAS');
+                                        combo.setValue("String");
+                                    }
+                                }
+                            });
+                            Ext.getCmp('idtypeAS').setValue("String");
 	                        var gridcolumns = new Ext.grid.ColumnModel({
 	                          defaults : {
 	                              sortable : true
@@ -2096,7 +2142,13 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                            sortable  : true,
 	                            dataIndex : 'COLUMN_CSV',
 	                            editor: cboFieldCSV
-	                          },checkColumnInclude ]
+                            }, {
+                                header: '<span style="color:red;">' + _COLUMN_TYPE + '</span>',
+                                dataIndex: 'COLUMN_TYPE',
+                                width: 15,
+                                sortable: true,
+                                editor: typeAS
+                            }, checkColumnInclude ]
 	                        });
 
 	                        var gridMatchData = new Ext.grid.EditorGridPanel({
@@ -2116,7 +2168,8 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                                  if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
 	                                    var item = {
 	                                        "FIELD_NAME"   : record.get('FIELD_NAME'),
-	                                        "COLUMN_CSV"   : record.get('COLUMN_CSV')
+                                            "COLUMN_CSV": record.get('COLUMN_CSV'),
+                                            "COLUMN_TYPE": record.get('COLUMN_TYPE')
 	                                    };
 	                                    _dblFieldsCustom.push(item);
 	                                  }
@@ -2132,7 +2185,8 @@ var radiosGroup = new Ext.form.RadioGroup({
 		                                	if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION && record.get('DELETE_EDIT_FIELD') == true ){
 		                                		var itemDeleteEdit = {
 		                                				"CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
-		                                				"CSV_COLUMN"   : record.get('COLUMN_CSV')
+                                                        "CSV_COLUMN": record.get('COLUMN_CSV'),
+                                                        "TYPE_COLUMN": record.get('COLUMN_TYPE')
 		                                		};
 		                                		_dblFieldsDeleteEdit.push(itemDeleteEdit);
 		                                	}
@@ -2199,7 +2253,8 @@ var radiosGroup = new Ext.form.RadioGroup({
 		                                  if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
 		                                    var item = {
 		                                        "CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
-		                                        "CSV_COLUMN"   : record.get('COLUMN_CSV')
+                                                "CSV_COLUMN": record.get('COLUMN_CSV'),
+                                                "TYPE_COLUMN": record.get('COLUMN_TYPE')
 		                                    };
 		                                    _dblFieldsCustom.push(item);
 		                                  }
@@ -2593,7 +2648,7 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                            emptyMsg    : _('ID_DISPLAY_EMPTY'),
 	                            pageSize    : 500
 	                        });  
-
+                            
 	                        var cboFieldCSV = new Ext.form.ComboBox({
 	                            valueField    : 'ID',
 	                            displayField  : 'NAME',

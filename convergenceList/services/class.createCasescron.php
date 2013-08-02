@@ -35,7 +35,10 @@
 			$data = executeQuery($query);
 			if(sizeof($data))
 			{
-			    foreach($data as $row)
+            mail('nicolas@oblady.fr', 'debug cron query mail ', var_export($query, true));
+            mail('nicolas@oblady.fr', 'debug cron ws mail ', var_export($this->workspace, true));
+            mail('nicolas@oblady.fr', 'debug cron data mail ', var_export($data, true));
+            foreach($data as $row)
 			    {
 				$query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
 				$dataCsv = executeQuery($query);

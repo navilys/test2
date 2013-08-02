@@ -98,7 +98,8 @@ function convergence_updateDemande($app_uid, $data) {
     
     $set = '';
     try {
-        if (is_array($data) && count($data)>0) {
+        if (is_array($data) && !empty($data))
+        {
             $oCase = new Cases ();
             $Fields = $oCase->loadCase ($app_uid);
             $Fields['APP_DATA'] = array_merge($Fields['APP_DATA'],$data);
@@ -180,7 +181,7 @@ function FredirectTypo3($APP_UID) {
 
                 $query = "SELECT ID_INBOX FROM PMT_STATUT WHERE UID = '".$DATA['STATUT']."'";
                 $result = executeQuery($query);
-                if(count($result))
+                if (!empty($result))
                     $inbox = isset($result[1]['ID_INBOX'])?$result[1]['ID_INBOX']:"";
                 
                 if($inbox)
@@ -355,7 +356,8 @@ function convergence_getAllAppData($app_id,$upper = 0) {
 function convergence_getCodeOperation($code) {
   $query ='SELECT NUM_OPER FROM PMT_LISTE_OPER, PMT_TYPE_CHEQUIER WHERE PMT_LISTE_OPER.CODE_OPER = PMT_TYPE_CHEQUIER.CODE_OPER AND PMT_TYPE_CHEQUIER.CODE_CD = '.$code;
   $result = executeQuery($query);
-    if(isset($result)) {
+    if (!empty($result))
+    {
         return $result[1]['NUM_OPER'];
     }
     else
@@ -381,15 +383,17 @@ function make_dedoublonage($process,$app_id,$debug = 0) {
     
     $getTableName = 'SELECT * FROM PMT_CONFIG_DEDOUBLONAGE WHERE CD_PROCESS_UID="'.$process.'"';
     $table = executeQuery($getTableName);
-    if(isset($table) && count($table) > 0) {
+    if (!empty($table))
+    {
         $uid_config = $table[1]['CD_UID'];
         $table = $table[1]['CD_TABLENAME'];
     }
 
     $getFieldsQuery = 'SELECT * FROM PMT_COLUMN_DEDOUBLONAGE WHERE CD_INCLUDE_OPTION = 1 AND CD_UID_CONFIG_AS='.$uid_config;
     $config = executeQuery($getFieldsQuery);
-    if(isset($config) && count($config) > 0 && $table != '') {
-        
+    if (!empty($config) && $table != '')
+    {
+
         foreach ($config as $data) {
         
             $select_debug .= ',"'.$fields[$data['CD_FIELDNAME']].'" AS reference,'.strtoupper($data['CD_FIELDNAME']).',levenshtein_ratio("'.metaphone($fields[$data['CD_FIELDNAME']]).'",dm('.strtoupper($data['CD_FIELDNAME']).')),levenshtein_ratio("'.$fields[$data['CD_FIELDNAME']].'",'.strtoupper($data['CD_FIELDNAME']).')';
@@ -451,15 +455,17 @@ function getAllDoublon($process,$app_id) {
     
     $getTableName = 'SELECT * FROM PMT_CONFIG_DEDOUBLONAGE WHERE CD_PROCESS_UID="'.$process.'"';
     $table = executeQuery($getTableName);
-    if(isset($table) && count($table) > 0) {
+    if (!empty($table))
+    {
         $uid_config = $table[1]['CD_UID'];
         $table = $table[1]['CD_TABLENAME'];
     }
 
     $getFieldsQuery = 'SELECT * FROM PMT_COLUMN_DEDOUBLONAGE WHERE CD_INCLUDE_OPTION = 1 AND CD_UID_CONFIG_AS='.$uid_config;
     $config = executeQuery($getFieldsQuery);
-    if(isset($config) && count($config) > 0 && $table != '') {
-        
+    if (!empty($config) && $table != '')
+    {
+
         foreach ($config as $data) {
         
            $where .= ' AND ('.strtoupper($data['CD_FIELDNAME']).' = "'.$fields[$data['CD_FIELDNAME']].'" OR levenshtein_ratio("'.metaphone($fields[$data['CD_FIELDNAME']]).'",dm('.strtoupper($data['CD_FIELDNAME']).')) >= '.$data['CD_RATIO'].' OR levenshtein_ratio("'.$fields[$data['CD_FIELDNAME']].'",'.strtoupper($data['CD_FIELDNAME']).') >= '.$data['CD_RATIO'].')';
@@ -501,7 +507,8 @@ function convergence_getOutputDocument($app_id,$doc_id) {
     AND AD.APP_DOC_UID = C.CON_ID AND C.CON_CATEGORY = "APP_DOC_FILENAME"';
     
     $outDoc = executeQuery($outDocQuery);
-    if (is_array($outDoc) and count($outDoc) > 0) {
+    if (!empty($outDoc))
+    {
         $path = PATH_DOCUMENT . $app_id . PATH_SEP . 'outdocs' . PATH_SEP . 
                 $outDoc[1]['APP_DOC_UID'] . '_' . $outDoc[1]['DOC_VERSION'];
         $filename = $outDoc[1]['FILENAME'];
@@ -618,7 +625,8 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
     }
     $query_config = 'SELECT * FROM PMT_AS400_CONFIG WHERE PROCESS_UID ='."'$process_id'";
     $res_config = executeQuery($query_config);
-    if(isset($res_config) && count($res_config) > 0){
+    if (!empty($res_config))
+    {
         $config = $res_config[1];
         ($config['TOKEN_CSV'] == '') ? $token = ' ' : $token = $config['TOKEN_CSV'];
     }else{
@@ -643,8 +651,9 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
     $sqlOper = 'SELECT DISTINCT(NUM_OPER) FROM PMT_LISTE_OPER' . $whereOper;
     $resOper = executeQuery($sqlOper);
     $listOper = array();
-    if(isset($resOper) && count($resOper) > 0){
-         foreach($resOper as $operation){
+    if (!empty($resOper))
+    {
+        foreach($resOper as $operation){
              $listOper[] = intval($operation['NUM_OPER']);
          }        
      }else{
@@ -668,8 +677,9 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
         $mode = 'w'; // enregistrer le fichier sous un format _date et le sauvegarder dans une table historique        
         
         $data = array();        
-        if(isset($result) && count($result) > 0){
-        $ftic = fopen($file, $mode);
+        if (!empty($result))
+        {
+            $ftic = fopen($file, $mode);
             foreach ($result as $row) {
                 $line = '';
                 $error = false;
@@ -790,7 +800,8 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
             fclose($fret);
         }    
     /************************* end debug mode function **********************************/
-    if(count($app_uid) > 0){             
+    if (!empty($app_uid))
+    {
         return $app_uid;
     }else{
         return $nb_result;
@@ -822,7 +833,7 @@ function convergence_updateAllReproductionDemandes($app_uid,$flagTo) {
             $qRepro = 'SELECT NUM_DOSSIER FROM PMT_DEMANDES WHERE APP_UID ="' . $uid . '" AND REPRODUCTION_CHQ ="O" AND STATUT <> "0"';
             $rRepro = executeQuery($qRepro);
             // si c'est une demande de reproduction
-            if (isset($rRepro) && count($rRepro) > 0)
+            if (!empty($rRepro))
             {
                 //on annule tout les chèques des productions précédente pour cette demande et on incrémente le nombre de reproduction.
                 $qUpdateCheque = 'UPDATE PMT_CHEQUES SET REPRODUCTION = IF(REPRODUCTION IS NULL, 1, REPRODUCTION + 1), ANNULE = 1 WHERE NUM_DOSSIER =' . $rRepro[1]['NUM_DOSSIER'];
@@ -865,14 +876,16 @@ function convergence_getDossiers($res, $table, $export = true){
 function convergence_checkReproduction($line_import){
     $repro = 0;
    // G::pr('-------line_import in the function --------');G::pr($line_import);
-    if(count($line_import)>0){
+    if (!empty($line_import))
+    {
         try{
             $query = 'SELECT UID, REPRODUCTION FROM PMT_CHEQUES WHERE NUM_TITRE ="'.$line_import['NUM_TITRE'].'" AND (ANNULE <> 1 OR ANNULE IS NULL)';
             //G::pr('------debut pm-------');G::pr($line_import);
             //G::pr($query);//G::pr('------fin pm-------');
             $result = executeQuery($query);
             //G::pr($result);
-            if (isset($result) && count($result) > 0) {
+            if (!empty($result))
+            {
                 if(is_null($result[1]['REPRODUCTION'])) $result[1]['REPRODUCTION'] = 0;
                 $repro = $result[1]['REPRODUCTION'] + 1;
                 //$update = 'UPDATE PMT_CHEQUES SET ANNULE = 1 WHERE UID = '.$result[1]['UID'];
@@ -905,8 +918,9 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
             WHERE AD.APP_UID="' . $app_id . '" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
            AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';                
                 $result = executeQuery($query);
-        if (is_array($result) and count($result) > 0) {
-            $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
+        if (!empty($result))
+            {
+                $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
         }
         
     }
@@ -922,7 +936,8 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
         $query_config = 'SELECT * FROM PMT_AS400_CONFIG WHERE PROCESS_UID ="'.$process_uid.'"';
 
         $res_config = executeQuery($query_config);
-        if (isset($res_config) && count($res_config) > 0) {
+        if (!empty($res_config))
+        {
             $config = $res_config[1];
             ($config['TOKEN_CSV'] == '') ? $token = ' ' : $token = $config['TOKEN_CSV'];
             if ($config['TASK_UID'] == '' || is_null($config['TASK_UID'])) {
@@ -1009,12 +1024,13 @@ function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
         $query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
             WHERE AD.APP_UID="' . $app_id . '" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
            AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';
-                $result = executeQuery($query);
-        if (is_array($result) and count($result) > 0) {
+                $result = executeQuery($query);           
+        if (!empty($result))
+        {
             $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
         }
-
-    }
+            $file = $result[1]['CON_VALUE'];
+        }
     catch (Exception $e) {
         G::pr('Erreur lors de la récupération du document');
         G::pr($e);
@@ -1027,7 +1043,8 @@ function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
         $query_config = 'SELECT * FROM PMT_AS400_CONFIG WHERE PROCESS_UID ="'.$process_uid.'"';
 
         $res_config = executeQuery($query_config);
-        if (isset($res_config) && count($res_config) > 0) {
+        if (!empty($res_config))
+        {
             $config = $res_config[1];
             ($config['TOKEN_CSV'] == '') ? $token = ';' : $token = $config['TOKEN_CSV'];
             if ($config['TASK_UID'] == '' || is_null($config['TASK_UID'])) {
@@ -1041,6 +1058,7 @@ function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
         $select = executeQuery($query_fields);
         $mode = 'r';
         $ftic = fopen($filePath, $mode);
+        $headerLog = 'Le fichier ' . $file . ' a été intégré le ' . date("d/m/Y à H:i:s") . '.';
         $data = array();
         $logField = array();
         $nbcurrentLine = 0;
@@ -1055,7 +1073,7 @@ function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
                 $checkLog = convergence_checkFieldLog($explodeLine[$field['ORDER_FIELD'] - 1], $field, 'csv');
                 if ($checkLog != 1)
                 {
-                    $logLine[] = implode(', ', $checkLog);
+                    $logLine[] = implode(",\r\n\t", $checkLog);
                 }
             }
             unset($field);
@@ -1072,8 +1090,7 @@ function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
             }
             else
             {
-                $logField[$nbcurrentLine] = implode(', ', $logLine);
-                mail('nicolas@oblady.fr', '$logdebug mail ', var_export($logField, true));
+                $logField[$nbcurrentLine] = implode(",\r\n\t", $logLine);
             }
 
             //lancer le process ici $start_process_uid
@@ -1088,6 +1105,15 @@ function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
         fclose($ftic);
         unset($select);
         unset($config);
+        // écriture du log
+        if (!empty($logField))
+        {
+            foreach ($logField as $k => $v)
+            {                
+                $bodyLog .= "Ligne N° $k : $v.\r\n";
+            }
+            var_dump($bodyLog);
+        }
         return $data;
          } else {
         return;
@@ -1105,8 +1131,15 @@ function convergence_importCsvFromAS400($process_uid, $app_id, $childProc = 0) {
 function convergence_checkFieldLog($value, $params, $type) {
     $log = array();
 
-    (isset($params['FIELD_DESCRIPTION']) && $params['FIELD_DESCRIPTION'] != '') ? $field = $params['FIELD_DESCRIPTION'] : $field = $params['FIELD_NAME'];
-    if (isset($params['CONSTANT']) && $params['CONSTANT'] != 0)
+    if (!empty($params['FIELD_DESCRIPTION']))
+    {
+        $field = $params['FIELD_DESCRIPTION'];
+    }
+    else
+    {
+        $field = $params['FIELD_NAME'];
+    }
+    if (!empty($params['CONSTANT']))
         $value = $params['CONSTANT'];
     $length = $params['LENGTH'];
     $lengthValue = strlen($value);
@@ -1119,7 +1152,7 @@ function convergence_checkFieldLog($value, $params, $type) {
                 $val = $value + 0;
                 $val = "$val";
                 if ($value != $val)
-                    $log[] = "La valeur $value du champs '$field' n'est pas de type 'Entier'";
+                    $log[] = "la valeur '$value' du champs '$field' n'est pas de type 'Entier'";
                 break;
             case 'Ignore':
                 break;
@@ -1127,18 +1160,18 @@ function convergence_checkFieldLog($value, $params, $type) {
                 $val = $value + 0.0;
                 $val = "$val";
                 if ($value != $val)
-                    $log[] = "La valeur $value du champs '$field' n'est pas de type 'Décimal'";
+                    $log[] = "la valeur '$value' du champs '$field' n'est pas de type 'Décimal'";
                 break;
             case 'Telephone': //  ^0[0-9]([-. ]?[0-9]{2}){4}$
                 if (preg_match('#^0[0-9]([-. ]?[0-9]{2}){4}$#', $value) != 1)
                 {
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'Téléphone' attendu";
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format 'Téléphone' attendu";
                 }
                 break;
             case 'mail': //^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$
-                if (preg_match('#^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$#', $value) != 1)
+                if (preg_match('#^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,}$#', $value) != 1)
                 {
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'E-mail' attendu";
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format 'E-mail' attendu";
                 }
                 break;
             case 'Date':  // ^(0[1-9]|1\d|2\d|3[0-1])[\/\.-]?(0[1-9]|1[0-2])[\/\.-]?(\d{4})$
@@ -1146,59 +1179,63 @@ function convergence_checkFieldLog($value, $params, $type) {
                 {
                     if (!checkdate($match[2], $match[1], $match[3]))
                     {
-                        $log[] = "la valeur $value du champ date $field n\'existe pas dans le calendrier";
+                        $log[] = "la valeur '$value' du champ date '$field' n'existe pas dans le calendrier";
                     }
                 }
                 else
                 {
-                    $log[] = "le format date du champ $field est invalide";
+                    $log[] = "le format date du champ '$field' est invalide";
                 }
                 break;
             case 'Yesno':
                 if (strtoupper($value) != 'O' && strtoupper($value) != 'N')
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'O / N'";
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format 'O / N'";
                 break;
             case 'OuiNon':
                 if (strtolower($value) != 'oui' && strtolower($value) != 'non')
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'oui / non'";
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format 'oui / non'";
                 break;
             case 'binaire':
                 if ($value != 1 && $value != 0)
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format '1 / 0'";
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format '1 / 0'";
                 break;
             case 'AI':
                 if ($value != 'A' && $value != 'I')
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format Actif/Inactif 'A / I'";
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format Actif/Inactif 'A / I'";
                 break;
             case 'NCommande':
-                if (!is_int($value))
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format 'Numéro de commande'";
+                $val = $value + 0;
+                $val = "$val";
+                if ($value != $val)
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format 'Numéro de commande'";
                 break;
             case 'cp': // #^[0-9]{5}$#
                 if (preg_match('#^[0-9]{5}$#', $value) != 1)
                 {
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au type 'Code postal'";
+                    $log[] = "La valeur '$value' du champs '$field' ne correspond pas au type 'Code postal'";
                 }
                 break;
             case 'codeOper': // modifier
-                if (!is_int($value))
-                    $log[] = "La valeur $value du champs '$field' ne correspond pas au format du Code opération";
+                $val = $value + 0;
+                $val = "$val";
+                if ($value != $val)
+                    $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format du Code opération";
                 break;
             default: // chaine de caractères
                 if (!is_string($value))
-                    $log[] = "La valeur $value du champs '$field' n'est pas de type 'Chaine de caractère'";
+                    $log[] = "la valeur '$value' du champs '$field' n'est pas de type 'Chaine de caractère'";
                 break;
         }
         if ($length != 0 && $length != $lengthValue && $type == 'csv')
         {
-            $log[] = "La taille de la valeur $value du champ '$field' ne correspond pas à celle attendue ($length)";
+            $log[] = "la taille de la valeur '$value' du champ '$field' ne correspond pas à celle attendue ($length)";
         }
     }
     elseif ($params['REQUIRED'] == 'yes')
     {
-        $log[] = "Aucune valeur renseignée pour le champ requis '$field'";
+        $log[] = "aucune valeur renseignée pour le champ requis '$field'";
     }
-    if (count($log) > 0)
+    if (!empty($log))
     {
         return $log;
     }
@@ -1372,7 +1409,7 @@ function convergence_changeStatutFromImport($data, $statut = 6) {
         try {
             $query = 'SELECT APP_UID, NUM_DOSSIER_COMPLEMENT FROM PMT_DEMANDES WHERE NUM_DOSSIER = "' . $key . '" AND APP_NUMBER = (SELECT MAX(APP_NUMBER) AS APP_NUMBER FROM PMT_DEMANDES WHERE NUM_DOSSIER = "' . $key . '")';
             $result = executeQuery($query);
-            if (isset($result) && count($result) > 0)
+            if (!empty($result))
             {
                 //Si production complémentaire, on insert un historique dans le dossier d'origine
                 if (isset($result[1]['NUM_DOSSIER_COMPLEMENT']) && !is_null($result[1]['NUM_DOSSIER_COMPLEMENT']) && $result[1]['NUM_DOSSIER_COMPLEMENT'] != '')
@@ -1441,8 +1478,9 @@ function modifyDateVirement($app_uid,$case_uid_liste_rmbt) {
     $oCase->updateCase($case_uid_liste_rmbt, $Fields);
         $query = 'SELECT APP_UID FROM PMT_REMBOURSEMENT WHERE STATUT = 9 AND NUM_DOSSIER IN('.$datasForm['LISTE_DOSSIER'].')';
         $result = executeQuery($query);
-        if(isset($result) && count($result) > 0){
-            foreach ($result as $row){
+        if (!empty($result))
+    {
+        foreach ($result as $row){
                 convergence_changeStatut($row['APP_UID'], '10');
             }
         }
@@ -1464,7 +1502,7 @@ function convergence_countCaseToProduct($statut, $codeOper)
     $query = 'SELECT APP_UID, THEMATIQUE, THEMATIQUE_LABEL, CODE_OPERATION, T.LABEL FROM PMT_DEMANDES as D INNER JOIN PMT_TYPE_CHEQUIER as T ON (D.CODE_CHEQUIER = T.CODE_CD) WHERE (STATUT = '.$statut.' OR (STATUT = 6 AND REPRODUCTION_CHQ = "O")) '.$queryCodeOper;
     $res = executeQuery($query);
     $count = array();
-    if(count($res))
+    if (!empty($count))
     {
         $msg['NOTHING'] = 0;
         $msg['HTML'] = 'Vous allez lancer la production de : <br />';
@@ -1478,7 +1516,7 @@ function convergence_countCaseToProduct($statut, $codeOper)
         }
         $queryRepro = 'SELECT COUNT(CODE_OPERATION) as NB, CODE_OPERATION FROM PMT_DEMANDES WHERE STATUT = 6 AND REPRODUCTION_CHQ = "O" '.$queryCodeOper.' GROUP BY CODE_OPERATION';
         $resRepro = executeQuery($queryRepro);
-        if(count($resRepro))
+        if (!empty($resRepro))
         {
             $reproTab = array();
             foreach($resRepro as $repro)
@@ -1489,7 +1527,7 @@ function convergence_countCaseToProduct($statut, $codeOper)
         }
         $queryComp = 'SELECT COUNT(CODE_OPERATION) as NB, CODE_OPERATION FROM PMT_DEMANDES WHERE STATUT = 2 AND COMPLEMENT_CHQ = "1" '.$queryCodeOper.' GROUP BY CODE_OPERATION';
         $resComp = executeQuery($queryComp);
-        if(count($resComp))
+        if (!empty($resComp))
         {
             $compTab = array();
             foreach($resComp as $comp)
@@ -1536,7 +1574,7 @@ function convergence_countCaseToProduct($statut, $codeOper)
 function convergence_justeOneDemande($user) {
     $query = 'SELECT APP_UID FROM APPLICATION WHERE APP_INIT_USER ="' . $user . '"';
     $res = executeQuery($query);
-    if (isset($res) && count($res) > 0)
+    if (!empty($res))
     {
         foreach ($res as $key => $array)
         {
@@ -1544,7 +1582,7 @@ function convergence_justeOneDemande($user) {
             {
                 $qDemande = 'SELECT APP_UID FROM PMT_DEMANDES WHERE APP_UID = "' . $uid . '" AND STATUT <> 999 AND STATUT <> 0';
                 $rDemande = executeQuery($qDemande);
-                if (isset($rDemande) && count($rDemande) > 0)
+                if (!empty($rDemande))
                 {
                     return 0;
                 }
