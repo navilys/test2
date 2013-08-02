@@ -266,6 +266,7 @@ if($actionAjax== 'historyDynaformGridPreview')
   	  else 
   	  	 	$_SESSION['PROCESS'] = $PRO_UID;
        #End get APP_NUMBER initial case
+      
       $Fields = $oCase->loadCase($APP_UID);
       //$Fields["APP_DATA"] = array_merge( $Fields["APP_DATA"], G::getSystemConstants() );
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['PREVIOUS_STEP_LABEL'] = '';
@@ -296,7 +297,7 @@ if($actionAjax== 'historyDynaformGridPreview')
 	    }
 	  
       }
-      
+     
       $_SESSION['APPLICATION'] = $APP_UID;
       
       $PRO_UID = $_SESSION['PROCESS'];

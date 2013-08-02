@@ -32,12 +32,11 @@ if(sizeof($resultAppDelegation)){
 #End Query To get the process, Actual user and task
 
 # Get Dynaforms
-$query = " SELECT DISTINCT DYN_UID FROM APP_HISTORY 
-      	   INNER JOIN APP_DELEGATION AD ON AD.APP_UID = APP_HISTORY.APP_UID
+$query = " SELECT DISTINCT STEP_UID_OBJ AS DYN_UID FROM STEP 
+      	   INNER JOIN APP_DELEGATION AD ON AD.TAS_UID = STEP.TAS_UID
       	   INNER JOIN APPLICATION A ON A.APP_UID = AD.APP_UID
-           WHERE APP_HISTORY.APP_UID = '".$APP_UID."' AND (A.APP_STATUS = 'TO_DO' OR A.APP_STATUS = 'DRAFT')
+           WHERE A.APP_UID = '".$APP_UID."' AND (A.APP_STATUS = 'TO_DO' OR A.APP_STATUS = 'DRAFT')
            AND AD.DEL_INDEX IN (SELECT MAX(AD1.DEL_INDEX) FROM APP_DELEGATION AD1 WHERE AD1.APP_UID=AD.APP_UID)
-           ORDER BY HISTORY_DATE  ASC
          ";
 $select = executeQuery($query);      
    
@@ -60,9 +59,33 @@ if(sizeof($select))
 							AND AD1.DEL_INDEX IN (SELECT MIN(AD.DEL_INDEX) FROM APP_DELEGATION AD WHERE AD1.APP_UID=AD.APP_UID)  ";
     $resultAppDelegation=executeQuery($queryAppDelegation);          
     $usrUidIniCase = isset($resultAppDelegation[1]['USR_UID'])? $resultAppDelegation[1]['USR_UID']:''; 
+    require_once 'classes/model/Event.php';
+    require_once 'classes/model/AppDelay.php';
+    require_once 'classes/class.wsResponse.php';
+    $caseInstance = new Cases ();
+    $eventInstance = new Event();
     if($usrUidIniCase == $_SESSION['USER_LOGGED'])
     {
-        $userActiveForm = 1;
+        $_SESSION['APPLICATION'] = $APP_UID;
+	    $_SESSION['INDEX'] = $FINDEX;
+	    if ($caseInstance->isSelfService( $_SESSION['USER_LOGGED'], $TAS_UID, $APP_UID )) 
+	    {
+            $queryUpdateDelegation="UPDATE APP_DELEGATION SET USR_UID='".$_SESSION['USER_LOGGED']."' WHERE APP_UID='".$APP_UID."' AND DEL_INDEX='".$FINDEX."' ";
+		    $resultDelegation = executeQuery($queryUpdateDelegation);
+	    }
+	    else
+            $userActiveForm = 1;
+    }
+    else
+    {
+        
+        $_SESSION['APPLICATION'] = $APP_UID;
+	    $_SESSION['INDEX'] = $FINDEX;
+	    if ($caseInstance->isSelfService( $_SESSION['USER_LOGGED'], $TAS_UID, $APP_UID )) 
+	    {
+            $queryUpdateDelegation="UPDATE APP_DELEGATION SET USR_UID='".$_SESSION['USER_LOGGED']."' WHERE APP_UID='".$APP_UID."' AND DEL_INDEX='".$FINDEX."' ";
+		    $resultDelegation = executeQuery($queryUpdateDelegation);
+	    }
     }
 }
 # End Get Dynaforms

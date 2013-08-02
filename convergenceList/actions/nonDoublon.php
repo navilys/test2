@@ -55,6 +55,28 @@ $i=1;
 	  $newAPP_UID = PMFNewCase($PRO_UID, $USR_UID, $TAS_UID, $Fields['APP_DATA']);   
 		
 		if($newAPP_UID >0) {
+		    # execute Triggers task Ini
+		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	        $startTasks = executeQuery($query);
+	        foreach($startTasks as $rowTask){
+		        $taskId = $rowTask['TAS_UID'];
+		        $stepsByTask = getStepsByTask($taskId);
+	            foreach ($stepsByTask as $caseStep){
+				    $caseStepRes[] = 	 $caseStep->getStepUidObj();
+			    }
+			    break;
+	        }
+	        
+			$totStep = 0;
+			foreach($caseStepRes as $index)
+			{
+				$stepUid = $index;
+				executeTriggersMon($PRO_UID, $newAPP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+				executeTriggersMon($PRO_UID, $newAPP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+				$totStep++;
+			} 
+			# end execute Triggers task Ini
+			
 			$resp = PMFDerivateCase($newAPP_UID, 1,true, $USR_UID);
 			//$res = autoDerivate($PRO_UID,$newAPP_UID,$USR_UID);
 			// Execute trigger before assignement =>> false

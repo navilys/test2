@@ -13,6 +13,9 @@ $FINDEX  ='';
 $PRO_UID ='';
 $TAS_UID ='';
 $USR_UID ='';
+$_SESSION['PROCESS'] = '';
+$_SESSION['APPLICATION'] = ''; 
+$_SESSION['APPLICATION_EDIT'] = '';
 #Query To get the process, Actual user and task
 $queryAppDelegation="SELECT MAX(AD1.DEL_INDEX) as FINDEX,PRO_UID, TAS_UID, USR_UID FROM APP_DELEGATION AD1 WHERE AD1.APP_UID='$APP_UID' ";
 $resultAppDelegation=executeQuery($queryAppDelegation);
@@ -60,10 +63,11 @@ $query = " SELECT DISTINCT DYN_UID FROM APP_HISTORY
 $selectHistory = executeQuery($query);      
 if($rolesAdmin == 'PROCESSMAKER_ADMIN')
 {
-	$query = " SELECT DISTINCT STEP_UID_OBJ AS DYN_UID, STEP_CONDITION  FROM STEP 
+	$query = " SELECT DISTINCT STEP_UID_OBJ AS DYN_UID, STEP_CONDITION, MIN( STEP_POSITION ) AS POSITION  FROM STEP 
   				WHERE PRO_UID = '$PRO_UID' AND STEP_TYPE_OBJ ='DYNAFORM'
-   				ORDER BY STEP_POSITION, STEP_MODE ASC";
-	$select = executeQuery($query);
+  				GROUP BY DYN_UID   
+   				ORDER BY POSITION, STEP_MODE ASC";
+	$selectData = executeQuery($query);
 }
 else
 {	
@@ -75,11 +79,10 @@ else
   				WHERE ST.PRO_UID = '$PRO_UID' AND ST.STEP_TYPE_OBJ ='DYNAFORM'
    				AND (TU.USR_UID = '$users' OR TU.USR_UID = '$userGroup')
    				ORDER BY ST.STEP_POSITION, ST.STEP_MODE ASC";
-	$select = executeQuery($query);
+	$selectData = executeQuery($query);
 	
 }
-    
-     //G::pr($select);  
+
 $newSelect = array();
 G::LoadClass('pmScript');
 $sAppUid = $APP_UID;
@@ -92,7 +95,7 @@ if (!is_array($aFields['APP_DATA']))
 {
 	$aFields['APP_DATA'] = G::array_merges(G::getSystemConstants(), unserialize($aFields['APP_DATA']));
 }
-foreach ($select as $row) 
+foreach ($selectData as $row) 
 {
 	if (trim($row['STEP_CONDITION']) != '') {
       	$oPMScript->setFields($aFields['APP_DATA']);   
@@ -106,8 +109,7 @@ foreach ($select as $row)
     }
      unset($aFields);
      $select = $newSelect;
- //    G::pr($select); //die;
-      
+    
      $total = sizeof($selectHistory);
      $o = new Dynaform();
      $DYNAFORMSLIST = array();

@@ -48,10 +48,10 @@ function DuplicateMySQLRecord ($table, $id_field, $oldid,$newId) {
   }    
 }
 
-function autoDerivate($processId,$caseUID,$userId){
+function autoDerivate($processId,$caseUID,$userId){	
 
 	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$processId."'";	//query for select all start tasks
-	$startTasks = executeQuery($query);
+	$startTasks = executeQuery($query);	
 	$taskId = $startTasks[1]['TAS_UID'];
 	$queryNextTask = "SELECT ROU_NEXT_TASK FROM ROUTE WHERE PRO_UID = '".$processId."' AND TAS_UID = '".$taskId."'";
 	$taskNumber = 1;
@@ -376,6 +376,7 @@ function getStepType($step){
 		$task = executeQuery("SELECT * FROM STEP WHERE STEP_UID_OBJ = '".$step."'");
 	  return $task[1]['STEP_TYPE_OBJ'];
 }
+
 
 ###### For Filters
 function getRolUser(){

@@ -2648,7 +2648,7 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                            emptyMsg    : _('ID_DISPLAY_EMPTY'),
 	                            pageSize    : 500
 	                        });  
-                            
+
 	                        var cboFieldCSV = new Ext.form.ComboBox({
 	                            valueField    : 'ID',
 	                            displayField  : 'NAME',
@@ -4345,9 +4345,10 @@ function modificationEnMasse(taskuid, champs){
 
     idField = myApp.addTab_inside();
     _AppUids = Ext.util.JSON.decode(idField);
-    
+    var totCases = _AppUids.length;
+    var i = 0;
      Ext.each(_AppUids, function(record){
-       
+        i++;
         var _dblFieldsCustom    = new Array ();
 	    var _jsonFieldsCustom   = '';
         var item = {
@@ -4357,8 +4358,9 @@ function modificationEnMasse(taskuid, champs){
 	   _dblFieldsCustom.push(item);
 	   _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom); 
         urlData = "../convergenceList/actions/massUpdate.php";
-     //console.log(_jsonFieldsCustom);
-        test = Ext.MessageBox.show({
+         if(i == 1)
+         {
+            test = Ext.MessageBox.show({
             msg: 'Mise à jour des données, veuillez patienter...',
             progressText: 'En cours...',
               width : 300,
@@ -4367,6 +4369,7 @@ function modificationEnMasse(taskuid, champs){
                 interval : 200
               }
             });
+         }
         Ext.Ajax.request({
            url : urlData,
            params : {
@@ -4377,17 +4380,18 @@ function modificationEnMasse(taskuid, champs){
            success: function (result, request) {
              var response = Ext.util.JSON.decode(result.responseText);
              if (response.success) {
-                test.hide();
-                        
-                         Ext.MessageBox.show({
+                if(i == totCases)
+                {
+                    test.hide();
+                    Ext.MessageBox.show({
                              title : 'Résultat du traitement',
                             msg : response.messageinfo,
                             width : 500,
                             fn : function() {Ext.getCmp('gridNewTab').store.reload();},
                             icon: Ext.MessageBox.INFO
-                        });
+                    });
                         
-              
+                }
              }
              else {
                 test.hide();
@@ -4402,6 +4406,7 @@ function modificationEnMasse(taskuid, champs){
         });
      });
 }
+
 function actionAddComment(app_uid) { 
     var waitLoading = {};
     var textField1 = new Ext.form.TextArea({
@@ -4479,7 +4484,7 @@ function actionAddComment(app_uid) {
                     params:
                             {
                                 options: 'save',
-                                APP_UID: app_uid,
+                            APP_UID: app_uid,
                                 Note: Ext.getCmp('caseNoteText').getValue()
                             },
                     success: function(result, request)
@@ -4507,6 +4512,7 @@ function actionAddComment(app_uid) {
             ]});
     w.show();
 }
+
 function listeChequierDemande(num_dossier)
 {
     var adaptiveHeight = getDocHeight() - 50;

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////
-// @@ listBeneficiareNewTab.js
+// @@ inboxDinamic.js
 // @@ Recent change : May 10
 ///////////////////////////////////////////////////////////////////////
 
@@ -113,52 +113,7 @@ Ext.onReady(function()
 		
 	}	
 	    // End Dynamic Assignation
-   
-	var optionMenuFile = new Ext.Action({
-		text: 'PHP File',
-		iconCls: 'x-tree-node-icon ss_application_form',
-			    
-		menu: [
-		       {
-	                text: 'Redirect',
-	                handler: function() {
-	            		var requestFile = 'inboxDinamic.php?idInbox=' + idInbox; 
-						redirect(requestFile);
-			        }
-	            }, {
-	                text: 'Pop up',
-	                handler: function() {
-						dataGridreview();
-			        }
-	            }
-	        ] 
-	});
-		
-		
-
-	var optionMenuSend = new Ext.Action({
-		text:'Send Array ',
-		iconCls: 'ICON_CASES_NOTES',
-		handler: function() {
-			dataGridreview();
-		}
-	});
-
-	var optionMenuPopup = new Ext.Action({
-		text: 'PopUp Action',
-		iconCls: 'ICON_CASES_PAUSED',
-		handler:function (){
-		var idField = '';
-			printData(idField);
-		}
-	});
-		 
-	var optionMenuOutput = new Ext.Action({
-		text: 'Output Document',
-		iconCls: 'ICON_CASES_TO_REASSIGN',
-		handler:  caseOutputDocuments
-	});
-		 
+	 
 	var UserCombo = new Ext.data.JsonStore({
 		url : 'ajaxFiltersProcess.php?Type=UserCombo',
 		root : 'data',
@@ -244,29 +199,6 @@ Ext.onReady(function()
 	}
 
  
-		   
-	var optionMenuSummary = new Ext.Action({
-		text: _('ID_SUMMARY'),
-		iconCls: 'x-tree-node-icon ss_application_form',
-		handler: caseSummary,
-		ref: "optionMenuSummary"
-	});
-
-	var optionMenuNotes = new Ext.Action({
-		text: _('ID_CASES_NOTES'),
-		iconCls: 'ICON_CASES_NOTES',
-		handler: caseNotes
-	});
-		
-	var storeGenericFileds = new Ext.data.JsonStore({
-		url : 'ajaxFiltersProcess.php?Type=UserCombo',
-		root : 'data',
-		fields : [{
-			name : 'USR_UID'
-		}, {
-			name : 'USER'
-		}]
-	});     
 
 	//////Filters
 
@@ -802,76 +734,7 @@ Ext.onReady(function()
 			}
 		}     
 	}
-	function dataGridreview()
-	{
-		var miArray = new Array();  
-		var i = 0;
-		var idField = '';
-		if(checkSelect) 	
-		{
-			checkSelect.each(function(record)  
-	    	{  
-	    		record.fields.each(function(field) 
-	    		{ 
-	    			var selections = gridInboxDinamic.getSelectionModel().getSelections();
-	    			var fieldValue = record.get(field.name);
-	    			var item = {
-					        "value": fieldValue
-					    };
-	    			i++;
-	    			miArray.push(item);
-	    			
-	    		}); 
-	    	});
-		}
-		return myJSON = Ext.util.JSON.encode({miArray: miArray});
-		// printData(myJSON);
-		 
-	}
-	
-	function printData(idField)
-	{
-		var idField = dataGridreview();
-		var win = new Ext.Window({
-			closable: true,
-			maximizable: true,
-			title: 'Details of Item:',	
-			width:450,
-			height: 280,
-			modal: true,
-			loadMask : true,
-			items : [{
-				xtype : "component",
-				id    : 'iframe-win1',  // Add id	
-				loadMask : true,
-				autoEl : {
-					tag : "iframe",
-				    frameborder : '0',
-					width: '100%',
-					height: '100%',				        
-				    loadMask : true			            			             
-				}
-			}],
-			buttons:[{
-				text:'Close Panel',
-				handler: function(){
-					win.destroy();
-				}
-			}]
-		});
-		if(idField != '')
-		{	
-			win.show();
-			Ext.getDom('iframe-win1').src = "../convergenceList/printData.php?array=" + idField;
-		}
-		else
-		{
-			win.show();
-			Ext.getDom('iframe-win1').html = 'test';
-		}
-						
-	}
-		
+			
 	function outputDocuments()
 	{
 		var win = new Ext.Window({
