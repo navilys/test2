@@ -283,7 +283,7 @@ if($actionAjax== 'historyDynaformGridPreview')
       //G::pr($Fields['APP_DATA']);
       $swaction = $ACTIONTYPE;
 	  $swCase = 0;
-      if($ACTIONTYPE == 'edit')
+      if($ACTIONTYPE == 'edit') 
       {
         $postInfo = 'saveDynaformLog.php?APP_UID='.$APP_UID.'&CURRENTDATETIME='.$CURRENTDATETIME.'&DYN_UID='.$_POST['DYN_UID'].'&PROCESS='.$PRO_UID;
        

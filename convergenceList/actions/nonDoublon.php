@@ -10,7 +10,7 @@ $appUid =  isset($_REQUEST['AppUid'])?$_REQUEST['AppUid']:'';
 //G::pr($items);die;
 $array=array();
 $auxUsrUID = $_SESSION['USER_LOGGED'];
-$auxUsruname = $_SESSION['USR_USERNAME'];
+$auxUsruname = $_SESSION['USR_USERNAME']; 
 
 $i=1;
 //foreach($items as $item)

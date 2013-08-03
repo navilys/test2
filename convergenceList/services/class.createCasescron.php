@@ -34,56 +34,55 @@ class archivedCasesClassCron
 		$data = executeQuery($query);
 		if(sizeof($data))
 		{
-	        mail('nicolas@oblady.fr', 'debug cron query mail ', var_export($query, true));
-	        mail('nicolas@oblady.fr', 'debug cron ws mail ', var_export($this->workspace, true));
-	        mail('nicolas@oblady.fr', 'debug cron data mail ', var_export($data, true));
-	        foreach($data as $row)
-			    {
-					$query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
-					$dataCsv = executeQuery($query);
-					$dataImportCSV =  array();
-					
-					foreach($dataCsv as $index)
-					{
-					    $record = array (
-									"FIELD_NAME" => $index['IMPCSV_FIELD_NAME'], 
-									"COLUMN_CSV" => $index['IMPCSV_VALUE']
-							);
-							$dataImportCSV[] = $record;
-					}
-					
-					$actionType = $row['IMPCSV_TYPE_ACTION'];
-					$matchFields = $dataImportCSV;
-				    $uidTask     = isset($row["IMPCSV_TAS_UID"])? $row["IMPCSV_TAS_UID"]:'';
-				    $tableName   = isset($row["IMPCSV_TABLE_NAME"])? $row["IMPCSV_TABLE_NAME"]:'';
-				    $csvIdentify   = isset($row["IMPCSV_IDENTIFY"])? $row["IMPCSV_IDENTIFY"]:'';
-				    $firstLineHeader   = isset($row["IMPCSV_FIRSTLINEHEADER"])? $row["IMPCSV_FIRSTLINEHEADER"]:'on';
-				    $fileCSV     = $tableName.'_'.$row['IMPCSV_IDENTIFY'];
-					$informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV);
-					$dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
-					
-					switch ($actionType) 
-					{
-					    case "ADD": 
-					    $totalCases = $this->importCreateCaseCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV);
-					    $delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
-					    $this->deleteFileCSV($fileCSV);
-					    break;
+		    foreach($data as $row)
+		    {
+				$query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
+				$dataCsv = executeQuery($query);
+				$dataImportCSV =  array();
 				
-				        case "ADD_DELETE": 
-					    $totalCases = $this->importCreateCaseDeleteCSV($matchFields,$uidTask,$tableName,$firstLineHeader, $informationCSV,$dataDeleteEdit);
-					    $delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
-					    $this->deleteFileCSV($fileCSV);
-					    break;
-
-				        case "ADD_UPDATE": 
-					    $totalCases = $this->importCreateCaseEditCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit);
-					    $delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
-					    $this->deleteFileCSV($fileCSV);
-					    break;
-				    }  
+				foreach($dataCsv as $index)
+				{
+				    $record = array (
+								"FIELD_NAME" => $index['IMPCSV_FIELD_NAME'], 
+								"COLUMN_CSV" => $index['IMPCSV_VALUE']
+						);
+						$dataImportCSV[] = $record;
 				}
+				
+				$actionType = $row['IMPCSV_TYPE_ACTION'];
+				$matchFields = $dataImportCSV;
+			    $uidTask     = isset($row["IMPCSV_TAS_UID"])? $row["IMPCSV_TAS_UID"]:'';
+			    $tableName   = isset($row["IMPCSV_TABLE_NAME"])? $row["IMPCSV_TABLE_NAME"]:'';
+			    $csvIdentify   = isset($row["IMPCSV_IDENTIFY"])? $row["IMPCSV_IDENTIFY"]:'';
+			    $firstLineHeader   = isset($row["IMPCSV_FIRSTLINEHEADER"])? $row["IMPCSV_FIRSTLINEHEADER"]:'on';
+			    $fileCSV     = $tableName.'_'.$row['IMPCSV_IDENTIFY'];
+				$informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV);
+				$dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
+				
+				switch ($actionType) 
+				{
+				    case "ADD": 
+				    $totalCases = $this->importCreateCaseCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV);
+				    $delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
+				    $this->deleteFileCSV($fileCSV);
+				    break;
+			
+			        case "ADD_DELETE": 
+				    $totalCases = $this->importCreateCaseDeleteCSV($matchFields,$uidTask,$tableName,$firstLineHeader, $informationCSV,$dataDeleteEdit);
+				    $delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
+				    $this->deleteFileCSV($fileCSV);
+				    break;
+			        case "ADD_UPDATE": 
+				    
+				    $totalCases = $this->importCreateCaseEditCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit);
+				    $delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
+				    $this->deleteFileCSV($fileCSV);
+				    break;
+			    }  
 			}
+		}
+			
+			
 	}
 		
 	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV)

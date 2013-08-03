@@ -49,7 +49,7 @@ if($rolesAdmin == 'PROCESSMAKER_ADMIN')
    				ORDER BY POSITION, STEP_MODE ASC";
 	$select = executeQuery($query);
 }
-else
+else 
 {	
 	$selectUser = "SELECT GRP_UID  FROM GROUP_USER WHERE USR_UID = '$users' ";
 	$selectUser = executeQuery($selectUser);	

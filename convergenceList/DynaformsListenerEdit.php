@@ -7,7 +7,7 @@ global $G_PUBLISH;
 
 $_SESSION['APPLICATION_EDIT'] = '';
 $_SESSION['PROCESS'] = '';
-$_SESSION['APPLICATION'] = ''; 
+$_SESSION['APPLICATION'] = '';  
 
 $ACTIONTYPE = $_GET['actionType'];
 $CURRENTDATETIME=date('Y-m-d H:i:s');

@@ -561,7 +561,7 @@ Ext.onReady(function()
 		viewConfig : {
 			forceFit : true,
 		    scrollOffset : 0,
-		    emptyText: '<div align="center"><b> ** Aucun résultat trouvé ** </b></div>'
+		    emptyText: '<div align="center"><b> ** No records found ** </b></div>'
 		}
 	});
 	

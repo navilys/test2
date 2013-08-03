@@ -595,7 +595,7 @@ function createCase($appUid, $appData,$uidTask,$jsonSelected,$hiddenUids, $idInb
 		}
 		break;
 	}
-	        
+	 
 	$totStep = 0;
 	foreach($caseStepRes as $index)
 	{

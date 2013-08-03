@@ -52,7 +52,7 @@ if(sizeof($resultAppDelegation)){
       } */
 
 # Get Dynaforms
-$users=$_SESSION['USER_LOGGED'];
+$users=$_SESSION['USER_LOGGED']; 
 $Us = new Users();
 $Roles=$Us->load($users);
 $rolesAdmin=$Roles['USR_ROLE'];

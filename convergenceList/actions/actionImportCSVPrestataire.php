@@ -590,7 +590,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     foreach ($dataCSV as $row) 
     {
         
-        if($totalCases >= 0)
+        if($totalCases >= 150)
         {
             foreach($row as $value)
             {
@@ -956,7 +956,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
     foreach ($dataCSV as $row) 
     {
-        if($totalCases >= 0)
+        if($totalCases >= 150)
         {
             foreach($row as $value)
             {
