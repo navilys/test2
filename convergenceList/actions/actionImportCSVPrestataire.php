@@ -24,30 +24,15 @@ function genDataReport ($tableName){
     G::loadClass( 'pmTable' );
     G::loadClass ( 'pmFunctions' );
     require_once 'classes/model/AdditionalTables.php';
-    
-    $tableType = "Report";
-   
-    // Check if the Table is Report or PM Table
-
-    $sqlAddTable = "SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME = '$tableName' ";
-    $resAddTable=executeQuery($sqlAddTable);
-    if(sizeof($resAddTable)){
-	    if($resAddTable[1]['PRO_UID'] == ''){
-		    $tableType = "pmTable";	    
-	    }		
-    }
-    if($tableType == "Report" )
-    {
-        $cnn = Propel::getConnection('workflow');
-	    $stmt = $cnn->createStatement();
-        $additionalTables = new AdditionalTables(); 
-        $oPmTable = $additionalTables->loadByName($tableName);
-        $table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
-        if ($table['PRO_UID'] != '') {
-    	    $truncateRPTable = "TRUNCATE TABLE  ".$tableName." ";
-	        $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);   
-	        $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
-        }
+    $cnn = Propel::getConnection('workflow');
+	$stmt = $cnn->createStatement();
+    $additionalTables = new AdditionalTables(); 
+    $oPmTable = $additionalTables->loadByName($tableName);
+    $table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
+    if ($table['PRO_UID'] != '') {
+    	$truncateRPTable = "TRUNCATE TABLE  ".$tableName." ";
+	    $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);    		 			
+        $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
     }
 }
 
@@ -474,20 +459,16 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         }
         $totalCases++;
     }
-    
-    # create file tmp   
+    # create file tmp
     if($csv != '')
     {
-        $sPathName = PATH_DOCUMENT . "csvTmp" ;
-        if (!is_dir($sPathName)) 
-       	    G::verifyPath($sPathName, true);
-        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
-           echo "Cannot open file";  
-           exit;  
+        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+            echo "Cannot open file";  
+            exit;  
         }  
         if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-           echo "Cannot write to file";  
-           exit;  
+            echo "Cannot write to file";  
+            exit;  
         }  
         fclose($handle);  
     }
@@ -841,20 +822,16 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 
     }
     genDataReport($tableName);
-    
-    # create file tmp   
+     # create file tmp
     if($csv != '')
     {
-        $sPathName = PATH_DOCUMENT . "csvTmp" ;
-        if (!is_dir($sPathName)) 
-       	    G::verifyPath($sPathName, true);
-        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
-           echo "Cannot open file";  
-           exit;  
+        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+            echo "Cannot open file";  
+            exit;  
         }  
         if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-           echo "Cannot write to file";  
-           exit;  
+            echo "Cannot write to file";  
+            exit;  
         }  
         fclose($handle);  
     }
@@ -1208,20 +1185,16 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         }
     }
     genDataReport($tableName);
-    
-    # create file tmp   
+     # create file tmp
     if($csv != '')
     {
-        $sPathName = PATH_DOCUMENT . "csvTmp" ;
-        if (!is_dir($sPathName)) 
-       	    G::verifyPath($sPathName, true);
-        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
-           echo "Cannot open file";  
-           exit;  
+        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+            echo "Cannot open file";  
+            exit;  
         }  
         if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-           echo "Cannot write to file";  
-           exit;  
+            echo "Cannot write to file";  
+            exit;  
         }  
         fclose($handle);  
     }

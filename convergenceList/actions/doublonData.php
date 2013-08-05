@@ -51,30 +51,15 @@ function genDataReport ($tableName){
     G::loadClass( 'pmTable' );
     G::loadClass ( 'pmFunctions' );
     require_once 'classes/model/AdditionalTables.php';
-    
-    $tableType = "Report";
-   
-    // Check if the Table is Report or PM Table
-
-    $sqlAddTable = "SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME = '$tableName' ";
-    $resAddTable=executeQuery($sqlAddTable);
-    if(sizeof($resAddTable)){
-	    if($resAddTable[1]['PRO_UID'] == ''){
-		    $tableType = "pmTable";	    
-	    }		
-    }
-    if($tableType == "Report" )
-    {
-        $cnn = Propel::getConnection('workflow');
-	    $stmt = $cnn->createStatement();
-        $additionalTables = new AdditionalTables(); 
-        $oPmTable = $additionalTables->loadByName($tableName);
-        $table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
-        if ($table['PRO_UID'] != '') {
-    	    $truncateRPTable = "TRUNCATE TABLE  ".$tableName." ";
-	        $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);   
-	        $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
-        }
+    $cnn = Propel::getConnection('workflow');
+	$stmt = $cnn->createStatement();
+    $additionalTables = new AdditionalTables(); 
+    $oPmTable = $additionalTables->loadByName($tableName);
+    $table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
+    if ($table['PRO_UID'] != '') {
+    	$truncateRPTable = "TRUNCATE TABLE  ".$tableName." ";
+	    $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);    		 			
+        $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
     }
 }
 
@@ -539,7 +524,10 @@ function createCase($appUid, $appData,$uidTask,$jsonSelected,$hiddenUids, $idInb
 		}
 	
 	}
-	
+	/*foreach($selected as $row){
+		$CurDateTime=date('Y-m-d H:i:s');
+		insertHistoryLogPlugin($row['APP_UID'],$_auxUserUid,$CurDateTime,'1',$caseUID,'Doublon');
+	}*/
 	if(sizeof($rowSelected) == 1)
 	{
 		foreach($data as $row)
@@ -583,30 +571,7 @@ function createCase($appUid, $appData,$uidTask,$jsonSelected,$hiddenUids, $idInb
 			}
 		}
 	}
-    ## executeTriggers task ini
-    $_SESSION['APPLICATION'] = $caseUID;  
-	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-	$startTasks = executeQuery($query);
-	foreach($startTasks as $rowTask){
-	    $taskId = $rowTask['TAS_UID'];
-		$stepsByTask = getStepsByTask($taskId);
-	    foreach ($stepsByTask as $caseStep){
-		    $caseStepRes[] = 	 $caseStep->getStepUidObj();
-		}
-		break;
-	}
-	 
-	$totStep = 0;
-	foreach($caseStepRes as $index)
-	{
-	    $stepUid = $index;
-		executeTriggersMon($PRO_UID, $caseUID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-		executeTriggersMon($PRO_UID, $caseUID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-		$totStep++;
-	} 
-	## End executeTriggers task ini
-	$_SESSION['USER_LOGGED'] = $_auxUserUid;
-    $_SESSION['USR_USERNAME'] = $_auxUserName;
+
 	$resp = PMFDerivateCase($caseUID, 1,true, $USR_UID);   
 	
 	return $resp;

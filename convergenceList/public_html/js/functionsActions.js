@@ -293,7 +293,7 @@ function explicationStatut(appUid){
                 test.hide();
                         
                          Ext.MessageBox.show({
-                            title : 'Explication du statut - Dossier '+response.num_dossier,
+                            title : 'Explication du statut - Dossier n°'+response.num_dossier,
                             msg : response.messageinfo,
                             width : 400,                            
                             icon: Ext.MessageBox.INFO
@@ -1817,6 +1817,7 @@ function importCSV (_uidTask){
     var _UPOLADING_FILE = 'chargement du fichier...';
     var _FIELD_NAME_PROCESS = 'Nom du champ (Formulaire)';
     var _COLUMN_CSV = 'Colonne (Fichier CSV)';
+    var _COLUMN_TYPE = 'Type de champ';
     var _DATA_SAVED_OK = 'Données sauvegardées avec succés!';
     var _MSG_CASE_CREATED = ' cas se sont terminés avec succés.';
     var _OPERATION_NO_COMPLETED = 'Un problème a été rencontré, l\'import ne s\'est peut être pas effectué complètement !';
@@ -1830,6 +1831,7 @@ function importCSV (_uidTask){
     var _MSG_TITLE_SAVE_RESET_CSV = "Réinitialiser le mapping";
     var _RESET_SAVED_OK = "Mapping réinitialisé";
     var _DELETE_EDIT_FIELD = "Supprimer le champs";
+    var _REQUIRED_COLUMN = "Champ requis";
 	  var hiddenDeleteEdit 		 = true;
 	  var _dblIdInbox = myApp.getIdInbox();
 	  var winMatchData;
@@ -1880,7 +1882,7 @@ var radiosGroup = new Ext.form.RadioGroup({
              listeners: {
                  'change' : function(){
                    _isCheckedOption    = 'editAdd';
-                   _DELETE_EDIT_FIELD  = "Edit Field";
+                    _DELETE_EDIT_FIELD = "Clé logique pour modifier";
                    hiddenDeleteEdit    = false;
                    //console.log(_isCheckedOption);
                  }
@@ -1899,7 +1901,7 @@ var radiosGroup = new Ext.form.RadioGroup({
                     }
                     if(_isCheckedOption == 'editAdd')
                     {
-                        _DELETE_EDIT_FIELD  = "Edit Field";
+                    _DELETE_EDIT_FIELD = "Clé logique pour modifier";
                hiddenDeleteEdit    = false;
                     }
                     if(_isCheckedOption == 'add')
@@ -2015,7 +2017,7 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                            totalProperty : 'total', 
 	                            remoteSort    : true,
 	                            autoWidth     : true,
-	                            fields        : ['FIELD_NAME','FIELD_DESC', 'COLUMN_CSV','DELETE_EDIT_FIELD']
+                                            fields: ['FIELD_NAME', 'FIELD_DESC', 'COLUMN_CSV', 'COLUMN_TYPE', 'DELETE_EDIT_FIELD']
 	                        });
 
 	                        Ext.Ajax.request({
@@ -2073,7 +2075,64 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                     	   	hidden: hiddenDeleteEdit,
 	                     	   	processEvent: function () { return false; }
 	                     	});
-	                 
+                            var checkColumnRequired = new Ext.grid.CheckColumn({
+                                header: _REQUIRED_COLUMN + " ?",
+                                dataIndex: 'REQ_COLUMN',
+                                id: 'req_check',
+                                flex: 1,
+                                width: 10,
+                                checked: false,
+                                hidden: hiddenDeleteEdit,
+                                processEvent: function() {
+                                    return false;
+                                }
+                            });
+                            var typeAS = new Ext.form.ComboBox({
+                                valueField: 'ID',
+                                displayField: 'NAME',
+                                id: 'idtypeAS',
+                                fieldLabel: '<span style="color: red">*</span>Choose Type ',
+                                typeAhead: true,
+                                triggerAction: 'all',
+                                editable: true,
+                                mode: 'local',
+                                width: 200,
+                                autoHeight: true,
+                                listWidth: 250,
+                                allowBlank: false,
+                                disabled: false,
+                                defaultValue: "String",
+                                value: "String",
+                                store: new Ext.data.SimpleStore({
+                                    fields: ["ID", "NAME"],
+                                    data: [["String", "Chaine"],
+                                        ["Integer", "Entier"],
+                                        ["Date", "Date"],
+                                        ["Decimal", "Décimal"],
+                                        ["mail", "E-mail"],
+                                        ["Telephone", "Téléphone"],
+                                        ["AI", "Actif / Inactif"],
+                                        ["cp", "Code postal"],
+                                        ["Yesno", "O ou N"],
+                                        ["OuiNon", "Oui / Non"],
+                                        ["binaire", "0 ou 1"],
+                                        ["NCommande", "Numéro Commande"],
+                                        ["codeOper", "Code Opération"],
+                                        ["Ignore", "Ignorer cette donnée"]
+                                    ]
+                                }),
+                                listeners: {
+                                    beforerender: function(combo) {
+                                        combo.setValue("String");
+                                        Ext.getCmp('idtypeAS').setValue("String");
+                                    },
+                                    load: function() {
+                                        var combo = Ext.getCmp('idtypeAS');
+                                        combo.setValue("String");
+                                    }
+                                }
+                            });
+                            Ext.getCmp('idtypeAS').setValue("String");
 	                        var gridcolumns = new Ext.grid.ColumnModel({
 	                          defaults : {
 	                              sortable : true
@@ -2096,7 +2155,13 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                            sortable  : true,
 	                            dataIndex : 'COLUMN_CSV',
 	                            editor: cboFieldCSV
-	                          },checkColumnInclude ]
+                            }, {
+                                header: '<span style="color:red;">' + _COLUMN_TYPE + '</span>',
+                                dataIndex: 'COLUMN_TYPE',
+                                width: 15,
+                                sortable: true,
+                                editor: typeAS
+                            }, checkColumnRequired, checkColumnInclude ]
 	                        });
 
 	                        var gridMatchData = new Ext.grid.EditorGridPanel({
@@ -2116,7 +2181,8 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                                  if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
 	                                    var item = {
 	                                        "FIELD_NAME"   : record.get('FIELD_NAME'),
-	                                        "COLUMN_CSV"   : record.get('COLUMN_CSV')
+                                            "COLUMN_CSV": record.get('COLUMN_CSV'),
+                                            "COLUMN_TYPE": record.get('COLUMN_TYPE')
 	                                    };
 	                                    _dblFieldsCustom.push(item);
 	                                  }
@@ -2132,8 +2198,11 @@ var radiosGroup = new Ext.form.RadioGroup({
 		                                	if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION && record.get('DELETE_EDIT_FIELD') == true ){
 		                                		var itemDeleteEdit = {
 		                                				"CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
-		                                				"CSV_COLUMN"   : record.get('COLUMN_CSV')
-		                                		};
+                                                        "CSV_COLUMN": record.get('COLUMN_CSV'),
+                                                                    "TYPE_COLUMN": record.get('COLUMN_TYPE'),
+                                                                    "CSV_PIVOT_EDIT": record.get('DELETE_EDIT_FIELD'),
+                                                                    "REQUIRED_COLUMN": record.get('REQ_COLUMN')
+                                                                };
 		                                		_dblFieldsDeleteEdit.push(itemDeleteEdit);
 		                                	}
 	                                  
@@ -2193,13 +2262,15 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                		      iconCls :'button_menu_ext cvrgl_configCSV',
 		                            handler: function() {
 		                                var _dblFieldsCustom    = new Array ();
-		                                var _jsonFieldsCustom   = '';
-		                                
+		                                var _jsonFieldsCustom   = '';		                                
 		                                storeMatchData.each(function(record)  {  
-		                                  if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
+                                        if (typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION) {
 		                                    var item = {
 		                                        "CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
-		                                        "CSV_COLUMN"   : record.get('COLUMN_CSV')
+                                                "CSV_COLUMN": record.get('COLUMN_CSV'),
+                                                                "TYPE_COLUMN": record.get('COLUMN_TYPE'),
+                                                                "CSV_PIVOT_EDIT": record.get('DELETE_EDIT_FIELD'),
+                                                                "REQUIRED_COLUMN": record.get('REQ_COLUMN')
 		                                    };
 		                                    _dblFieldsCustom.push(item);
 		                                  }
@@ -2338,559 +2409,8 @@ var radiosGroup = new Ext.form.RadioGroup({
 	    ]
 	  });
 	  w.show();
-	}////////////////////////////////////////////////////////////////////////////////////////////////////
-// Import CSV for the table PMT_PRESTATAIRE , create or update case and autoderivate 
-function importCSVPrestataire (_uidTask){
+}
 
-	  var _MSG_ERROR_CONFIG_ACTION_CSV = 'The Import CSV was not configured correctly, check your parameters please.';
-	  if(typeof(_uidTask) == "undefined") {
-	    PMExt.info(_('ID_INFO'), _MSG_ERROR_CONFIG_ACTION_CSV);
-	    return true;
-	  }
-	  var _dblIdMainGrid          = myApp.getIdMainGrid();
-	  var pathPluginActionsPhp    = '../convergenceList/actions/actionImportCSVPrestataire'; 
-	  var _LBL_ITEMCBO_COLUMN     = 'Column';
-    var _isCheckedFirstLineAs   = 'off';
-    var _isCheckedAdd   	  	  = 'on';
-	  var _isCheckedDeleteAdd     = 'off';
-	  var _isCheckedEditAdd   	  = 'off';
-	  var _isCheckedOption   	  = 'add';
-	  var _SELECT_OPTION          = 'Select...' ;  
-
-	  var _USE_FIRSTLINE_AS       = 'Use first line-entry as field names';  
-	  var _USE_ADD       	  	  = 'Add'; 
-	  var _USE_DELETE_ADD         = 'Delete Before Import'; 
-	  var _USE_EDIT_ADD       	  = 'Add and Modify';  
-	  var _WINTITLE_MATCHDATA     = 'Match Fields Name - Column CSV';
-	  var _IMPORT_CREATE_CASES    = 'Import & Create Cases';
-	  var _UPOLADING_FILE         = 'Uploading file...';
-	  var _FIELD_NAME_PROCESS     = 'Field Name (PROCESS)';
-	  var _COLUMN_CSV             = 'Column (CSV File)';
-	  var _DATA_SAVED_OK          = 'The data was saved sucessfully!';
-	  var _MSG_CASE_CREATED       = 'Cases were successfully created and derivatives.';
-	  var _OPERATION_NO_COMPLETED = 'The operation was not completed sucessfully!';
-	  var _MSG_ERROR              = 'An unexpected error occurred.';
-	  var _MSG_TITLE_MESSAGE      = 'Message';
-	  var _MSG_IMPORT_LOAD_DATA_SUCCESSFULLY  = 'Import and load data succesfully!';
-	  var _MSG_TITLE_CREATE_DERIVATE_CASES    = 'Cases creating';
-	  var _CSV_FILE               = 'CSV fichier';//'CSV File';
-	  var _MSG_TITLE_SAVE_CONFIG_CSV = 'Save Configuration CSV';
-	  var _MSG_SAVE_CONFIG_CSV    = 'The configuration saved sucessfully!';
-	  var _MSG_TITLE_SAVE_RESET_CSV  = "Reset Configuration CSV";
-	  var _RESET_SAVED_OK 		  = "Reset fields sucessfully";
-	  var _DELETE_EDIT_FIELD 	 = "Delete Field";
-	  var hiddenDeleteEdit 		 = true;
-	  var _dblIdInbox = myApp.getIdInbox(); 
-	  var winMatchData;
-	  var waitLoading = {};
-	  waitLoading.show = function() {
-	    var mask = Ext.getBody().mask(_("ID_SAVING"), 'x-mask-loading', false);
-	    mask.setStyle('z-index', Ext.WindowMgr.zseed + 1000);
-	  };
-	  waitLoading.hide = function() {
-	    Ext.getBody().unmask();
-	  };
-	  
-var radiosGroup = new Ext.form.RadioGroup({   
-        
-       columns: 1, //display the radiobuttons in two columns   
-       items: [   
-            {
-            boxLabel: _USE_ADD,
-               name: 'radioGroupOption',
-               checked: true,
-               id: 'add',
-               listeners: {
-              'change' : function(){
-                _isCheckedOption    = 'add';
-                hiddenDeleteEdit    = true;
-               }
-              }
-            },
-            { 
-             boxLabel: _USE_DELETE_ADD,
-             name: 'radioGroupOption',
-             checked: false,
-             id: 'deleteAdd',
-             listeners: {
-                 'change' : function(){
-                _isCheckedOption    = 'deleteAdd';
-                _DELETE_EDIT_FIELD  = "Delete Field";
-                hiddenDeleteEdit    = false;
-                   //console.log(_isCheckedOption);
-                 }
-              }
-         },   
-            { 
-             boxLabel: _USE_EDIT_ADD,
-             name: 'radioGroupOption',
-             checked: false,
-             id: 'editAdd',
-             listeners: {
-                 'change' : function(){
-                   _isCheckedOption    = 'editAdd';
-                   _DELETE_EDIT_FIELD  = "Edit Field";
-                   hiddenDeleteEdit    = false;
-                   //console.log(_isCheckedOption);
-                 }
-             }
-         }  
-              
-       ],
-       listeners: {
-                change: function(el,val) {
-                   // console.log(val);
-                    _isCheckedOption = val.id;
-                    if(_isCheckedOption == 'deleteAdd')
-                    {
-                        _DELETE_EDIT_FIELD  = "Delete Field";
-               hiddenDeleteEdit    = false;
-                    }
-                    if(_isCheckedOption == 'editAdd')
-                    {
-                        _DELETE_EDIT_FIELD  = "Edit Field";
-               hiddenDeleteEdit    = false;
-                    }
-                    if(_isCheckedOption == 'add')
-                    {
-               hiddenDeleteEdit    = true;
-                    }
-                    console.log(_isCheckedOption);
-                }
-            } 
-   });	  
-	  
-	  var w = new Ext.Window({
-	    title       : '',
-	    width       : 440,
-	    height      : 230,
-	    modal       : true,
-	    autoScroll  : false,
-	    maximizable : false,
-	    resizable   : false,
-	    items: [
-	      new Ext.FormPanel({
-	        id         :'uploader',
-	        fileUpload : true,
-	        width      : 420,
-	        frame      : true,
-	        title      : _('ID_IMPORT_DATA_CSV'),
-	        autoHeight : false,
-	        bodyStyle  : 'padding: 10px 10px 0 10px;',
-	        labelWidth : 80,
-	        defaults   : {
-	            anchor     : '90%',
-	            allowBlank : false,
-	            msgTarget  : 'side'
-	        },
-	        items : [{
-	            xtype      : 'fileuploadfield',
-	            id         : 'csv-file',
-	            emptyText  : _('ID_SELECT_FILE'),//'Select a file',
-	            fieldLabel : _CSV_FILE,
-	            name       : 'form[CSV_FILE]',
-	            buttonText : '',
-	            buttonCfg  : {
-	                iconCls: 'upload-icon'
-	            }
-	        },
-	        {
-	          xtype: 'checkbox',
-	          fieldLabel: '',
-	          boxLabel: _USE_FIRSTLINE_AS,
-	          name: 'chkFirstRow',
-              checked: false,
-	          listeners: {
-	              change: function(checkbox, checked){
-	                _isCheckedFirstLineAs = (checked)?'on':'off';
-	                Ext.getCmp('hdnCheckedFirstRow').setValue(_isCheckedFirstLineAs);
-	              }
-	          }
-	        },radiosGroup,
-	        {
-	          xtype : 'hidden',
-	          name  : 'form[FIRSTLINE_ISHEADER]',
-	          id    : 'hdnCheckedFirstRow',
-	          value : 'off'
-	        }
-	        ],
-	        buttons : [{
-	            text     : _('ID_UPLOAD'),
-	            handler  : function(){
-	              var filePath = Ext.getCmp('csv-file').getValue();
-	              var fileType = filePath.substring(filePath.lastIndexOf('.') + 1).toLowerCase();
-	              if(fileType =='csv' ){
-	                var uploader  = Ext.getCmp('uploader');
-
-	                if(uploader.getForm().isValid()){
-	                  uploader.getForm().submit({
-	                    url: pathPluginActionsPhp + '?option=getDataCSV',
-	                    waitMsg  : _UPOLADING_FILE,
-	                    scope: this,
-	                    success  : function(o, resp){
-	                      w.close();
-	                      var dataCSV = Ext.util.JSON.decode(resp.response.responseText);
-	                      if(typeof(dataCSV.success)!= 'undefined' && dataCSV.success === true){
-	                        
-	                        var _dataForCboFieldCSV = new Array();
-	                        var _numCol = 0, lenColumns=0;
-	                        var _itemsCboCSV = new Array();
-
-	                        var child = new Array();
-	                        child.push(_SELECT_OPTION);
-	                        child.push(_SELECT_OPTION);                        
-	                        _itemsCboCSV.push(child);                     
-	                        if(_isCheckedFirstLineAs =='on'){ //with header
-	                          Ext.iterate(dataCSV.data[0], function(key, value) {
-	                              var child = new Array();
-	                              child.push(key);
-	                              child.push(key.toUpperCase());
-	                              _itemsCboCSV.push(child); 
-	                              lenColumns++;
-	                          });
-	                        }else{
-	                          Ext.iterate(dataCSV.data[0], function(key, value) {
-	                              var child = new Array();
-	                              child.push(_LBL_ITEMCBO_COLUMN + ' ' + lenColumns);
-				                        child.push(_LBL_ITEMCBO_COLUMN + ' ' + lenColumns + ' (' +key + '...)');
-	                              _itemsCboCSV.push(child); 
-	                              lenColumns++;
-	                          });
-	}
-    
-	                        var storeMatchData = new Ext.data.JsonStore({ 
-	                            url           : pathPluginActionsPhp + '?option=getDataMatch&' + '&tableName=' + table + '&idInbox=' +_dblIdInbox,
-	                            root          : 'data',
-	                            totalProperty : 'total', 
-	                            remoteSort    : true,
-	                            autoWidth     : true,
-	                            fields        : ['FIELD_NAME','FIELD_DESC', 'COLUMN_CSV','DELETE_EDIT_FIELD']
-	                        });
-
-	                        Ext.Ajax.request({
-	                          url: pathPluginActionsPhp,
-	                          method: "POST",
-	                          params: {'option': 'getDataMatch', 'tableName': table, 'idInbox' : _dblIdInbox},           
-	                          success:function (result, request) {
-	                            var resp = Ext.util.JSON.decode(result.responseText);
-	                            if(typeof(resp.success)!= 'undefined' && resp.success === true){
-	                              storeMatchData.loadData(Ext.util.JSON.decode(result.responseText));
-	                              PMExt.notify(_MSG_TITLE_MESSAGE,_MSG_IMPORT_LOAD_DATA_SUCCESSFULLY);
-	                            }else{
-	                              PMExt.warning(_('ID_ERROR'), resp.message);
-	                            } 
-	                          },
-	                          failure:function (result, request) {
-	                            var resp = Ext.util.JSON.decode(result.responseText);
-	                            PMExt.error(_('ID_ERROR'), _MSG_ERROR);
-	                          }
-	                        });
-	                        var pager = new Ext.PagingToolbar({
-	                            store       : storeMatchData, 
-	                            displayInfo : true,
-	                            autoHeight  : true,
-	                            displayMsg  : _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
-	                            emptyMsg    : _('ID_DISPLAY_EMPTY'),
-	                            pageSize    : 500
-	                        });  
-
-	                        var cboFieldCSV = new Ext.form.ComboBox({
-	                            valueField    : 'ID',
-	                            displayField  : 'NAME',
-	                            id            : 'cboFieldCSV',
-	                            typeAhead     : true,
-	                            triggerAction : 'all',
-	                            editable      : true,
-	                            mode          : 'local',
-	                            anchor        : '95%',
-	                            allowBlank    : false,
-	                            disabled      : false,
-	                            selectOnFocus : true,
-	                            store: new Ext.data.SimpleStore({
-	                                      fields  : ["ID", "NAME"],
-	                                      data    : _itemsCboCSV        
-	                            })
-	                        });
-	                     	                       
-	                        var checkColumnInclude = new Ext.grid.CheckColumn({
-	                        	header: _DELETE_EDIT_FIELD + " ?",
-	                     	   	dataIndex: 'DELETE_EDIT_FIELD',
-	                     	   	id: 'check',
-	                     	   	flex: 1,
-	                     	   	width: 10,
-	                     	    checked: false,
-	                     	   	hidden: hiddenDeleteEdit,
-	                     	   	processEvent: function () { return false; }
-	                     	});
-	                        
-	                        var gridcolumns = new Ext.grid.ColumnModel({
-	                          defaults : {
-	                              sortable : true
-	                          },
-	                          columns : [new Ext.grid.RowNumberer(),
-	                          {
-	                            dataIndex : 'FIELD_NAME',
-	                            width     : 5,
-	                            hidden    : true
-	                          },
-	                          {
-	                            header    : '<span style="color:green;">'+_FIELD_NAME_PROCESS + '</span>',
-	                            width     : 25,
-	                            sortable  : true,
-	                            dataIndex : 'FIELD_DESC'
-	                          },
-	                          {
-	                            header    : '<span style="color:blue;">'+_COLUMN_CSV+'</span>',
-	                            width     : 15,
-	                            sortable  : true,
-	                            dataIndex : 'COLUMN_CSV',
-	                            editor: cboFieldCSV
-	                          },checkColumnInclude]
-	                        });
-
-	                        var gridMatchData = new Ext.grid.EditorGridPanel({
-	                          store           : storeMatchData,
-	                          columnLines     : true,
-	                          id              : 'gridMatchData',
-	                          cm              : gridcolumns,
-	                          plugins         : [checkColumnInclude],
-	                          tbar : [{
-	                            text  : _IMPORT_CREATE_CASES,
-	                            cls   : 'x-btn-text-icon',
-	                            icon  : '/images/ext/default/tree/drop-yes.gif',
-	                            handler: function() {
-	                                var _dblFieldsCustom    = new Array ();
-	                                var _jsonFieldsCustom   = '';
-	                                storeMatchData.each(function(record)  {  
-	                                  if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
-	                                    var item = {
-	                                        "FIELD_NAME"   : record.get('FIELD_NAME'),
-	                                        "COLUMN_CSV"   : record.get('COLUMN_CSV')
-	                                    };
-	                                    _dblFieldsCustom.push(item);
-	                                  }
-	                                });
-	                                
-	                                _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom); 
-	                                
-	                                var _jsonFieldsDeleteEdit   = '';
-	                                if(_isCheckedOption != 'add') 
-	                                {
-	                                	var _dblFieldsDeleteEdit    = new Array ();
-		                                storeMatchData.each(function(record)  {  
-		                                	
-		                                	if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION && record.get('DELETE_EDIT_FIELD') == true )
-		                                	{
-		                                		var itemDeleteEdit = {
-		                                				"CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
-		                                				"CSV_COLUMN"   : record.get('COLUMN_CSV')
-		                                		};
-		                                		_dblFieldsDeleteEdit.push(itemDeleteEdit);
-		                                	}
-	                                  
-		                                });
-		                                if(_dblFieldsDeleteEdit.length > 0)
-		                                	_jsonFieldsDeleteEdit = Ext.util.JSON.encode(_dblFieldsDeleteEdit); 
-		                             
-	                                }
-	                               // console.log(_jsonFieldsDeleteEdit);
-	                                
-	                                if(_isCheckedOption == 'add' || (_isCheckedOption != 'add' && _jsonFieldsDeleteEdit != '' ) )
-	                                {
-	                                	waitLoading.show();
-	                                	Ext.Ajax.request({
-	                                		params : {        
-	                                			matchFields : _jsonFieldsCustom,
-	                                			uidTask     : _uidTask,
-	                                			tableName   : table,
-	                                			option      : 'importCreateCase',
-	                                			firstLineHeader : _isCheckedFirstLineAs,
-	                                			radioOption : _isCheckedOption,
-	                                			dataEditDelete : _jsonFieldsDeleteEdit
-	                                    	},
-	                                    	url : pathPluginActionsPhp,
-	                                    	success : function(result, request) {
-	                                    		waitLoading.hide();
-	                                    		var resp=Ext.util.JSON.decode(result.responseText);
-	                                    		if(typeof(resp.success) != 'undefined' && resp.success === true){
-	                                    			var totCases = (typeof(resp.totalCases) != 'undefined')?resp.totalCases:0;
-	                                    			PMExt.notify(_MSG_TITLE_CREATE_DERIVATE_CASES, totCases + ' ' + _MSG_CASE_CREATED);
-	                                    			winMatchData.close();
-	                                    		}else{
-	                                    			PMExt.warning(_('ID_ERROR'), resp.message);
-	                                    		}
-	                                    	},
-	                                    	failure : function() {
-	                                    		waitLoading.hide();
-	                                    		PMExt.warning(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-	                                    	}
-	                                	});
-	                                }
-	                                else
-	                                {
-	                                	alert("Select "+_DELETE_EDIT_FIELD);
-	                                }
-	                            } 
-	                          },
-	                          '-',
-	                          {
-	                            text: _('ID_CANCEL'),
-	                            iconCls: 'button_menu_ext ss_sprite ss_cancel',
-	                            handler: function() {winMatchData.close();}
-	                          },
-	                          '-',
-	                          {
-	                        	  text: 'Save Configuration CSV',
-	                		      iconCls :'button_menu_ext cvrgl_configCSV',
-		                            handler: function() {
-		                                var _dblFieldsCustom    = new Array ();
-		                                var _jsonFieldsCustom   = '';
-		                                
-		                                storeMatchData.each(function(record)  {  
-		                                  if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
-		                                    var item = {
-		                                        "CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
-		                                        "CSV_COLUMN"   : record.get('COLUMN_CSV')
-		                                    };
-		                                    _dblFieldsCustom.push(item);
-		                                  }
-		                                });
-		                                
-		                                _jsonFieldsCustom = Ext.util.JSON.encode(_dblFieldsCustom); 
-		                                waitLoading.show();
-		                                
-		                                Ext.Ajax.request({
-		                                    params : {        
-		                                      matchFields : _jsonFieldsCustom,
-		                                      idInbox	  : _dblIdInbox,
-		                                      option      : 'saveConfigCSV',
-		                                      firstLineHeader : _isCheckedFirstLineAs,
-		                                      radioOption : _isCheckedOption
-		                                    },
-		                                    url : pathPluginActionsPhp,
-		                                    success : function(result, request) {
-		                                     waitLoading.hide();
-		                                     var resp=Ext.util.JSON.decode(result.responseText);
-		                                     if(typeof(resp.success) != 'undefined' && resp.success === true){
-		                                         PMExt.notify(_MSG_TITLE_SAVE_CONFIG_CSV, _MSG_SAVE_CONFIG_CSV);
-		                                         //winMatchData.close();
-		                                      }else{
-		                                        PMExt.warning(_('ID_ERROR'), resp.message);
-		                                     }
-		                                    },
-		                                    failure : function() {
-		                                      waitLoading.hide();
-		                                      PMExt.warning(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-		                                    }
-		                                });
-		                            } 
-		                          },
-		                          '-',
-		                          {
-		                		      text: 'Reset Configuration CSV',
-		                		      iconCls :'button_menu_ext cvrgl_reset',
-		                		      handler: function() {
-		                		            waitLoading.show();
-		                		            Ext.Ajax.request({
-		                		                params : {        
-		                		                idInbox : _dblIdInbox,
-		                		                tableName   : table
-		                		                },
-		                		                url : '../convergenceList/actions/actionImportCSVPrestataire.php?option=resetConfigCSV',
-		                		                success : function(result, request) {
-		                		                  waitLoading.hide();
-		                		                  var resp=Ext.util.JSON.decode(result.responseText);
-		                		                   if(typeof(resp.success)!= 'undefined' && resp.success ==true){
-		                		                    //winConfigDoublon.close();
-		                		                	   storeMatchData.load();
-		                		                	   PMExt.notify(_MSG_TITLE_SAVE_RESET_CSV, _RESET_SAVED_OK);
-		                		                   }else{
-		                		                      PMExt.error(_('ID_ERROR'), resp.message);
-		                		                   }
-		                		                },
-		                		                failure : function() {
-		                		                  waitLoading.show();
-		                		                  PMExt.error(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-		                		                }
-		                		            });
-		                		          }
-		                		  }
-	                          ],
-	                          columnLines    : true,
-	                          clicksToEdit   : 1,
-	                          stateId        : 'grid',
-	                          border         : false,
-	                          loadMask       : true,
-	                          autoShow       : true, 
-	                          autoFill       : true,
-	                          nocache        : true,
-	                          stateful       : true,
-	                          animCollapse   : true,
-	                          enableDragDrop : true,
-	                          stripeRows     : true,
-	                          bbar           : pager,
-	                          selModel       : new Ext.grid.RowSelectionModel({singleSelect : true}),
-	                          viewConfig     : {
-	                            forceFit     : true,
-	                            scrollOffset : 2,
-	                            emptyText    : ( _('ID_NO_RECORDS_FOUND')),
-	                            sm           : new Ext.grid.RowSelectionModel({singleSelect:true})
-	                          }
-	                        });
-
-	                        winMatchData = new Ext.Window({
-	                            closeAction  : 'hide',
-	                            autoDestroy  : true,
-	                            maximizable  : true,
-	                            id           : 'winMatchData',
-	                            title        : _WINTITLE_MATCHDATA,
-	                            width        : 900,
-	                            height       : 400,
-	                            modal        : true,
-	                            closable     : true,
-	                            constrain    : true,
-	                            autoScroll   : true,
-	                            layout       : 'fit',
-	                            items        : gridMatchData
-	                        });     
-	                        winMatchData.show();
-	                        winMatchData.on('hide',function(){
-	                          if(Ext.getCmp(_dblIdMainGrid)) Ext.getCmp(_dblIdMainGrid).getStore().reload();
-	                        });
-	                      }else{
-
-	                      }
-	                    }, ///success
-	                    failure: function(o, resp){
-	                      w.close();
-	                      PMExt.error(_('ID_ERROR'), _MSG_ERROR);
-	                    }
-	                  });
-	                }
-	              } else {
-	                Ext.MessageBox.show({ 
-	                  title   : '', 
-	                  msg     : _('ID_INVALID_EXTENSION') + ' ' + fileType,
-	                  buttons : Ext.MessageBox.OK,
-	                  animEl  : 'mb9', 
-	                  fn      : function(){},
-	                  icon    : Ext.MessageBox.ERROR
-	                });
-	              }
-	            }
-	        },{
-	          text    : TRANSLATIONS.ID_CANCEL,
-	          handler : function(){
-	            w.close();
-	          }
-	        }]
-	      })
-	    ]
-	  });
-	  w.show();
-	}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//Doublon 
 function loadDataStore(option,jsonreg, store, idInbox) {
   var myMask = new Ext.LoadMask(Ext.getBody(), {msg:_('ID_LOADING')});
   var _MSG_ERROR = 'Failure data load.';
@@ -4290,10 +3810,9 @@ function modificationEnMasse(taskuid, champs){
 
     idField = myApp.addTab_inside();
     _AppUids = Ext.util.JSON.decode(idField);
-    var totCases = _AppUids.length;
-    var i = 0;
+    
      Ext.each(_AppUids, function(record){
-        i++;
+       
         var _dblFieldsCustom    = new Array ();
 	    var _jsonFieldsCustom   = '';
         var item = {
@@ -4303,9 +3822,8 @@ function modificationEnMasse(taskuid, champs){
 	   _dblFieldsCustom.push(item);
 	   _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom); 
         urlData = "../convergenceList/actions/massUpdate.php";
-         if(i == 1)
-         {
-            test = Ext.MessageBox.show({
+     //console.log(_jsonFieldsCustom);
+        test = Ext.MessageBox.show({
             msg: 'Mise à jour des données, veuillez patienter...',
             progressText: 'En cours...',
               width : 300,
@@ -4314,7 +3832,6 @@ function modificationEnMasse(taskuid, champs){
                 interval : 200
               }
             });
-         }
         Ext.Ajax.request({
            url : urlData,
            params : {
@@ -4325,18 +3842,17 @@ function modificationEnMasse(taskuid, champs){
            success: function (result, request) {
              var response = Ext.util.JSON.decode(result.responseText);
              if (response.success) {
-                if(i == totCases)
-                {
-                    test.hide();
-                    Ext.MessageBox.show({
+                test.hide();
+                        
+                         Ext.MessageBox.show({
                              title : 'Résultat du traitement',
                             msg : response.messageinfo,
                             width : 500,
                             fn : function() {Ext.getCmp('gridNewTab').store.reload();},
                             icon: Ext.MessageBox.INFO
-                    });
+                        });
                         
-                }
+              
              }
              else {
                 test.hide();
@@ -4351,7 +3867,6 @@ function modificationEnMasse(taskuid, champs){
         });
      });
 }
-
 function actionAddComment(app_uid) { 
     var waitLoading = {};
     var textField1 = new Ext.form.TextArea({
@@ -4429,7 +3944,7 @@ function actionAddComment(app_uid) {
                     params:
                             {
                                 options: 'save',
-                            APP_UID: app_uid,
+                                APP_UID: app_uid,
                                 Note: Ext.getCmp('caseNoteText').getValue()
                             },
                     success: function(result, request)
@@ -4457,7 +3972,6 @@ function actionAddComment(app_uid) {
             ]});
     w.show();
 }
-
 function listeChequierDemande(num_dossier)
 {
     var adaptiveHeight = getDocHeight() - 50;

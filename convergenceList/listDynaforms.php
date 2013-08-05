@@ -43,13 +43,13 @@ $query = " SELECT DISTINCT DYN_UID FROM APP_HISTORY
 $selectHistory = executeQuery($query);      
 if($rolesAdmin == 'PROCESSMAKER_ADMIN')
 {
-	$query = " SELECT DISTINCT STEP_UID_OBJ AS DYN_UID, STEP_CONDITION, MIN( STEP_POSITION ) AS POSITION  FROM STEP 
+	$query = " SELECT DISTINCT STEP_UID_OBJ AS DYN_UID, STEP_CONDITION  FROM STEP 
   				WHERE PRO_UID = '$PRO_UID' AND STEP_TYPE_OBJ ='DYNAFORM'
   				GROUP BY DYN_UID   
-   				ORDER BY POSITION, STEP_MODE ASC";
+   				ORDER BY STEP_POSITION, STEP_MODE ASC";
 	$select = executeQuery($query);
 }
-else 
+else
 {	
 	$selectUser = "SELECT GRP_UID  FROM GROUP_USER WHERE USR_UID = '$users' ";
 	$selectUser = executeQuery($selectUser);	

@@ -109,7 +109,7 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 	  	$newFields['APP_DATA']['FLAG_EDIT'] = 1;
 
 	   // 	If the user is different
-	  	if($_SESSION['USER_LOGGED'] != $newFields['APP_DATA']['USER_LOGGED']) 
+	  	if($_SESSION['USER_LOGGED'] != $newFields['APP_DATA']['USER_LOGGED'])
 	  	{
     		$arrayUser = userInfo($newFields['APP_DATA']['USER_LOGGED']);      
     		$_SESSION['USER_LOGGED'] = $newFields['APP_DATA']['USER_LOGGED'];
@@ -119,34 +119,15 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
       
   		PMFSendVariables($newAPP_UID, $newFields['APP_DATA']);		    
 		$oCase->updateCase($newAPP_UID, $newFields);
-		
+		//G::pr($newFields['APP_DATA']['FLAG_EDIT ']);
+   		//G::pr($_SESSION['APPLICATION_EDIT']);
   		if(isset($_SESSION['APPLICATION_EDIT']) && $_SESSION['APPLICATION_EDIT'] != '')
   		{
 			$_SESSION['APPLICATION'] = $newAPP_UID;
       		$_SESSION['APPLICATION_EDIT'] = $newAPP_UID;   
   			$_SESSION['USER_LOGGED'] = $auxUsrUID ;
     		$_SESSION['USR_USERNAME'] = $auxUsruname;
-    		# execute Triggers task Ini
-		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-	        $startTasks = executeQuery($query);
-	        foreach($startTasks as $rowTask){
-		        $taskId = $rowTask['TAS_UID'];
-		        $stepsByTask = getStepsByTask($taskId);
-	            foreach ($stepsByTask as $caseStep){
-				    $caseStepRes[] = 	 $caseStep->getStepUidObj();
-			    }
-			    break;
-	        }
-	        
-			$totStep = 0;
-			foreach($caseStepRes as $index)
-			{
-				$stepUid = $index;
-				executeTriggersMon($PRO_UID, $newAPP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-				executeTriggersMon($PRO_UID, $newAPP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-				$totStep++;
-			} 
-			# end execute Triggers task Ini
+    		//executeTriggers($PRO_UID, $newAPP_UID ,$auxUsrUID);
 			
      	}
   		else	
@@ -154,7 +135,7 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
   			$end_date =  Date("m-d-Y H:i:s");
        		$update = executeQuery("UPDATE PMT_USER_CONTROL_CASES SET USR_CTR_CAS_END_DATE = '$end_date' 
        							    WHERE APP_UID = '$APP_UID' AND USR_UID = '$auxUsrUID' "); 
-       		$delete = executeQuery("DELETE FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID = '".$auxUsrUID."' ");
+       		$delete = executeQuery("DELETE FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID = '".$_SESSION['USER_LOGGED']."' ");
        		
 			$_SESSION['APPLICATION'] = $newAPP_UID;
      		$_SESSION['APPLICATION_EDIT'] = $newAPP_UID;
@@ -162,7 +143,6 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
   			insertHistoryLogPlugin($APP_UID,$USR_UID,$CURRENTDATETIME,$version,$newAPP_UID,'Modification'); // PM function in aquitineProject Plugin		    
 		  	DuplicateMySQLRecord('APP_HISTORY','APP_UID',$APP_UID,$newAPP_UID);
 		  	
-		  	# execute Triggers task Ini
 		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
 	        $startTasks = executeQuery($query);
 	        foreach($startTasks as $rowTask){
@@ -173,7 +153,7 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 			    }
 			    break;
 	        }
-	        
+	        //G::pr($caseStepRes);die;
 			$totStep = 0;
 			foreach($caseStepRes as $index)
 			{
@@ -182,7 +162,6 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 				executeTriggersMon($PRO_UID, $newAPP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
 				$totStep++;
 			} 
-			# end execute Triggers task Ini
 			
 		  	$resInfo = PMFDerivateCase($newAPP_UID, 1,true, $USR_UID); 
 			$_SESSION['USER_LOGGED'] = $auxUsrUID ;
