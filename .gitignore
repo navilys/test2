@@ -45,3 +45,4 @@ enterprise/
 externalRegistration.php
 externalRegistration/
 .DS_Store
+convergenceList/csvTmp/*

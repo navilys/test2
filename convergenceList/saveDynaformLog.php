@@ -107,7 +107,10 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 		$newFields["APP_DATA"] = array_merge( $newFields, $_POST['form'] );
 	  	$newFields['APP_DATA']['APPLICATION'] = $newAPP_UID;
 	  	$newFields['APP_DATA']['FLAG_EDIT'] = 1;
-
+        if($_SESSION['APPLICATION_EDIT'] == '')
+  		{
+            $newFields['APP_DATA']['INDEX'] = 1; 
+        }
 	   // 	If the user is different
 	  	if($_SESSION['USER_LOGGED'] != $newFields['APP_DATA']['USER_LOGGED'])
 	  	{

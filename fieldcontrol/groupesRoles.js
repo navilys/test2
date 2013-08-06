@@ -178,7 +178,13 @@ Ext.onReady(function(){
     url   : '../groups/groups_Ajax?action=saveNewGroup',
     frame : true,
     items :[
-           {id:'groupnamefield', xtype: 'textfield', fieldLabel: _('ID_GROUP_NAME'), name: 'name', width: 200, allowBlank: false},
+           {id:'groupnamefield', xtype: 'textfield', fieldLabel: _('ID_GROUP_NAME'), name: 'name', width: 200,
+             autoCreate :  {   tag: "input", 
+                maxlength : 32, 
+                type: "text", 
+                size: "32", 
+                autocomplete: "off"},  
+             allowBlank: false},
            {
              xtype      : 'combo',
              id         : 'status',
@@ -212,7 +218,13 @@ Ext.onReady(function(){
     frame: true,
     items:[
            {xtype : 'textfield', name: 'grp_uid', hidden: true},
-           {xtype : 'textfield', fieldLabel: _('ID_GROUP_NAME'), name: 'name', width: 200, allowBlank: false},
+           {xtype : 'textfield', fieldLabel: _('ID_GROUP_NAME'), name: 'name', width: 200, 
+             autoCreate :  {   tag: "input", 
+                maxlength : 32, 
+                type: "text", 
+                size: "32", 
+                autocomplete: "off"},
+             allowBlank: false},
            {
              xtype         : 'combo',
              fieldLabel    : _('ID_STATUS'),

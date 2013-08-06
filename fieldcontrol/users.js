@@ -47,7 +47,7 @@ Ext.onReady(function () {
 	var j = 0;
 	var sw = 0;
 	var f = 1;
-	var b;
+	var b='';
 	var a;
 	var itemsOptions ={};
 	for ( i=0;  i < arrayOptions.length;  i++) 

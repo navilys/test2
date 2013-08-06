@@ -24,6 +24,7 @@ foreach($options as $index)
 {
 	$arrayOptions[] = $index;
 }
+
 $oHeadPublisher =& headPublisher::getSingleton();
 $oHeadPublisher->addExtJsScript('fieldcontrol/users', true );    //adding a javascript file .js
 $oHeadPublisher->assign('USR_UID', '');

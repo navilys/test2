@@ -1520,7 +1520,7 @@ function convergence_countCaseToProduct($statut, $codeOper) {
     $query = 'SELECT APP_UID, THEMATIQUE, THEMATIQUE_LABEL, CODE_OPERATION, T.LABEL FROM PMT_DEMANDES as D INNER JOIN PMT_TYPE_CHEQUIER as T ON (D.CODE_CHEQUIER = T.CODE_CD) WHERE (STATUT = ' . $statut . ' OR (STATUT = 6 AND REPRODUCTION_CHQ = "O")) ' . $queryCodeOper;
     $res = executeQuery($query);
     $count = array();
-    if (!empty($count))
+    if (!empty($res))
     {
         $msg['NOTHING'] = 0;
         $msg['HTML'] = 'Vous allez lancer la production de : <br />';
@@ -1532,7 +1532,7 @@ function convergence_countCaseToProduct($statut, $codeOper) {
             $count[$thema['THEMATIQUE']][$thema['LABEL']]['chequier'] = $thema['LABEL'];
             $count[$thema['THEMATIQUE']][$thema['LABEL']]['total']++;
         }
-        $queryRepro = 'SELECT COUNT(CODE_OPERATION) as NB, CODE_OPERATION FROM PMT_DEMANDES WHERE STATUT = 6 AND REPRODUCTION_CHQ = "O" ' . $queryCodeOper . ' GROUP BY CODE_OPERATION';
+        $queryRepro = 'SELECT COUNT(CODE_OPERATION) as NB, CODE_OPERATION FROM PMT_DEMANDES WHERE STATUT = 6 AND REPRODUCTION_CHQ = "O" ' . $queryCodeOper . ' GROUP BY CODE_OPERATION';        
         $resRepro = executeQuery($queryRepro);
         if (!empty($resRepro))
         {
