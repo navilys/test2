@@ -7,11 +7,11 @@ ini_set('display_errors',0);
 
 class getrecapprod extends WebResource {
 
-        function get_recapprod($codeOper) {
-                    
-                $result = convergence_countCaseToProduct(2, $codeOper);
-                
-                $res = json_encode($result);
+        function get_recapprod($codeOper, $detailChequier = 1) {
+
+        $result = convergence_countCaseToProduct(2, $codeOper, $detailChequier);
+
+        $res = json_encode($result);
 
                 return $res;
         }        

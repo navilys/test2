@@ -720,10 +720,11 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                 $error = false;
                 foreach ($select as $field)
                 {
-                    if ($field['CONSTANT'] != '')
+                    if (!empty($field['CONSTANT'])) // contient 0 par defaut
                         $row[$field['FIELD_NAME']] = $field['CONSTANT'];
                     if ($field['REQUIRED'] == 'no' || ($field['REQUIRED'] == 'yes' && isset($row[$field['FIELD_NAME']]) && $row[$field['FIELD_NAME']] != ''))
                     {
+
                         switch ($field['AS400_TYPE'])
                         {
                             case 'Integer':
@@ -1511,7 +1512,7 @@ function modifyDateVirement($app_uid, $case_uid_liste_rmbt) {
  */
 
 //LOCALE mais doit etre GLOBAL
-function convergence_countCaseToProduct($statut, $codeOper) {
+function convergence_countCaseToProduct($statut, $codeOper, $detailChequier = 1) {
     $queryCodeOper = '';
     if (isset($codeOper) && $codeOper != 0)
     {
@@ -1563,13 +1564,16 @@ function convergence_countCaseToProduct($statut, $codeOper) {
             $msg['HTML'] .= "-  $nb dossier$s pour la thématique :  $th <br />";
             $msg['HTML'] .= $reproTab[$tab['codeOper']];
             $msg['HTML'] .= $compTab[$tab['codeOper']];
-            foreach ($tab as $chequier)
+            if (!empty($detailChequier))
             {
-                if (is_array($chequier))
+                foreach ($tab as $chequier)
                 {
-                    $nbCheq = $chequier['total'];
-                    $lbCheq = $chequier['chequier'];
-                    $msg['HTML'] .= "<span style=\"margin-left:5em\">$lbCheq : $nbCheq</span><br />";
+                    if (is_array($chequier))
+                    {
+                        $nbCheq = $chequier['total'];
+                        $lbCheq = $chequier['chequier'];
+                        $msg['HTML'] .= "<span style=\"margin-left:5em\">$lbCheq : $nbCheq</span><br />";
+                    }
                 }
             }
         }

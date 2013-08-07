@@ -1823,7 +1823,7 @@ function importCSV (_uidTask){
     var _OPERATION_NO_COMPLETED = 'Un problème a été rencontré, l\'import ne s\'est peut être pas effectué complètement !';
     var _MSG_ERROR = 'Une erreur est survenue lors de l\'import!';
     var _MSG_TITLE_MESSAGE      = 'Message';
-    var _MSG_IMPORT_LOAD_DATA_SUCCESSFULLY = 'Import terminé avec succés!';
+    var _MSG_IMPORT_LOAD_DATA_SUCCESSFULLY = 'Chargement des paramètres réussi';
     var _MSG_TITLE_CREATE_DERIVATE_CASES = 'Cas créé';
     var _CSV_FILE = 'Fichier CSV';
     var _MSG_TITLE_SAVE_CONFIG_CSV = 'Mémoriser le mapping CSV';

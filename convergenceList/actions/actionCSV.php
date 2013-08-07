@@ -434,9 +434,9 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 					if($key == $row['FIELD_NAME'])
 					{
 						//$i = isset($fields[$key])?$fields[$key]:$row['FIELD_DEFAULT_VALUE'];
-						$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
-						
-						if(count($row['FIELD_SQL_OPTION']))
+						$i = isset($fields) ? $fields : $row['FIELD_DEFAULT_VALUE'];
+
+                        if(count($row['FIELD_SQL_OPTION']))
 						{
 							
 							$options = $row['FIELD_SQL_OPTION'];
@@ -459,8 +459,8 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 							}
 							
 							$record[$row['FIELD_NAME']] = $id;
-							$appData = array_merge($record,$appData);
-							$record[$row['FIELD_NAME']."_label"] = $label;
+							//$appData = array_merge($record,$appData); Coment all this line because shift the current label to the next row MISTAKE
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 							$appData = array_merge($record,$appData);
 						}
 						else
@@ -482,11 +482,10 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 								
 								$record = Array();
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
-								$appData = array_merge($record,$appData);
-
-							}
+								//$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
+								$appData = array_merge($record, $appData);
+                            }
 						}
 					}
 				}	
@@ -527,11 +526,10 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 							}
 							
 							$record[$row['FIELD_NAME']] = $id;
-							$appData = array_merge($record,$appData);
-							$record[$row['FIELD_NAME']."_label"] = $label;
-							$appData = array_merge($record,$appData);
-						
-						}
+							//$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
+							$appData = array_merge($record, $appData);
+                        }
 						else
 						{
 							if(count($row['FIELD_OPTION']))
@@ -556,22 +554,27 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 								}
 							
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
-								$appData = array_merge($record,$appData);
-								
-							}
+								//$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
+								$appData = array_merge($record, $appData);
+                               
+                            }
 						}
 					}
 				}
 	        }
 	    
 	     // end labels 
-	        $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
+            foreach ($appData as $key => $value)
+            {
+                $appData[$key] = utf8_decode($value);
+            }
+            $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
             $appData['eligible'] = 0; // only process beneficiary
             $appData['FLAG_EDIT'] = 1;
+            $appData['STATUT'] = 1;
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
             if($caseUID >0) {
@@ -579,8 +582,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
                 autoDerivate($proUid,$caseUID,$USR_UID);
                 $oCase = new Cases ();
                 $FieldsCase = $oCase->loadCase ( $caseUID );
-                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-                $FieldsCase['APP_DATA']['STATUT'] = 1;
+                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                
                 $oCase->updateCase($caseUID,$FieldsCase);
             }
         }
@@ -794,8 +796,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    				}
 		    				
 		    				$record[$row['FIELD_NAME']] = $id;
-		    				$appData = array_merge($record,$appData);
-		    				$record[$row['FIELD_NAME']."_label"] = $label;
+		    				//$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 		    				$appData = array_merge($record,$appData);
 		    			}
 		    			else
@@ -817,8 +819,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    					
 		    					$record = Array();
 		    					$record[$row['FIELD_NAME']] = $id;
-		    					$appData = array_merge($record,$appData);
-		    					$record[$row['FIELD_NAME']."_label"] = $label;
+		    					//$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 		    					$appData = array_merge($record,$appData);
 		    				}
 		    			}
@@ -858,8 +860,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    					$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
 		    				}
 		    				$record[$row['FIELD_NAME']] = $id;
-		    				$appData = array_merge($record,$appData);
-		    				$record[$row['FIELD_NAME']."_label"] = $label;
+		    				//$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 		    				$appData = array_merge($record,$appData);
 		    			}
 		    			else
@@ -885,8 +887,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    						$label = $row['FIELD_OPTION'][0]['descrip'];
 		    					}
 		    					$record[$row['FIELD_NAME']] = $id;
-		    					$appData = array_merge($record,$appData);
-		    					$record[$row['FIELD_NAME']."_label"] = $label;
+		    					//$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 		    					$appData = array_merge($record,$appData);
 		    				}
 		    			}
@@ -925,12 +927,16 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 	        	}
 	        }
 	        // end delete cases
-	        
-	        $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
+	        foreach ($appData as $key => $value)
+            {
+                $appData[$key] = utf8_decode($value);
+            }
+            $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
             $appData['eligible'] = 0; // only process beneficiary
             $appData['FLAG_EDIT'] = 1;
+            $appData['STATUT'] = 1;
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
             if($totalCases == 0)
@@ -942,8 +948,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
                 autoDerivate($proUid,$caseUID,$USR_UID);
                 $oCase = new Cases ();
                 $FieldsCase = $oCase->loadCase ( $caseUID );
-                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-                $FieldsCase['APP_DATA']['STATUT'] = 1;
+                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                
                 $oCase->updateCase($caseUID,$FieldsCase);
             }
             
@@ -1160,7 +1165,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                             }
 
                             $record[$row['FIELD_NAME']] = $id;
-                            $appData = array_merge($record, $appData);
+                            //$appData = array_merge($record, $appData);
                             $record[$row['FIELD_NAME'] . "_label"] = $label;
                             $appData = array_merge($record, $appData);
                         }
@@ -1183,7 +1188,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
                                 $record = Array();
                                 $record[$row['FIELD_NAME']] = $id;
-                                $appData = array_merge($record, $appData);
+                                //$appData = array_merge($record, $appData);
                                 $record[$row['FIELD_NAME'] . "_label"] = $label;
                                 $appData = array_merge($record, $appData);
                             }
@@ -1224,7 +1229,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                                 $label = $row['FIELD_SQL_OPTION'][0]['descrip'];
                             }
                             $record[$row['FIELD_NAME']] = $id;
-                            $appData = array_merge($record, $appData);
+                            //$appData = array_merge($record, $appData);
                             $record[$row['FIELD_NAME'] . "_label"] = $label;
                             $appData = array_merge($record, $appData);
                         }
@@ -1250,7 +1255,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                                     $label = $row['FIELD_OPTION'][0]['descrip'];
                                 }
                                 $record[$row['FIELD_NAME']] = $id;
-                                $appData = array_merge($record, $appData);
+                                //$appData = array_merge($record, $appData);
                                 $record[$row['FIELD_NAME'] . "_label"] = $label;
                                 $appData = array_merge($record, $appData);
                             }
@@ -1272,7 +1277,10 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
             // end labels
             // update cases
-
+            foreach ($appData as $key => $value)
+            {
+                $appData[$key] = utf8_decode($value);
+            }
             $query = "SELECT APP_UID FROM $tableName WHERE $whereUpdate ";
             $updateData = executeQuery($query);
             if (sizeof($updateData))
@@ -1286,6 +1294,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     $appData['EXEC_AUTO_DERIVATE'] = 'NO';
                     $appData['eligible'] = 0; // only process beneficiary
                     $appData['FLAG_EDIT'] = 1;
+                    $appData['STATUT'] = 1;
                     $appData['CurrentUserAutoDerivate'] = $USR_UID;
                     $appData = array_merge($FieldsCase['APP_DATA'], $appData);
                     $FieldsCase['APP_DATA'] = $appData;
@@ -1293,7 +1302,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     executeTriggers($proUid, $index['APP_UID'], $USR_UID);
                     $oCase = new Cases ();
                     $FieldsCase = $oCase->loadCase($index['APP_UID']);
-                    $FieldsCase['APP_DATA']['STATUT'] = 1;
+//                    $FieldsCase['APP_DATA']['STATUT'] = 1;
                     $oCase->updateCase($index['APP_UID'], $FieldsCase);
                 }
             }
@@ -1303,6 +1312,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 $appData['FLAG_ACTION'] = 'multipleDerivation';
                 $appData['EXEC_AUTO_DERIVATE'] = 'NO';
                 $appData['eligible'] = 0; // only process beneficiary
+                $appData['STATUT'] = 1;
                 $appData['FLAG_EDIT'] = 1;
                 $appData['CurrentUserAutoDerivate'] = $USR_UID;
                 $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);
@@ -1311,8 +1321,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     autoDerivate($proUid, $caseUID, $USR_UID);
                     $oCase = new Cases ();
                     $FieldsCase = $oCase->loadCase($caseUID);
-                    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-                    $FieldsCase['APP_DATA']['STATUT'] = 1;
+                    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                    
                     $oCase->updateCase($caseUID, $FieldsCase);
                 }
             }
