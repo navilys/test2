@@ -2169,7 +2169,7 @@ var radiosGroup = new Ext.form.RadioGroup({
 	                          columnLines     : true,
 	                          id              : 'gridMatchData',
 	                          cm              : gridcolumns,
-	                          plugins         : [checkColumnInclude],
+                            plugins: [checkColumnInclude, checkColumnRequired],
 	                          tbar : [{
 	                            text  : _IMPORT_CREATE_CASES,
 	                            cls   : 'x-btn-text-icon',

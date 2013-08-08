@@ -160,6 +160,14 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
         $nbcurrentLine++;
         foreach ($items as $field)
         {
+           /* if ($nbcurrentLine < 3)
+              {
+              mail('nicolas@oblady.fr', 'debug $row mail' . $nbcurrentLine, var_export($row, true));
+              mail('nicolas@oblady.fr', 'debug $field mail ' . $nbcurrentLine, var_export($field, true));
+              mail('nicolas@oblady.fr', 'debug $firstLineHeader mail ' . $nbcurrentLine, var_export($firstLineHeader, true));
+              mail('nicolas@oblady.fr', 'debug $param mail ' . $nbcurrentLine, var_export($param, true));
+              }
+             */
             $param = array();
             $param['LENGTH'] = 0;
             $param['REQUIRED'] = 'no'; // à implémenter
@@ -177,13 +185,13 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
                 if (isset($row[$field['COLUMN_CSV']])) // le nom de la colonne est présent dans le csv
                 {
                     $param['FIELD_DESCRIPTION'] = $field['COLUMN_CSV'];
-                    if ($row[$field['COLUMN_CSV']])
-                        $value = utf8_encode($row[$field['COLUMN_CSV']]);
+                   // if ($row[$field['COLUMN_CSV']]) //probleme ici possible.
+                    $value = utf8_encode($row[$field['COLUMN_CSV']]);
                 }
                 else // sinon c'est une constante
                 {
-                    if ($field['COLUMN_CSV'])
-                        $value = utf8_encode($field['COLUMN_CSV']);
+                  //  if ($field['COLUMN_CSV'])
+                    $value = utf8_encode($field['COLUMN_CSV']);
                 }
             }
             else
@@ -565,10 +573,10 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 	        }
 	    
 	     // end labels 
-            foreach ($appData as $key => $value)
-            {
-                $appData[$key] = utf8_decode($value);
-            }
+          /*  foreach ($appData as $key => $value)
+              {
+              $appData[$key] = utf8_decode($value);
+              } */
             $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
@@ -927,10 +935,10 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 	        	}
 	        }
 	        // end delete cases
-	        foreach ($appData as $key => $value)
-            {
-                $appData[$key] = utf8_decode($value);
-            }
+	      /*  foreach ($appData as $key => $value)
+              {
+              $appData[$key] = utf8_decode($value);
+              } */
             $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
@@ -985,7 +993,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
-    $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
+   $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
@@ -1277,10 +1285,10 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
             // end labels
             // update cases
-            foreach ($appData as $key => $value)
-            {
-                $appData[$key] = utf8_decode($value);
-            }
+           /* foreach ($appData as $key => $value)
+              {
+              $appData[$key] = utf8_decode($value);
+              } */
             $query = "SELECT APP_UID FROM $tableName WHERE $whereUpdate ";
             $updateData = executeQuery($query);
             if (sizeof($updateData))
@@ -1294,6 +1302,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     $appData['EXEC_AUTO_DERIVATE'] = 'NO';
                     $appData['eligible'] = 0; // only process beneficiary
                     $appData['FLAG_EDIT'] = 1;
+                    //$appData['FLAG_UPDATE'] = 1;
                     $appData['STATUT'] = 1;
                     $appData['CurrentUserAutoDerivate'] = $USR_UID;
                     $appData = array_merge($FieldsCase['APP_DATA'], $appData);
