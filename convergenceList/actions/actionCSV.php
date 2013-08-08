@@ -1,8 +1,7 @@
 <?php
 
 ## (c) req - last change May 23
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', True);
+
 G::loadClass ( 'pmFunctions' );
 G::LoadClass ( 'form' );
 //include ("doublonData.php");
@@ -1094,7 +1093,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         $totRow = sizeof($row);
         $totIni = 1;
         //  G::pr($items);
-        if ($totalCases >= 150)
+        if ($totalCases >= 100)
         {
             foreach ($row as $value)
             {
