@@ -22,10 +22,10 @@ if(isset($_REQUEST) && $_REQUEST['TYPE'] == 'TableCombo')
 					  A.ADD_TAB_NAME as NAME, 
 					  A.ADD_TAB_DESCRIPTION 
                FROM ADDITIONAL_TABLES  AS A	               
-               WHERE  ADD_TAB_UID <> '' ";	    
-	$aDara = executeQuery ($sQuery);
+               WHERE  A.ADD_TAB_UID <> '' AND A.PRO_UID <>'' ";	    
+	$aData = executeQuery ($sQuery);
 	
-	foreach ( $aDara as $value ) 
+	foreach ( $aData as $value ) 
 	{
 		$query = "SELECT JOIN_QUERY FROM PMT_INBOX_JOIN 
 		WHERE JOIN_ROL_CODE = '" . $_GET ['rolID'] ."' AND JOIN_QUERY != '' AND JOIN_ID_INBOX = '".$_POST['idInbox']."' ";
@@ -38,7 +38,7 @@ if(isset($_REQUEST) && $_REQUEST['TYPE'] == 'TableCombo')
 		$value['INNER_JOIN'] = $innerJoin;
 		$array [] = $value;
 	}
-	$total = count ( $aDara );
+	$total = count ( $aData );
 }
 $_REQUEST['idTable'] = isset($_REQUEST['idTable'])?$_REQUEST['idTable']:'';
 if(isset($_REQUEST) && $_REQUEST['idTable'] != '')

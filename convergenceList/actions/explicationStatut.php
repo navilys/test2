@@ -16,6 +16,11 @@ else
     $items = json_decode($array, true);
     $app_uid = $items[0]['APP_UID'];
 }
+if (isset($_SESSION['APPLICATION']) && $_SESSION['APPLICATION'] != '') {
+    
+    $app_uid = $_SESSION['APPLICATION'];
+   // $_GET['APP_UID'] = $_SESSION['APPLICATION'];
+}
 
 $oCase = new Cases ();
 $Fields = $oCase->loadCase($app_uid);

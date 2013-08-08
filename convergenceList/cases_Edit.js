@@ -132,7 +132,7 @@ Ext.onReady(function() {
     	  var PRO_UID  = rowSelected.data.PRO_UID;
     	  var CURRENTDATETIME = rowSelected.data.CURRENTDATETIME;
     	  var DYN_UID=rowSelected.data.DYN_UID;   
-          var url = 'casesHistoryDynaformPage_Ajax.php?ACTIONTYPE='+ACTIONTYPE+'&actionAjax=historyDynaformGridPreview'+'&DYN_UID='+DYN_UID+'&APP_UID='+APP_UID+'&PRO_UID='+PRO_UID+'&CURRENTDATETIME=' + CURRENTDATETIME;
+          var url = 'casesHistoryDynaformPage_Ajax.php?ACTIONTYPE='+ACTIONTYPE+'&actionAjax=historyDynaformGridPreview'+'&DYN_UID='+DYN_UID+'&APP_UID='+APP_UID+'&PRO_UID='+PRO_UID+'&CURRENTDATETIME=' + CURRENTDATETIME +'&ACTIONSAVE=0';
           //fn_add_tab(tabTitle,url,TabPanel);
     	  tabId = 'plugin-grid-' + rowSelected.data.APP_NUMBER;
     	  

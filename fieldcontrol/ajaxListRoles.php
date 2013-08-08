@@ -27,7 +27,7 @@ $array = Array ();
 $ROL_UID = $_GET ['rolID'];
 $innerJoin = '';
 $j = 0;
-
+$total = 0;
 if (isset ( $_POST ['idInbox'] ) && $_POST ['idInbox'] != '') 
 {
 	 $array = Array();
@@ -39,7 +39,7 @@ if (isset ( $_POST ['idInbox'] ) && $_POST ['idInbox'] != '')
     		    ADD_TAB_NAME AS ID,
     		    ADD_TAB_NAME AS NAME
     		    FROM PMT_INBOX_FIELDS
-				INNER JOIN ADDITIONAL_TABLES ON PMT_INBOX_FIELDS.ID_TABLE = ADDITIONAL_TABLES.ADD_TAB_NAME
+				INNER JOIN ADDITIONAL_TABLES ON (PMT_INBOX_FIELDS.ID_TABLE = ADDITIONAL_TABLES.ADD_TAB_NAME AND ADDITIONAL_TABLES.PRO_UID != '' )
 				WHERE PMT_INBOX_FIELDS.ID_INBOX = '".$_POST['idInbox']."' AND ROL_CODE  = '" . $_GET ['rolID'] . "' 
 					  AND ALIAS_TABLE = ID_TABLE AND ID_TABLE = '".$dataSelect[1]['ID_TABLE']."'
 				GROUP BY ADD_TAB_UID";
@@ -50,7 +50,7 @@ if (isset ( $_POST ['idInbox'] ) && $_POST ['idInbox'] != '')
     		    ADD_TAB_NAME AS ID,
     		    ADD_TAB_NAME AS NAME
     		    FROM PMT_INBOX_FIELDS
-				INNER JOIN ADDITIONAL_TABLES ON PMT_INBOX_FIELDS.ID_TABLE = ADDITIONAL_TABLES.ADD_TAB_NAME
+				INNER JOIN ADDITIONAL_TABLES ON (PMT_INBOX_FIELDS.ID_TABLE = ADDITIONAL_TABLES.ADD_TAB_NAME AND ADDITIONAL_TABLES.PRO_UID != '' )
 				WHERE PMT_INBOX_FIELDS.ID_INBOX = '".$_POST['idInbox']."' AND ROL_CODE  = '" . $_GET ['rolID'] . "' 
 					  AND ALIAS_TABLE = ID_TABLE 
 				GROUP BY ADD_TAB_UID
@@ -59,24 +59,35 @@ if (isset ( $_POST ['idInbox'] ) && $_POST ['idInbox'] != '')
 	 }
     $fields = executeQuery($query);
   
-    foreach($fields as $index)
+    if(sizeof($fields))
     {
-		$query = "SELECT JOIN_QUERY FROM PMT_INBOX_JOIN 
+        foreach($fields as $index)
+        {
+		    $query = "SELECT JOIN_QUERY FROM PMT_INBOX_JOIN 
 				  WHERE JOIN_ROL_CODE  = '" . $_GET ['rolID'] . "'  AND JOIN_ID_INBOX = '".$_POST['idInbox']."'  ";
 
-		$newOptions = executeQuery ( $query );
-		$innerJoin = isset ( $newOptions [1]['JOIN_QUERY'] ) ? $newOptions [1]['JOIN_QUERY'] : '';
-		$index['INNER_JOIN'] = $innerJoin; 
-    	$array[] = $index;
-	}
-    $total = count ( $fields );
+		    $newOptions = executeQuery ( $query );
+		    $innerJoin = isset ( $newOptions [1]['JOIN_QUERY'] ) ? $newOptions [1]['JOIN_QUERY'] : '';
+		    $index['INNER_JOIN'] = $innerJoin; 
+    	    $array[] = $index;
+	    }
+	    $total = count ( $fields );
+    }
+    else
+    {
+        $index['INNER_JOIN'] = '';
+        $index['ID'] = '';
+        $index['NAME'] = '';
+        $array[] = $index;
+        $total = 1;
+    }
 
 }
 
-$total = 0;
 
 if (isset ( $_REQUEST ['idTable'] ) && $_REQUEST ['idTable'] != '') 
 {
+    $total = 0;
 	if( (isset($_REQUEST ['inner']) && $_REQUEST ['inner'] != '') || (isset($_REQUEST ['swinner']) && $_REQUEST ['swinner'] == 1) )
 		$innerJoin = $_REQUEST ['inner'];
 	else 

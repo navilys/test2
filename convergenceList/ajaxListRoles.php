@@ -7,24 +7,7 @@ G::loadClass ( 'pmFunctions' );
 
 /*$start = isset ( $_POST ['start'] ) ? $_POST ['start'] : 0;
 $limit = isset ( $_POST ['limit'] ) ? $_POST ['limit'] : 20;
-$OrderBy = "ORDER BY NOM_BEN DESC";
-if (isset ( $_POST ['sort'] )) 
-{
-	if ($_POST ['sort'] != '') 
-	{
-		$typeOrder = "";
-		if (isset ( $_POST ['dir'] ) && $_POST ['dir'] != '') {
-			$typeOrder = $_POST ['dir'];
-		}
-		if ($_POST ['sort'] == "UNDERWRITER") {
-			$_POST ['sort'] = "A.ASSIGNED_UNDERWRITER";
-		}
-		if ($_POST ['sort'] == "SUBMISSION_DATE") {
-			$_POST ['sort'] = "APP.APP_INIT_DATE";
-		}
-		$OrderBy = " ORDER BY " . $_POST ['sort'] . "  " . $typeOrder . " ";
-	}
-}
+
 $array = Array();
 $query = "SELECT * FROM PMT_FIELDS_INBOX WHERE ROL_UID = '".$_GET['rolID']."'";
 $newOptions = executeQuery($query);

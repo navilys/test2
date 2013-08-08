@@ -123,11 +123,14 @@ function windowTabs(idField,urlData,appNumber)
                             panel.ownerCt.doLayout();
                             var activeTab = panel.getActiveTab();                           
                             if(activeTab.id == "iframe-DynaForms" && window.swFrame != '')
-                            {   //console.log(newTab);
-                                //newTab.autoLoad;
+                            {  
                                 newTab.doAutoLoad();
-                                //panel.ownerCt.doLayout();
                                 
+                            }
+                            if(activeTab.id == "iframe-Explication Statut" && window.swFrame != '')
+                            {  
+                                newTab.doAutoLoad();
+                               
                             }
                         },
                       afterrender: function(panel){                     

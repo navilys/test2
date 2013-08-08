@@ -41,6 +41,16 @@ class cronCreateCasesClassCron
       $plugin = new archivedCasesClassCron();
       $plugin->followUpActions();
     }
+    if(SYS_SYS == "idfTranSport"){
+        $pluginFile = PATH_PLUGINS.'convergenceList'.PATH_SEP.'services'.PATH_SEP.'class.createCasescron.php';
+        if(file_exists($pluginFile)){
+          G::LoadClass('plugin');
+          require_once($pluginFile);
+        }
+      
+      $plugin = new archivedCasesClassCron();
+      $plugin->followUpActions();
+    }
   }
 
 }

@@ -1,6 +1,8 @@
 <?php
 
 ## (c) req - last change May 23
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', True);
 G::loadClass ( 'pmFunctions' );
 G::LoadClass ( 'form' );
 //include ("doublonData.php");
@@ -23,16 +25,28 @@ function genDataReport ($tableName){
     G::loadClass( 'pmTable' );
     G::loadClass ( 'pmFunctions' );
     require_once 'classes/model/AdditionalTables.php';
-    $cnn = Propel::getConnection('workflow');
-	$stmt = $cnn->createStatement();
-    $additionalTables = new AdditionalTables(); 
-    $oPmTable = $additionalTables->loadByName($tableName);
-    $table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
-    if ($table['PRO_UID'] != '') {
-    	$truncateRPTable = "TRUNCATE TABLE  ".$tableName." ";
-	    $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);   
-	   // print( $table['ADD_TAB_NAME'].' user '. pmTable::resolveDbSource( $table['DBS_UID'] ).' type '. $table['ADD_TAB_TYPE']. 'process'.$table['PRO_UID'].'  tabgrid '.$table['ADD_TAB_GRID']. 'tab id'.$table['ADD_TAB_UID'] ); 		 			
-        $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
+    
+    // Check if the Table is Report or PM Table
+    $tableType = "Report";
+    $sqlAddTable = "SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME = '$tableName' ";
+    $resAddTable=executeQuery($sqlAddTable);
+    if(sizeof($resAddTable)){
+	    if($resAddTable[1]['PRO_UID'] == ''){
+		    $tableType = "pmTable";	    
+	    }		
+    }
+    if($tableType == "Report" )
+    {
+        $cnn = Propel::getConnection('workflow');
+	    $stmt = $cnn->createStatement();
+        $additionalTables = new AdditionalTables(); 
+        $oPmTable = $additionalTables->loadByName($tableName);
+        $table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
+        if ($table['PRO_UID'] != '') {
+    	    $truncateRPTable = "TRUNCATE TABLE  ".$tableName." ";
+	        $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM);   
+	        $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
+        }
     }
 }
 function deletePMCases($caseId) {
@@ -160,14 +174,6 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
         $nbcurrentLine++;
         foreach ($items as $field)
         {
-           /* if ($nbcurrentLine < 3)
-              {
-              mail('nicolas@oblady.fr', 'debug $row mail' . $nbcurrentLine, var_export($row, true));
-              mail('nicolas@oblady.fr', 'debug $field mail ' . $nbcurrentLine, var_export($field, true));
-              mail('nicolas@oblady.fr', 'debug $firstLineHeader mail ' . $nbcurrentLine, var_export($firstLineHeader, true));
-              mail('nicolas@oblady.fr', 'debug $param mail ' . $nbcurrentLine, var_export($param, true));
-              }
-             */
             $param = array();
             $param['LENGTH'] = 0;
             $param['REQUIRED'] = 'no'; // à implémenter
@@ -185,13 +191,13 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
                 if (isset($row[$field['COLUMN_CSV']])) // le nom de la colonne est présent dans le csv
                 {
                     $param['FIELD_DESCRIPTION'] = $field['COLUMN_CSV'];
-                   // if ($row[$field['COLUMN_CSV']]) //probleme ici possible.
-                    $value = utf8_encode($row[$field['COLUMN_CSV']]);
+                    if ($row[$field['COLUMN_CSV']])
+                        $value = utf8_encode($row[$field['COLUMN_CSV']]);
                 }
                 else // sinon c'est une constante
                 {
-                  //  if ($field['COLUMN_CSV'])
-                    $value = utf8_encode($field['COLUMN_CSV']);
+                    if ($field['COLUMN_CSV'])
+                        $value = utf8_encode($field['COLUMN_CSV']);
                 }
             }
             else
@@ -278,9 +284,9 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $_SESSION['USER_LOGGED_INI'] = $USR_UID;
     $proUid  = getProUid($tableName);
     $totalCases = 0;
-    //G::pr($dataCSV );
-// load Dynaforms of process
-    $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader);
+   
+    // load Dynaforms of process
+    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader);
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
 
@@ -366,7 +372,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     {
         $totRow = sizeof($row);
         $totIni = 1;
-       //  G::pr($items);
+       
         if($totalCases >= 150)
         {
             foreach($row as $value)
@@ -395,7 +401,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
             }
             
         }
-        else
+        else 
         {
             $appData =  array();
             foreach ($items as $field) { 
@@ -573,10 +579,10 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 	        }
 	    
 	     // end labels 
-          /*  foreach ($appData as $key => $value)
-              {
+            foreach ($appData as $key => $value)
+            {
               $appData[$key] = utf8_decode($value);
-              } */
+            } 
             $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
@@ -586,7 +592,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
             if($caseUID >0) {
-                //$resInfo = PMFDerivateCase($caseUID, 1,true, $USR_UID); 
                 autoDerivate($proUid,$caseUID,$USR_UID);
                 $oCase = new Cases ();
                 $FieldsCase = $oCase->loadCase ( $caseUID );
@@ -596,9 +601,13 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         }
         $totalCases++;
     }
+    # create file tmp
     if($csv != '')
     {
-        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+        $sPathName = PATH_DOCUMENT . "csvTmp" ;
+        if (!is_dir($sPathName)) 
+       	    G::verifyPath($sPathName, true);
+        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
            echo "Cannot open file";  
            exit;  
         }  
@@ -624,7 +633,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
-    $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader); // corriger pour la suppression
+    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader); // corriger pour la suppression
     // load Dynaforms of process
 	$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
@@ -935,10 +944,10 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 	        	}
 	        }
 	        // end delete cases
-	      /*  foreach ($appData as $key => $value)
-              {
+	        foreach ($appData as $key => $value)
+            {
               $appData[$key] = utf8_decode($value);
-              } */
+            } 
             $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
@@ -965,9 +974,14 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         }
     }
     genDataReport($tableName);
+    
+    # create file tmp
     if($csv != '')
     {
-        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+        $sPathName = PATH_DOCUMENT . "csvTmp" ;
+        if (!is_dir($sPathName)) 
+       	    G::verifyPath($sPathName, true);
+        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
            echo "Cannot open file";  
            exit;  
         }  
@@ -978,6 +992,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         fclose($handle);  
     }
     # end create file tmp
+    
     
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
@@ -993,7 +1008,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
-   $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
+    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
@@ -1098,8 +1113,9 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 foreach ($items as $field)
                 {
                     $insert = "INSERT INTO PMT_IMPORT_CSV_DATA
-      (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION) VALUES
-      ('$maxId','" . $field['FIELD_NAME'] . "', '" . $field['COLUMN_CSV'] . "', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD_UPDATE', '" . mysql_real_escape_string($dataDeleteEdit) . "')";
+                               (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION) 
+                               VALUES
+                               ('$maxId','" . $field['FIELD_NAME'] . "', '" . $field['COLUMN_CSV'] . "', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD_UPDATE', '" . mysql_real_escape_string($dataDeleteEdit) . "')";
                     executeQuery($insert);
                     $swInsert = 1;
                     $maxId++;
@@ -1285,10 +1301,10 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
             // end labels
             // update cases
-           /* foreach ($appData as $key => $value)
-              {
+            foreach ($appData as $key => $value)
+            {
               $appData[$key] = utf8_decode($value);
-              } */
+            } 
             $query = "SELECT APP_UID FROM $tableName WHERE $whereUpdate ";
             $updateData = executeQuery($query);
             if (sizeof($updateData))
@@ -1340,9 +1356,14 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     }
 
     genDataReport($tableName);
+    
+    # create file tmp
     if($csv != '')
     {
-        if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$csv_file, "w")) {  
+        $sPathName = PATH_DOCUMENT . "csvTmp" ;
+        if (!is_dir($sPathName)) 
+       	    G::verifyPath($sPathName, true);
+        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
            echo "Cannot open file";  
            exit;  
         }  
@@ -1353,6 +1374,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         fclose($handle);  
     }
     # end create file tmp
+    
     
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;

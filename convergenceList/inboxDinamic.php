@@ -1,5 +1,5 @@
 <?php
-### changed by ronald May 10
+### changed May 10
 
 G::LoadClass ( 'case' );
 G::LoadClass ( 'configuration' );
@@ -95,7 +95,7 @@ if(sizeof($inbox)){
 		}
 		
 		$array = delete_duplicate($array,'FIELD_NAME');
-		//G::pr($array); die;
+		
 		####### Actions
 		$queryActions = "SELECT I.ID_INBOX, I.NAME_ACTION, I.ID_PM_FUNCTION, I.PARAMETERS_FUNCTION, I.ROL_CODE, A.DESCRIPTION, A.ROWS_AFFECT
 						 FROM PMT_INBOX_ACTIONS  I
@@ -128,15 +128,30 @@ if(sizeof($inbox)){
 			
 		}	
 		##### PROCESS_UID for getDybafields
-
-		$sSQL ="SELECT  PRO_UID FROM $table RT, APPLICATION A WHERE RT.APP_UID = A.APP_UID";
-		$aResult = executeQuery($sSQL);
-		$sProUid = '';
-		if(is_array($aResult) && isset($aResult[1]['PRO_UID'])){
-			$sProUid = $aResult[1]['PRO_UID'];
-		}
+        
+        ##### Check if the Table is Report or PM Table
+        $tableType = "Report";
+        $sqlAddTable = "SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME = '$table' ";
+        $resAddTable=executeQuery($sqlAddTable);
+        if(sizeof($resAddTable)){
+	        if($resAddTable[1]['PRO_UID'] == ''){
+		        $tableType = "pmTable";	    
+	        }		
+        }
+        #####
+        $sProUid = '';
+        if($tableType == "Report" )
+        {
+		    $sSQL ="SELECT  PRO_UID FROM $table RT, APPLICATION A WHERE RT.APP_UID = A.APP_UID";
+		    $aResult = executeQuery($sSQL);
+		    $sProUid = '';
+		    if(is_array($aResult) && isset($aResult[1]['PRO_UID'])){
+			    $sProUid = $aResult[1]['PRO_UID'];
+		    }
+	    }
 
 		##### 
+		
 		$oHeadPublisher->assign ( 'tableDef', $array );
 		$oHeadPublisher->assign ( 'table', $table );
 		$oHeadPublisher->assign ( 'nameInbox', $description );

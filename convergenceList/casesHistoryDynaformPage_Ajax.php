@@ -248,6 +248,15 @@ if($actionAjax== 'historyDynaformGridPreview')
         leimnud.iphone.make = function(){};      
         function ajax_function(ajax_server, funcion, parameters, method){          
         }
+        /* <?php
+            if(isset($_REQUEST['ACTIONSAVE']) && $_REQUEST['ACTIONSAVE'] == 1)
+            {        
+        ?>
+            alert('Vos changements ont \u00E9t\u00E9 enregistr\u00E9s avec succ\u00E9s');
+        <?php
+            $_REQUEST['SAVEDATA'] = 0;
+            }
+        ?>*/
         //!
       </script>
 <?php

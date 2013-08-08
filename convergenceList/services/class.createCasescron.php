@@ -1,99 +1,96 @@
-	<?php
+<?php
 	
-	class archivedCasesClassCron
-	{
-		public $workspace = SYS_SYS;
+class archivedCasesClassCron
+{
+    public $workspace = SYS_SYS;
 		
-		function followUpActions()
-		{   
-		    if (!defined('PATH_PM_BUSINESS_RULES')) {
-		        define('PATH_PM_BUSINESS_RULES', PATH_CORE . 'plugins' . PATH_SEP . 'pmBusinessRules' . PATH_SEP );
-		    }
-			G::LoadClass('configuration');
-			G::LoadClass('pmFunctions');
-			G::LoadClass('wsBase');
-			G::LoadClass('case');
-			G::LoadClass('plugin');
-		    require_once(PATH_PLUGINS.'convergenceList/classes/class.pmFunctions.php');
-		    require_once(PATH_PLUGINS.'obladyConvergence/classes/class.pmFunctions.php');
-		    require_once(PATH_PLUGINS.'NordPDC/classes/class.pmFunctions.php');
-		    require_once(PATH_PLUGINS.'pmBusinessRules/classes/class.pmFunctions.php');
-		    set_include_path(PATH_PLUGINS . 'pmBusinessRules' . PATH_SEPARATOR . get_include_path());		
-	       define( 'PATH_WORKSPACE', PATH_DB . SYS_SYS . PATH_SEP );
-	       set_include_path( get_include_path() . PATH_SEPARATOR . PATH_WORKSPACE );
-		    $this->createCasesCSV();
-			echo "* ARCHIVED CASES EXECUTED *"; 
-				
-		}
+	function followUpActions()
+	{   
+	    if (!defined('PATH_PM_BUSINESS_RULES')) {
+	        define('PATH_PM_BUSINESS_RULES', PATH_CORE . 'plugins' . PATH_SEP . 'pmBusinessRules' . PATH_SEP );
+	    }
+		G::LoadClass('configuration');
+		G::LoadClass('pmFunctions');
+		G::LoadClass('wsBase');
+		G::LoadClass('case');
+		G::LoadClass('plugin');
+	    require_once(PATH_PLUGINS.'convergenceList/classes/class.pmFunctions.php');
+	    require_once(PATH_PLUGINS.'obladyConvergence/classes/class.pmFunctions.php');
+	    require_once(PATH_PLUGINS.'NordPDC/classes/class.pmFunctions.php');
+	    require_once(PATH_PLUGINS.'pmBusinessRules/classes/class.pmFunctions.php');
+	    set_include_path(PATH_PLUGINS . 'pmBusinessRules' . PATH_SEPARATOR . get_include_path());		
+	    define( 'PATH_WORKSPACE', PATH_DB . SYS_SYS . PATH_SEP );
+	    set_include_path( get_include_path() . PATH_SEPARATOR . PATH_WORKSPACE );
+	    $this->createCasesCSV();
+		echo "* ARCHIVED CASES EXECUTED *"; 
+			
+	}
 	 
-	
-	
-		function createCasesCSV()
+	function createCasesCSV()
+	{
+	    $query = "SELECT IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION, IMPCSV_FIRSTLINEHEADER, IMPCSV_TABLE_NAME, IMPCSV_TAS_UID
+		      FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA GROUP BY IMPCSV_IDENTIFY ";
+		$data = executeQuery($query);
+		if(sizeof($data))
 		{
-		    $query = "SELECT IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION, IMPCSV_CONDITION_ACTION, IMPCSV_FIRSTLINEHEADER, IMPCSV_TABLE_NAME, IMPCSV_TAS_UID
-			      FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA GROUP BY IMPCSV_IDENTIFY ";
-			$data = executeQuery($query);
-			if(sizeof($data))
-			{
             mail('nicolas@oblady.fr', 'debug cron query mail ', var_export($query, true));
             mail('nicolas@oblady.fr', 'debug cron ws mail ', var_export($this->workspace, true));
             mail('nicolas@oblady.fr', 'debug cron data mail ', var_export($data, true));
             foreach($data as $row)
-			    {
-				$query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
-				$dataCsv = executeQuery($query);
-				$dataImportCSV =  array();
-				
-				foreach($dataCsv as $index)
-				{
-				    $record = array (
-								"FIELD_NAME" => $index['IMPCSV_FIELD_NAME'], 
-								"COLUMN_CSV" => $index['IMPCSV_VALUE']
-						);
-						$dataImportCSV[] = $record;
-				}
-				
-				$actionType = $row['IMPCSV_TYPE_ACTION'];
-				$matchFields = $dataImportCSV;
-			$uidTask     = isset($row["IMPCSV_TAS_UID"])? $row["IMPCSV_TAS_UID"]:'';
-			$tableName   = isset($row["IMPCSV_TABLE_NAME"])? $row["IMPCSV_TABLE_NAME"]:'';
-			$csvIdentify   = isset($row["IMPCSV_IDENTIFY"])? $row["IMPCSV_IDENTIFY"]:'';
-			$firstLineHeader   = isset($row["IMPCSV_FIRSTLINEHEADER"])? $row["IMPCSV_FIRSTLINEHEADER"]:'on';
-			$fileCSV     = $tableName.'_'.$row['IMPCSV_IDENTIFY'];
-				$informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV);
-				$dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
-				
-				switch ($actionType) 
-				{
-				case "ADD": 
-				$totalCases = $this->importCreateCaseCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV);
-				$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
-				$this->deleteFileCSV($fileCSV);
-				break;
-			
-			    case "ADD_DELETE": 
-				$totalCases = $this->importCreateCaseDeleteCSV($matchFields,$uidTask,$tableName,$firstLineHeader, $informationCSV,$dataDeleteEdit);
-				$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
-				$this->deleteFileCSV($fileCSV);
-				break;
-			    case "ADD_UPDATE": 
-				
-				$totalCases = $this->importCreateCaseEditCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit);
-				$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
-				$this->deleteFileCSV($fileCSV);
-				break;
-			}  
-			    }
-			}
-			
-			
+		    {
+		        $query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
+		        $dataCsv = executeQuery($query);
+		        $dataImportCSV =  array();
+		        
+		        foreach($dataCsv as $index)
+		        {
+		            $record = array (
+		        				"FIELD_NAME" => $index['IMPCSV_FIELD_NAME'], 
+		        				"COLUMN_CSV" => $index['IMPCSV_VALUE']
+		        		);
+		        	$dataImportCSV[] = $record;
+		        }
+		        
+		        $actionType = $row['IMPCSV_TYPE_ACTION'];
+		        $matchFields = $dataImportCSV;
+		        $uidTask     = isset($row["IMPCSV_TAS_UID"])? $row["IMPCSV_TAS_UID"]:'';
+		        $tableName   = isset($row["IMPCSV_TABLE_NAME"])? $row["IMPCSV_TABLE_NAME"]:'';
+		        $csvIdentify   = isset($row["IMPCSV_IDENTIFY"])? $row["IMPCSV_IDENTIFY"]:'';
+		        $firstLineHeader   = isset($row["IMPCSV_FIRSTLINEHEADER"])? $row["IMPCSV_FIRSTLINEHEADER"]:'on';
+		        $fileCSV     = $tableName.'_'.$row['IMPCSV_IDENTIFY'];
+		        $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV);
+		        $dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
+		        	
+		        switch ($actionType) 
+		    	{
+		    		case "ADD": 
+		    		$totalCases = $this->importCreateCaseCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV);
+		    		$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
+		    		$this->deleteFileCSV($fileCSV);
+		    		break;
+		    	
+		    	    case "ADD_DELETE": 
+		    		$totalCases = $this->importCreateCaseDeleteCSV($matchFields,$uidTask,$tableName,$firstLineHeader, $informationCSV,$dataDeleteEdit);
+		    		$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
+		    		$this->deleteFileCSV($fileCSV);
+		    		break;
+		    	    case "ADD_UPDATE": 
+		    		
+		    		$totalCases = $this->importCreateCaseEditCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit);
+		    		$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
+		    		$this->deleteFileCSV($fileCSV);
+		    		break;
+		    	}   
+		    }
 		}
 		
-		function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV)
-		{
-		    ($fileCSV);
-		set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
-		if (!$handle = fopen("/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$fileCSV.".csv", "r")) {  
+		
+	}
+	
+	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV)
+	{
+	    set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
+		if (!$handle = fopen(PATH_DOCUMENT . "csvTmp/".$fileCSV.".csv", "r")) {  
 		    echo "Cannot open file";  
 		    exit;  
 		} 
@@ -104,31 +101,32 @@
 		    $i = 0; 
 		    foreach($data as $row) {
 	
-		       $csvDataIni[]= $row;
+		        $csvDataIni[]= $row;
 	
 		    }
-		     $csvData[] = $csvDataIni;
+		    $csvData[] = $csvDataIni;
 		    $csvDataIni = '';
 		}
 		
 		return $csvData;
-	    }
+	}
 		
-		function deleteFileCSV($fileCSV)
-		{
-		    $dir= "/opt/processmaker/workflow/engine/plugins/convergenceList/csvTmp/".$fileCSV.".csv"; 
+	function deleteFileCSV($fileCSV)
+	{
+	    $dir = PATH_DOCUMENT . "csvTmp/".$fileCSV.".csv"; 
 		if(file_exists($dir)) 
 		{ 
-		if(unlink($dir)) 
-		print "File Deleted"; 
+		    if(unlink($dir)) 
+		        print "File Deleted "; 
 		} 
 		else 
-		print "The file is not present."; 
-		}
-	    function importCreateCaseCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV)
-	    {
+		    print "The file is not present. "; 
+	}
+		
+	 function importCreateCaseCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV)
+	 {
 	       
-		G::LoadClass('case');
+        G::LoadClass('case');
 		$items   =$jsonMatchFields; 
 		$dataCSV = isset($informationCSV) ? $informationCSV: array();
 		$USR_UID = '00000000000000000000000000000001';
@@ -143,84 +141,84 @@
 		$totalCases = 0;
 	    
 		// load Dynaforms of process
-		 $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
-			$resultDynaform = executeQuery($select);
+		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
+		$resultDynaform = executeQuery($select);
+		
+		$_dataForms =  array();
+		foreach($resultDynaform As $rowDynaform)
+		{
+			$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
 			
-			$_dataForms =  array();
-			foreach($resultDynaform As $rowDynaform)
+			foreach ($dynaform->fields as $fieldName => $field) 
 			{
-				$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
-				
-				foreach ($dynaform->fields as $fieldName => $field) {
-					if( $field->type == 'dropdown')
+				if( $field->type == 'dropdown')
+				{
+					$aData = array();
+					$dataSQL = array();
+					$data = array();
+					if(strlen($field->sql))
 					{
-						$aData = array();
-						$dataSQL = array();
-						$data = array();
-						if(strlen($field->sql))
+						$query = $field->sql;
+						$valueData = explode(",",$query); 
+						$valueId = explode(" ",$valueData[0]);
+						$position = count($valueId)-1 ;
+						$valueId = $valueId[$position];
+						$valueDataCount = count($valueData);
+						$valueName = explode(" ",$valueData[$valueDataCount-1]);
+						for($i = 0; $i <count($valueName) ; $i++)
 						{
-							$query = $field->sql;
-							$valueData = explode(",",$query); 
-							$valueId = explode(" ",$valueData[0]);
-							$position = count($valueId)-1 ;
-							$valueId = $valueId[$position];
-							$valueDataCount = count($valueData);
-							$valueName = explode(" ",$valueData[$valueDataCount-1]);
-							for($i = 0; $i <count($valueName) ; $i++)
+							if($valueName[$i]=="from" || $valueName[$i]=="FROM")
 							{
-								if($valueName[$i]=="from" || $valueName[$i]=="FROM")
-								{
-									$dataName = $valueName[$i-1];
-									break;		
-								}
-							}
-							
-							$aData = executeQuery($field->sql);
-							
-						}	
-						if(sizeof($aData))
-						{
-							foreach($aData As $key => $row)
-							{
-								$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
-								$dataSQL[] = $rowData;
+								$dataName = $valueName[$i-1];
+								break;		
 							}
 						}
 						
-						if(sizeof($field->option))
-						{
-							foreach($field->option As $key => $row)
-							{
-								$rowData = array ( 'id'=>$key,'descrip'=>$row);
-								$data[] = $rowData;
-							}
-						}
+						$aData = executeQuery($field->sql);
 						
-						$record = array (
-								"FIELD_NAME" => $field->name, 
-								"FIELD_LABEL" => $field->label,
-								"FIELD_TYPE" => $field->type,
-								"FIELD_DEFAULT_VALUE" => $field->defaultValue,
-								"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
-								"FIELD_OPTION" => $data,
-								"FIELD_READONLY" => $field->readonly,
-								"FIELD_SQL_CONNECTION" => $field->sqlConnection,
-								"FIELD_SQL" => $field->sql,
-								"FIELD_SQL_OPTION" => $dataSQL,
-								"FIELD_SELECTED_VALUE" => $field->selectedValue,
-								"FIELD_SAVE_LABEL" => $field->saveLabel
-						);
-						$_dataForms[] = $record;
+					}	
+					if(sizeof($aData))
+					{
+						foreach($aData As $key => $row)
+						{
+							$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
+							$dataSQL[] = $rowData;
+						}
 					}
+					
+					if(sizeof($field->option))
+					{
+						foreach($field->option As $key => $row)
+						{
+							$rowData = array ( 'id'=>$key,'descrip'=>$row);
+							$data[] = $rowData;
+						}
+					}
+					
+					$record = array (
+							"FIELD_NAME" => $field->name, 
+							"FIELD_LABEL" => $field->label,
+							"FIELD_TYPE" => $field->type,
+							"FIELD_DEFAULT_VALUE" => $field->defaultValue,
+							"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
+							"FIELD_OPTION" => $data,
+							"FIELD_READONLY" => $field->readonly,
+							"FIELD_SQL_CONNECTION" => $field->sqlConnection,
+							"FIELD_SQL" => $field->sql,
+							"FIELD_SQL_OPTION" => $dataSQL,
+							"FIELD_SELECTED_VALUE" => $field->selectedValue,
+							"FIELD_SAVE_LABEL" => $field->saveLabel
+					);
+					$_dataForms[] = $record;
 				}
 			}
+		}
 			
-		
-	       
 		foreach ($dataCSV as $row) 
 		{
 		    $appData =  array();
-			foreach ($items as $field) { 
+			foreach ($items as $field) 
+			{ 
 			    if($firstLineHeader == 'on'){
 				
 				if(isset($row[$field['COLUMN_CSV']]))
@@ -330,7 +328,7 @@
 					}	
 			}
 		       
-		       $whereDelete = '';
+		 
 			foreach($appData As $key => $fields)
 			{
 				foreach ($_dataForms As $row)

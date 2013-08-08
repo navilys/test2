@@ -215,7 +215,7 @@ function FredirectTypo3($APP_UID) {
                 $PRO_UID = $DATA['PROCESS'];
                 $_SESSION['USER_LOGGED'] = $DATA['FLG_INITUSERUID'];
                 $_SESSION['USR_USERNAME'] = $DATA['FLG_INITUSERNAME'];
-                $url = '../convergenceList/casesHistoryDynaformPage_Ajax.php?ACTIONTYPE=edit&actionAjax=historyDynaformGridPreview&DYN_UID=' . $DYN_UID . '&APP_UID=' . $APP_UID . '&PRO_UID=' . $PRO_UID . '&CURRENTDATETIME=' . $CURRENTDATETIME;
+                $url = '../convergenceList/casesHistoryDynaformPage_Ajax.php?ACTIONTYPE=edit&actionAjax=historyDynaformGridPreview&DYN_UID=' . $DYN_UID . '&APP_UID=' . $APP_UID . '&PRO_UID=' . $PRO_UID . '&CURRENTDATETIME=' . $CURRENTDATETIME . '&ACTIONSAVE=1';
                 echo "<script language='javascript'> location.href = '" . $url . "';</script>";
                 die();
             }

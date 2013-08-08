@@ -51,7 +51,8 @@ function genDataReport ($tableName){
     G::loadClass( 'pmTable' );
     G::loadClass ( 'pmFunctions' );
     require_once 'classes/model/AdditionalTables.php';
-     $tableType = "Report";
+    
+    $tableType = "Report";
    
     // Check if the Table is Report or PM Table
 
