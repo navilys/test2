@@ -20,7 +20,7 @@ class archivedCasesClassCron
 	    require_once(PATH_PLUGINS.'pmBusinessRules/classes/class.pmFunctions.php');
 	    set_include_path(PATH_PLUGINS . 'pmBusinessRules' . PATH_SEPARATOR . get_include_path());		
 	    define( 'PATH_WORKSPACE', PATH_DB . SYS_SYS . PATH_SEP );
-	    set_include_path( get_include_path() . PATH_SEPARATOR . PATH_WORKSPACE );
+	    set_include_path( get_include_path() . PATH_SEPARATOR . PATH_WORKSPACE );	     
 	    $this->createCasesCSV();
 		echo "* ARCHIVED CASES EXECUTED *"; 
 			
@@ -33,9 +33,9 @@ class archivedCasesClassCron
 		$data = executeQuery($query);
 		if(sizeof($data))
 		{
-            mail('nicolas@oblady.fr', 'debug cron query mail ', var_export($query, true));
-            mail('nicolas@oblady.fr', 'debug cron ws mail ', var_export($this->workspace, true));
-            mail('nicolas@oblady.fr', 'debug cron data mail ', var_export($data, true));
+            //mail('nicolas@oblady.fr', 'debug cron query mail ', var_export($query, true));
+            //mail('nicolas@oblady.fr', 'debug cron ws mail ', var_export($this->workspace, true));
+            //mail('nicolas@oblady.fr', 'debug cron data mail ', var_export($data, true));
             foreach($data as $row)
 		    {
 		        $query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
