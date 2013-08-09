@@ -294,8 +294,8 @@ class archivedCasesClassCron
 								}
 								
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
+								//$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
 							}
 							else
@@ -318,8 +318,8 @@ class archivedCasesClassCron
 									$record = Array();
 									
 									$record[$row['FIELD_NAME']] = $id;
-									$appData = array_merge($record,$appData);
-									$record[$row['FIELD_NAME']."_label"] = $label;
+									//$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 									$appData = array_merge($record,$appData);
 									
 								}
@@ -364,8 +364,8 @@ class archivedCasesClassCron
 								}
 								
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
+							//	$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
 								
 							}
@@ -393,8 +393,8 @@ class archivedCasesClassCron
 									}
 									
 									$record[$row['FIELD_NAME']] = $id;
-									$appData = array_merge($record,$appData);
-									$record[$row['FIELD_NAME']."_label"] = $label;
+								//	$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 									$appData = array_merge($record,$appData);
 									
 								}
@@ -598,8 +598,8 @@ class archivedCasesClassCron
 								}
 								
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
+							//	$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
 							}
 							else
@@ -622,8 +622,8 @@ class archivedCasesClassCron
 									$record = Array();
 									
 									$record[$row['FIELD_NAME']] = $id;
-									$appData = array_merge($record,$appData);
-									$record[$row['FIELD_NAME']."_label"] = $label;
+									//$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 									$appData = array_merge($record,$appData);
 									
 								}
@@ -667,8 +667,8 @@ class archivedCasesClassCron
 								}
 								
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
+							//	$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
 								
 							}
@@ -696,8 +696,8 @@ class archivedCasesClassCron
 									}
 									
 									$record[$row['FIELD_NAME']] = $id;
-									$appData = array_merge($record,$appData);
-									$record[$row['FIELD_NAME']."_label"] = $label;
+							//		$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 									$appData = array_merge($record,$appData);
 									
 								}
@@ -944,8 +944,8 @@ class archivedCasesClassCron
 								}
 								
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
+							//	$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
 							}
 							else
@@ -968,8 +968,8 @@ class archivedCasesClassCron
 									$record = Array();
 									
 									$record[$row['FIELD_NAME']] = $id;
-									$appData = array_merge($record,$appData);
-									$record[$row['FIELD_NAME']."_label"] = $label;
+							//		$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 									$appData = array_merge($record,$appData);
 									
 								}
@@ -1013,8 +1013,8 @@ class archivedCasesClassCron
 								}
 								
 								$record[$row['FIELD_NAME']] = $id;
-								$appData = array_merge($record,$appData);
-								$record[$row['FIELD_NAME']."_label"] = $label;
+							//	$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
 								
 							}
@@ -1042,8 +1042,8 @@ class archivedCasesClassCron
 									}
 									
 									$record[$row['FIELD_NAME']] = $id;
-									$appData = array_merge($record,$appData);
-									$record[$row['FIELD_NAME']."_label"] = $label;
+							//		$appData = array_merge($record,$appData);
+                                $record[$row['FIELD_NAME']."_label"] = $label;
 									$appData = array_merge($record,$appData);
 									
 								}

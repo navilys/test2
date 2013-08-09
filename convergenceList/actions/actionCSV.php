@@ -190,13 +190,13 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
                 if (isset($row[$field['COLUMN_CSV']])) // le nom de la colonne est présent dans le csv
                 {
                     $param['FIELD_DESCRIPTION'] = $field['COLUMN_CSV'];
-                    if ($row[$field['COLUMN_CSV']])
-                        $value = utf8_encode($row[$field['COLUMN_CSV']]);
+                    //if ($row[$field['COLUMN_CSV']])
+                    $value = utf8_encode($row[$field['COLUMN_CSV']]);
                 }
                 else // sinon c'est une constante
                 {
-                    if ($field['COLUMN_CSV'])
-                        $value = utf8_encode($field['COLUMN_CSV']);
+                    //if ($field['COLUMN_CSV'])
+                    $value = utf8_encode($field['COLUMN_CSV']);
                 }
             }
             else
@@ -285,7 +285,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $totalCases = 0;
    
     // load Dynaforms of process
-    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader);
+    $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader);
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
 
@@ -632,7 +632,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
-    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader); // corriger pour la suppression
+    $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader); // corriger pour la suppression
     // load Dynaforms of process
 	$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
@@ -1008,6 +1008,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
     //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
+    //mail('nicolas@oblady.fr', '$data debug mail ', var_export($dataCSV, true));
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);

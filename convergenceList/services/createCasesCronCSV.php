@@ -293,8 +293,8 @@
     							}
     							
     							$record[$row['FIELD_NAME']] = $id;
-    							$appData = array_merge($record,$appData);
-    							$record[$row['FIELD_NAME']."_label"] = $label;
+    					//		$appData = array_merge($record,$appData);
+                        $record[$row['FIELD_NAME']."_label"] = $label;
     							$appData = array_merge($record,$appData);
     						}
     						else
@@ -317,8 +317,8 @@
     								$record = Array();
     								
     								$record[$row['FIELD_NAME']] = $id;
-    								$appData = array_merge($record,$appData);
-    								$record[$row['FIELD_NAME']."_label"] = $label;
+    							//	$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
     								$appData = array_merge($record,$appData);
     								
     							}
@@ -363,8 +363,8 @@
     							}
     							
     							$record[$row['FIELD_NAME']] = $id;
-    							$appData = array_merge($record,$appData);
-    							$record[$row['FIELD_NAME']."_label"] = $label;
+    					//		$appData = array_merge($record,$appData);
+                        $record[$row['FIELD_NAME']."_label"] = $label;
     							$appData = array_merge($record,$appData);
     							
     						}
@@ -392,8 +392,8 @@
     								}
     								
     								$record[$row['FIELD_NAME']] = $id;
-    								$appData = array_merge($record,$appData);
-    								$record[$row['FIELD_NAME']."_label"] = $label;
+    					//			$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
     								$appData = array_merge($record,$appData);
     								
     							}
@@ -621,8 +621,8 @@
     							}
     							
     							$record[$row['FIELD_NAME']] = $id;
-    							$appData = array_merge($record,$appData);
-    							$record[$row['FIELD_NAME']."_label"] = $label;
+    					//		$appData = array_merge($record,$appData);
+                        $record[$row['FIELD_NAME']."_label"] = $label;
     							$appData = array_merge($record,$appData);
     						}
     						else
@@ -645,8 +645,8 @@
     								$record = Array();
     								
     								$record[$row['FIELD_NAME']] = $id;
-    								$appData = array_merge($record,$appData);
-    								$record[$row['FIELD_NAME']."_label"] = $label;
+    					//			$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
     								$appData = array_merge($record,$appData);
     								
     							}
@@ -690,8 +690,8 @@
     							}
     							
     							$record[$row['FIELD_NAME']] = $id;
-    							$appData = array_merge($record,$appData);
-    							$record[$row['FIELD_NAME']."_label"] = $label;
+    					//		$appData = array_merge($record,$appData);
+                        $record[$row['FIELD_NAME']."_label"] = $label;
     							$appData = array_merge($record,$appData);
     							
     						}
@@ -719,8 +719,8 @@
     								}
     								
     								$record[$row['FIELD_NAME']] = $id;
-    								$appData = array_merge($record,$appData);
-    								$record[$row['FIELD_NAME']."_label"] = $label;
+    					//			$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
     								$appData = array_merge($record,$appData);
     								
     							}
@@ -967,8 +967,8 @@
     							}
     							
     							$record[$row['FIELD_NAME']] = $id;
-    							$appData = array_merge($record,$appData);
-    							$record[$row['FIELD_NAME']."_label"] = $label;
+    					//		$appData = array_merge($record,$appData);
+                        $record[$row['FIELD_NAME']."_label"] = $label;
     							$appData = array_merge($record,$appData);
     						}
     						else
@@ -991,8 +991,8 @@
     								$record = Array();
     								
     								$record[$row['FIELD_NAME']] = $id;
-    								$appData = array_merge($record,$appData);
-    								$record[$row['FIELD_NAME']."_label"] = $label;
+    					//			$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
     								$appData = array_merge($record,$appData);
     								
     							}
@@ -1036,8 +1036,8 @@
     							}
     							
     							$record[$row['FIELD_NAME']] = $id;
-    							$appData = array_merge($record,$appData);
-    							$record[$row['FIELD_NAME']."_label"] = $label;
+    					//		$appData = array_merge($record,$appData);
+                        $record[$row['FIELD_NAME']."_label"] = $label;
     							$appData = array_merge($record,$appData);
     							
     						}
@@ -1065,8 +1065,8 @@
     								}
     								
     								$record[$row['FIELD_NAME']] = $id;
-    								$appData = array_merge($record,$appData);
-    								$record[$row['FIELD_NAME']."_label"] = $label;
+    					//			$appData = array_merge($record,$appData);
+                            $record[$row['FIELD_NAME']."_label"] = $label;
     								$appData = array_merge($record,$appData);
     								
     							}

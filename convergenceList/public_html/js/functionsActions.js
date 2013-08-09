@@ -1433,7 +1433,7 @@ function actionNewRmbt(uidForm,app_uid,num_dossier)
         });
 }
 
-function actionDeleteCases(){
+function actionDeleteCases(canBeDeletedFunc){
     
     arrayAPPUID = myApp.addTab_inside();                    
         urlData = "../convergenceList/actions/actionDeleteCases.php";
@@ -1453,7 +1453,8 @@ function actionDeleteCases(){
                url : urlData,
                params : {
                  array  : arrayAPPUID,
-                 pmTableId  :table              
+                 pmTableId  :table,
+                 canBeDeletedFunc : canBeDeletedFunc
                },
                success: function (result, request) {
                  var response = Ext.util.JSON.decode(result.responseText);
@@ -1797,19 +1798,19 @@ function EditStartForm(appid,uidForm)
 // Import CSV, create case and autoderivate 
 function importCSV (_uidTask){
     var _MSG_ERROR_CONFIG_ACTION_CSV = 'Votre configuration est incorect, vérifiez les paramètres svp.';
-	  if(typeof(_uidTask) == "undefined") {
-	    PMExt.info(_('ID_INFO'), _MSG_ERROR_CONFIG_ACTION_CSV);
-	    return true;
-	  }
-	  var _dblIdMainGrid          = myApp.getIdMainGrid();
-	  var pathPluginActionsPhp    = '../convergenceList/actions/actionCSV'; 
-	  var _LBL_ITEMCBO_COLUMN     = 'Column';
-	  var _isCheckedFirstLineAs   = 'off';
-	  var _isCheckedAdd   	  	  = 'on';
-	  var _isCheckedDeleteAdd     = 'off';
-	  var _isCheckedEditAdd   	  = 'off';
-	  var _isCheckedOption   	  = 'add';
-	  var _SELECT_OPTION          = 'Select...' ;  
+      if(typeof(_uidTask) == "undefined") {
+        PMExt.info(_('ID_INFO'), _MSG_ERROR_CONFIG_ACTION_CSV);
+        return true;
+      }
+      var _dblIdMainGrid          = myApp.getIdMainGrid();
+      var pathPluginActionsPhp    = '../convergenceList/actions/actionCSV'; 
+      var _LBL_ITEMCBO_COLUMN     = 'Column';
+      var _isCheckedFirstLineAs   = 'off';
+      var _isCheckedAdd           = 'on';
+      var _isCheckedDeleteAdd     = 'off';
+      var _isCheckedEditAdd       = 'off';
+      var _isCheckedOption        = 'add';
+      var _SELECT_OPTION          = 'Select...' ;  
 
     var _USE_FIRSTLINE_AS = 'La première ligne contient les entêtes';
     var _USE_ADD = 'Importer et ajouter';
@@ -1835,18 +1836,18 @@ function importCSV (_uidTask){
     var _RESET_SAVED_OK = "Mapping réinitialisé";
     var _DELETE_EDIT_FIELD = "Supprimer le champs";
     var _REQUIRED_COLUMN = "Champ requis";
-	  var hiddenDeleteEdit 		 = true;
-	  var _dblIdInbox = myApp.getIdInbox();
-	  var winMatchData;
-	  var waitLoading = {};
-	  waitLoading.show = function() {
-	    var mask = Ext.getBody().mask(_("ID_SAVING"), 'x-mask-loading', false);
-	    mask.setStyle('z-index', Ext.WindowMgr.zseed + 1000);
-	  };
-	  waitLoading.hide = function() {
-	    Ext.getBody().unmask();
-	  };
-	  
+      var hiddenDeleteEdit       = true;
+      var _dblIdInbox = myApp.getIdInbox();
+      var winMatchData;
+      var waitLoading = {};
+      waitLoading.show = function() {
+        var mask = Ext.getBody().mask(_("ID_SAVING"), 'x-mask-loading', false);
+        mask.setStyle('z-index', Ext.WindowMgr.zseed + 1000);
+      };
+      waitLoading.hide = function() {
+        Ext.getBody().unmask();
+      };
+      
 var radiosGroup = new Ext.form.RadioGroup({   
         
        columns: 1, //display the radiobuttons in two columns   
@@ -1914,170 +1915,170 @@ var radiosGroup = new Ext.form.RadioGroup({
                     console.log(_isCheckedOption);
                 }
             } 
-   });	  
-	  var w = new Ext.Window({
-	    title       : '',
-	    width       : 440,
-	    height      : 250,
-	    modal       : true,
-	    autoScroll  : false,
-	    maximizable : false,
-	    resizable   : false,
-	    items: [
-	      new Ext.FormPanel({
-	        id         :'uploader',
-	        fileUpload : true,
-	        width      : 420,
-	        frame      : true,
-	        title      : _('ID_IMPORT_DATA_CSV'),
-	        autoHeight : false,
-	        bodyStyle  : 'padding: 10px 10px 0 10px;',
-	        labelWidth : 80,
-	        defaults   : {
-	            anchor     : '90%',
-	            allowBlank : false,
-	            msgTarget  : 'side'
-	        },
-	        items : [{
-	            xtype      : 'fileuploadfield',
-	            id         : 'csv-file',
-	            emptyText  : _('ID_SELECT_FILE'),//'Select a file',
-	            fieldLabel : _CSV_FILE,
-	            name       : 'form[CSV_FILE]',
-	            buttonText : '',
-	            buttonCfg  : {
-	                iconCls: 'upload-icon'
-	            }
-	        },
-	        {
-	          xtype: 'checkbox',
-	          fieldLabel: '',
-	          boxLabel: _USE_FIRSTLINE_AS,
-	          name: 'chkFirstRow',
+   });    
+      var w = new Ext.Window({
+        title       : '',
+        width       : 440,
+        height      : 250,
+        modal       : true,
+        autoScroll  : false,
+        maximizable : false,
+        resizable   : false,
+        items: [
+          new Ext.FormPanel({
+            id         :'uploader',
+            fileUpload : true,
+            width      : 420,
+            frame      : true,
+            title      : _('ID_IMPORT_DATA_CSV'),
+            autoHeight : false,
+            bodyStyle  : 'padding: 10px 10px 0 10px;',
+            labelWidth : 80,
+            defaults   : {
+                anchor     : '90%',
+                allowBlank : false,
+                msgTarget  : 'side'
+            },
+            items : [{
+                xtype      : 'fileuploadfield',
+                id         : 'csv-file',
+                emptyText  : _('ID_SELECT_FILE'),//'Select a file',
+                fieldLabel : _CSV_FILE,
+                name       : 'form[CSV_FILE]',
+                buttonText : '',
+                buttonCfg  : {
+                    iconCls: 'upload-icon'
+                }
+            },
+            {
+              xtype: 'checkbox',
+              fieldLabel: '',
+              boxLabel: _USE_FIRSTLINE_AS,
+              name: 'chkFirstRow',
               checked: false,
               listeners: {
-	              change: function(checkbox, checked){
-	                _isCheckedFirstLineAs = (checked)?'on':'off';
-	                Ext.getCmp('hdnCheckedFirstRow').setValue(_isCheckedFirstLineAs);
-	              }
-	          }
-	        },radiosGroup,
-	        {
-	          xtype : 'hidden',
-	          name  : 'form[FIRSTLINE_ISHEADER]',
-	          id    : 'hdnCheckedFirstRow',
-	          value : 'off'
-	        }
-	        ],
-	        buttons : [{
-	            text     : _('ID_UPLOAD'),
-	            handler  : function(){
-	              var filePath = Ext.getCmp('csv-file').getValue();
-	              var fileType = filePath.substring(filePath.lastIndexOf('.') + 1).toLowerCase();
-	              if(fileType =='csv' ){
-	                var uploader  = Ext.getCmp('uploader');
+                  change: function(checkbox, checked){
+                    _isCheckedFirstLineAs = (checked)?'on':'off';
+                    Ext.getCmp('hdnCheckedFirstRow').setValue(_isCheckedFirstLineAs);
+                  }
+              }
+            },radiosGroup,
+            {
+              xtype : 'hidden',
+              name  : 'form[FIRSTLINE_ISHEADER]',
+              id    : 'hdnCheckedFirstRow',
+              value : 'off'
+            }
+            ],
+            buttons : [{
+                text     : _('ID_UPLOAD'),
+                handler  : function(){
+                  var filePath = Ext.getCmp('csv-file').getValue();
+                  var fileType = filePath.substring(filePath.lastIndexOf('.') + 1).toLowerCase();
+                  if(fileType =='csv' ){
+                    var uploader  = Ext.getCmp('uploader');
 
-	                if(uploader.getForm().isValid()){
-	                  uploader.getForm().submit({
-	                    url: pathPluginActionsPhp + '?option=getDataCSV',
-	                    waitMsg  : _UPOLADING_FILE,
-	                    scope: this,
-	                    success  : function(o, resp){
-	                      w.close();
-	                      var dataCSV = Ext.util.JSON.decode(resp.response.responseText);
-	                      if(typeof(dataCSV.success)!= 'undefined' && dataCSV.success === true){
-	                        
-	                        var _dataForCboFieldCSV = new Array();
-	                        var _numCol = 0, lenColumns=0;
-	                        var _itemsCboCSV = new Array();
+                    if(uploader.getForm().isValid()){
+                      uploader.getForm().submit({
+                        url: pathPluginActionsPhp + '?option=getDataCSV',
+                        waitMsg  : _UPOLADING_FILE,
+                        scope: this,
+                        success  : function(o, resp){
+                          w.close();
+                          var dataCSV = Ext.util.JSON.decode(resp.response.responseText);
+                          if(typeof(dataCSV.success)!= 'undefined' && dataCSV.success === true){
+                            
+                            var _dataForCboFieldCSV = new Array();
+                            var _numCol = 0, lenColumns=0;
+                            var _itemsCboCSV = new Array();
 
-	                        var child = new Array();
-	                        child.push(_SELECT_OPTION);
-	                        child.push(_SELECT_OPTION);                        
-	                        _itemsCboCSV.push(child);                     
+                            var child = new Array();
+                            child.push(_SELECT_OPTION);
+                            child.push(_SELECT_OPTION);                        
+                            _itemsCboCSV.push(child);                     
 
-	                        if(_isCheckedFirstLineAs =='on'){ //with header
-	                          Ext.iterate(dataCSV.data[0], function(key, value) {
-	                              var child = new Array();
-	                              child.push(key);
-	                              child.push(key.toUpperCase());
-	                              _itemsCboCSV.push(child); 
-	                              lenColumns++;
-	                          });
-	                        }else{
-	                          Ext.iterate(dataCSV.data[0], function(key, value) {
-	                              var child = new Array();
-	                              child.push(_LBL_ITEMCBO_COLUMN + ' ' + lenColumns);
-				                        child.push(_LBL_ITEMCBO_COLUMN + ' ' + lenColumns + ' (' +key + '...)');
-	                              _itemsCboCSV.push(child); 
-	                              lenColumns++;
-	                          });
-	                        }
-	               
-	                        var storeMatchData = new Ext.data.JsonStore({
-	                            url           : pathPluginActionsPhp + '?option=getDataMatch&' + '&tableName=' + table +'&idInbox=' +_dblIdInbox,
-	                            root          : 'data',
-	                            totalProperty : 'total', 
-	                            remoteSort    : true,
-	                            autoWidth     : true,
+                            if(_isCheckedFirstLineAs =='on'){ //with header
+                              Ext.iterate(dataCSV.data[0], function(key, value) {
+                                  var child = new Array();
+                                  child.push(key);
+                                  child.push(key.toUpperCase());
+                                  _itemsCboCSV.push(child); 
+                                  lenColumns++;
+                              });
+                            }else{
+                              Ext.iterate(dataCSV.data[0], function(key, value) {
+                                  var child = new Array();
+                                  child.push(_LBL_ITEMCBO_COLUMN + ' ' + lenColumns);
+                                        child.push(_LBL_ITEMCBO_COLUMN + ' ' + lenColumns + ' (' +key + '...)');
+                                  _itemsCboCSV.push(child); 
+                                  lenColumns++;
+                              });
+                            }
+                   
+                            var storeMatchData = new Ext.data.JsonStore({
+                                url           : pathPluginActionsPhp + '?option=getDataMatch&' + '&tableName=' + table +'&idInbox=' +_dblIdInbox,
+                                root          : 'data',
+                                totalProperty : 'total', 
+                                remoteSort    : true,
+                                autoWidth     : true,
                                             fields: ['FIELD_NAME', 'FIELD_DESC', 'COLUMN_CSV', 'COLUMN_TYPE', 'DELETE_EDIT_FIELD']
-	                        });
+                            });
 
-	                        Ext.Ajax.request({
-	                          url: pathPluginActionsPhp,
-	                          method: "POST",
-	                          params: {'option': 'getDataMatch', 'tableName': table, 'idInbox' : _dblIdInbox },           
-	                          success:function (result, request) {
-	                            var resp = Ext.util.JSON.decode(result.responseText);
-	                            if(typeof(resp.success)!= 'undefined' && resp.success === true){
-	                              storeMatchData.loadData(Ext.util.JSON.decode(result.responseText));
-	                              PMExt.notify(_MSG_TITLE_MESSAGE,_MSG_IMPORT_LOAD_DATA_SUCCESSFULLY);
-	                            }else{
-	                              PMExt.warning(_('ID_ERROR'), resp.message);
-	                            } 
-	                          },
-	                          failure:function (result, request) {
-	                            var resp = Ext.util.JSON.decode(result.responseText);
-	                            PMExt.error(_('ID_ERROR'), _MSG_ERROR);
-	                          }
-	                        });
-	                        var pager = new Ext.PagingToolbar({
-	                            store       : storeMatchData, 
-	                            displayInfo : true,
-	                            autoHeight  : true,
-	                            displayMsg  : _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
-	                            emptyMsg    : _('ID_DISPLAY_EMPTY'),
-	                            pageSize    : 500
-	                        });  
+                            Ext.Ajax.request({
+                              url: pathPluginActionsPhp,
+                              method: "POST",
+                              params: {'option': 'getDataMatch', 'tableName': table, 'idInbox' : _dblIdInbox },           
+                              success:function (result, request) {
+                                var resp = Ext.util.JSON.decode(result.responseText);
+                                if(typeof(resp.success)!= 'undefined' && resp.success === true){
+                                  storeMatchData.loadData(Ext.util.JSON.decode(result.responseText));
+                                  PMExt.notify(_MSG_TITLE_MESSAGE,_MSG_IMPORT_LOAD_DATA_SUCCESSFULLY);
+                                }else{
+                                  PMExt.warning(_('ID_ERROR'), resp.message);
+                                } 
+                              },
+                              failure:function (result, request) {
+                                var resp = Ext.util.JSON.decode(result.responseText);
+                                PMExt.error(_('ID_ERROR'), _MSG_ERROR);
+                              }
+                            });
+                            var pager = new Ext.PagingToolbar({
+                                store       : storeMatchData, 
+                                displayInfo : true,
+                                autoHeight  : true,
+                                displayMsg  : _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
+                                emptyMsg    : _('ID_DISPLAY_EMPTY'),
+                                pageSize    : 500
+                            });  
 
-	                        var cboFieldCSV = new Ext.form.ComboBox({
-	                            valueField    : 'ID',
-	                            displayField  : 'NAME',
-	                            id            : 'cboFieldCSV',
-	                            typeAhead     : true,
-	                            triggerAction : 'all',
-	                            editable      : true,
-	                            mode          : 'local',
-	                            anchor        : '95%',
-	                            allowBlank    : false,
-	                            disabled      : false,
-	                            selectOnFocus : true,
-	                            store: new Ext.data.SimpleStore({
-	                                      fields  : ["ID", "NAME"],
-	                                      data    : _itemsCboCSV        
-	                            })
-	                        });
-	                         
-	                        var checkColumnInclude = new Ext.grid.CheckColumn({
-	                        	header: _DELETE_EDIT_FIELD + " ?",
-	                     	   	dataIndex: 'DELETE_EDIT_FIELD',
-	                     	   	id: 'check',
-	                     	   	flex: 1,
-	                     	   	width: 10,
-	                     	    checked: false,
-	                     	   	hidden: hiddenDeleteEdit,
-	                     	   	processEvent: function () { return false; }
-	                     	});
+                            var cboFieldCSV = new Ext.form.ComboBox({
+                                valueField    : 'ID',
+                                displayField  : 'NAME',
+                                id            : 'cboFieldCSV',
+                                typeAhead     : true,
+                                triggerAction : 'all',
+                                editable      : true,
+                                mode          : 'local',
+                                anchor        : '95%',
+                                allowBlank    : false,
+                                disabled      : false,
+                                selectOnFocus : true,
+                                store: new Ext.data.SimpleStore({
+                                          fields  : ["ID", "NAME"],
+                                          data    : _itemsCboCSV        
+                                })
+                            });
+                             
+                            var checkColumnInclude = new Ext.grid.CheckColumn({
+                                header: _DELETE_EDIT_FIELD + " ?",
+                                dataIndex: 'DELETE_EDIT_FIELD',
+                                id: 'check',
+                                flex: 1,
+                                width: 10,
+                                checked: false,
+                                hidden: hiddenDeleteEdit,
+                                processEvent: function () { return false; }
+                            });
                             var checkColumnRequired = new Ext.grid.CheckColumn({
                                 header: _REQUIRED_COLUMN + " ?",
                                 dataIndex: 'REQ_COLUMN',
@@ -2136,28 +2137,28 @@ var radiosGroup = new Ext.form.RadioGroup({
                                 }
                             });
                             Ext.getCmp('idtypeAS').setValue("String");
-	                        var gridcolumns = new Ext.grid.ColumnModel({
-	                          defaults : {
-	                              sortable : true
-	                          },
-	                          columns : [new Ext.grid.RowNumberer(),
-	                          {
-	                            dataIndex : 'FIELD_NAME',
-	                            width     : 5,
-	                            hidden    : true
-	                          },
-	                          {
-	                            header    : '<span style="color:green;">'+_FIELD_NAME_PROCESS + '</span>',
-	                            width     : 25,
-	                            sortable  : true,
-	                            dataIndex : 'FIELD_DESC'
-	                          },
-	                          {
-	                            header    : '<span style="color:blue;">'+_COLUMN_CSV+'</span>',
-	                            width     : 15,
-	                            sortable  : true,
-	                            dataIndex : 'COLUMN_CSV',
-	                            editor: cboFieldCSV
+                            var gridcolumns = new Ext.grid.ColumnModel({
+                              defaults : {
+                                  sortable : true
+                              },
+                              columns : [new Ext.grid.RowNumberer(),
+                              {
+                                dataIndex : 'FIELD_NAME',
+                                width     : 5,
+                                hidden    : true
+                              },
+                              {
+                                header    : '<span style="color:green;">'+_FIELD_NAME_PROCESS + '</span>',
+                                width     : 25,
+                                sortable  : true,
+                                dataIndex : 'FIELD_DESC'
+                              },
+                              {
+                                header    : '<span style="color:blue;">'+_COLUMN_CSV+'</span>',
+                                width     : 15,
+                                sortable  : true,
+                                dataIndex : 'COLUMN_CSV',
+                                editor: cboFieldCSV
                             }, {
                                 header: '<span style="color:red;">' + _COLUMN_TYPE + '</span>',
                                 dataIndex: 'COLUMN_TYPE',
@@ -2165,253 +2166,253 @@ var radiosGroup = new Ext.form.RadioGroup({
                                 sortable: true,
                                 editor: typeAS
                             }, checkColumnRequired, checkColumnInclude ]
-	                        });
+                            });
 
-	                        var gridMatchData = new Ext.grid.EditorGridPanel({
-	                          store           : storeMatchData,
-	                          columnLines     : true,
-	                          id              : 'gridMatchData',
-	                          cm              : gridcolumns,
+                            var gridMatchData = new Ext.grid.EditorGridPanel({
+                              store           : storeMatchData,
+                              columnLines     : true,
+                              id              : 'gridMatchData',
+                              cm              : gridcolumns,
                             plugins: [checkColumnInclude, checkColumnRequired],
-	                          tbar : [{
-	                            text  : _IMPORT_CREATE_CASES,
-	                            cls   : 'x-btn-text-icon',
-	                            icon  : '/images/ext/default/tree/drop-yes.gif',
-	                            handler: function() {
-	                                var _dblFieldsCustom    = new Array ();
-	                                var _jsonFieldsCustom   = '';
-	                                storeMatchData.each(function(record)  {  
-	                                  if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
-	                                    var item = {
-	                                        "FIELD_NAME"   : record.get('FIELD_NAME'),
+                              tbar : [{
+                                text  : _IMPORT_CREATE_CASES,
+                                cls   : 'x-btn-text-icon',
+                                icon  : '/images/ext/default/tree/drop-yes.gif',
+                                handler: function() {
+                                    var _dblFieldsCustom    = new Array ();
+                                    var _jsonFieldsCustom   = '';
+                                    storeMatchData.each(function(record)  {  
+                                      if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION){
+                                        var item = {
+                                            "FIELD_NAME"   : record.get('FIELD_NAME'),
                                             "COLUMN_CSV": record.get('COLUMN_CSV'),
                                             "COLUMN_TYPE": record.get('COLUMN_TYPE')
-	                                    };
-	                                    _dblFieldsCustom.push(item);
-	                                  }
-	                                });
-	                                
-	                                _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom); 
-	                                
-	                                var _jsonFieldsDeleteEdit   = '';
-	                                if(_isCheckedOption != 'add') 
-	                                {
-	                                	var _dblFieldsDeleteEdit    = new Array ();
-		                                storeMatchData.each(function(record)  {  
-		                                	if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION && record.get('DELETE_EDIT_FIELD') == true ){
-		                                		var itemDeleteEdit = {
-		                                				"CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
+                                        };
+                                        _dblFieldsCustom.push(item);
+                                      }
+                                    });
+                                    
+                                    _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom); 
+                                    
+                                    var _jsonFieldsDeleteEdit   = '';
+                                    if(_isCheckedOption != 'add') 
+                                    {
+                                        var _dblFieldsDeleteEdit    = new Array ();
+                                        storeMatchData.each(function(record)  {  
+                                            if(typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION && record.get('DELETE_EDIT_FIELD') == true ){
+                                                var itemDeleteEdit = {
+                                                        "CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
                                                         "CSV_COLUMN": record.get('COLUMN_CSV'),
                                                                     "TYPE_COLUMN": record.get('COLUMN_TYPE'),
                                                                     "CSV_PIVOT_EDIT": record.get('DELETE_EDIT_FIELD'),
                                                                     "REQUIRED_COLUMN": record.get('REQ_COLUMN')
                                                                 };
-		                                		_dblFieldsDeleteEdit.push(itemDeleteEdit);
-		                                	}
-	                                  
-		                                });
-		                                if(_dblFieldsDeleteEdit.length > 0)
-		                                	_jsonFieldsDeleteEdit = Ext.util.JSON.encode(_dblFieldsDeleteEdit); 
-		                              
-	                                }
-	                                //console.log(_isCheckedOption);
-	                                
-	                                if(_isCheckedOption == 'add' || (_isCheckedOption != 'add' && _jsonFieldsDeleteEdit != '' ) )
-	                                {
-	                                	waitLoading.show();
-	                                	Ext.Ajax.request({
-	                                		params : {        
-	                                			matchFields : _jsonFieldsCustom,
-	                                			uidTask     : _uidTask,
-	                                			tableName   : table,
-	                                			option      : 'importCreateCase',
-	                                			firstLineHeader : _isCheckedFirstLineAs,
-	                                			radioOption : _isCheckedOption,
-	                                			dataEditDelete : _jsonFieldsDeleteEdit
-	                                    	},
-	                                    	url : pathPluginActionsPhp,
-	                                    	success : function(result, request) {
-	                                    		waitLoading.hide();
-	                                    		var resp=Ext.util.JSON.decode(result.responseText);
-	                                    		if(typeof(resp.success) != 'undefined' && resp.success === true){
-	                                    			var totCases = (typeof(resp.totalCases) != 'undefined')?resp.totalCases:0;
-	                                    			PMExt.notify(_MSG_TITLE_CREATE_DERIVATE_CASES, totCases + ' ' + _MSG_CASE_CREATED);
-	                                    			winMatchData.close();
-	                                    		}else{
-	                                    			PMExt.warning(_('ID_ERROR'), resp.message);
-	                                    		}
-	                                    	},
-	                                    	failure : function() {
-	                                    		waitLoading.hide();
-	                                    		PMExt.warning(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-	                                    	}
-	                                	});
-	                                }
-	                                else
-	                                {
-	                                	alert("Select "+_DELETE_EDIT_FIELD);
-	                                }
-	                            } 
-	                          },
-	                          '-',
-	                          {
-	                            text: _('ID_CANCEL'),
-	                            iconCls: 'button_menu_ext ss_sprite ss_cancel',
-	                            handler: function() {winMatchData.close();}
-	                          },
-	                          '-',
-	                          {
-	                        	  text: 'Save Configuration CSV',
-	                		      iconCls :'button_menu_ext cvrgl_configCSV',
-		                            handler: function() {
-		                                var _dblFieldsCustom    = new Array ();
-		                                var _jsonFieldsCustom   = '';		                                
-		                                storeMatchData.each(function(record)  {  
+                                                _dblFieldsDeleteEdit.push(itemDeleteEdit);
+                                            }
+                                      
+                                        });
+                                        if(_dblFieldsDeleteEdit.length > 0)
+                                            _jsonFieldsDeleteEdit = Ext.util.JSON.encode(_dblFieldsDeleteEdit); 
+                                      
+                                    }
+                                    //console.log(_isCheckedOption);
+                                    
+                                    if(_isCheckedOption == 'add' || (_isCheckedOption != 'add' && _jsonFieldsDeleteEdit != '' ) )
+                                    {
+                                        waitLoading.show();
+                                        Ext.Ajax.request({
+                                            params : {        
+                                                matchFields : _jsonFieldsCustom,
+                                                uidTask     : _uidTask,
+                                                tableName   : table,
+                                                option      : 'importCreateCase',
+                                                firstLineHeader : _isCheckedFirstLineAs,
+                                                radioOption : _isCheckedOption,
+                                                dataEditDelete : _jsonFieldsDeleteEdit
+                                            },
+                                            url : pathPluginActionsPhp,
+                                            success : function(result, request) {
+                                                waitLoading.hide();
+                                                var resp=Ext.util.JSON.decode(result.responseText);
+                                                if(typeof(resp.success) != 'undefined' && resp.success === true){
+                                                    var totCases = (typeof(resp.totalCases) != 'undefined')?resp.totalCases:0;
+                                                    PMExt.notify(_MSG_TITLE_CREATE_DERIVATE_CASES, totCases + ' ' + _MSG_CASE_CREATED);
+                                                    winMatchData.close();
+                                                }else{
+                                                    PMExt.warning(_('ID_ERROR'), resp.message);
+                                                }
+                                            },
+                                            failure : function() {
+                                                waitLoading.hide();
+                                                PMExt.warning(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
+                                            }
+                                        });
+                                    }
+                                    else
+                                    {
+                                        alert("Select "+_DELETE_EDIT_FIELD);
+                                    }
+                                } 
+                              },
+                              '-',
+                              {
+                                text: _('ID_CANCEL'),
+                                iconCls: 'button_menu_ext ss_sprite ss_cancel',
+                                handler: function() {winMatchData.close();}
+                              },
+                              '-',
+                              {
+                                  text: 'Save Configuration CSV',
+                                  iconCls :'button_menu_ext cvrgl_configCSV',
+                                    handler: function() {
+                                        var _dblFieldsCustom    = new Array ();
+                                        var _jsonFieldsCustom   = '';                                       
+                                        storeMatchData.each(function(record)  {  
                                         if (typeof(record.get('COLUMN_CSV')) != "undefined" && record.get('COLUMN_CSV') != _SELECT_OPTION) {
-		                                    var item = {
-		                                        "CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
+                                            var item = {
+                                                "CSV_FIELD_NAME"   : record.get('FIELD_NAME'),
                                                 "CSV_COLUMN": record.get('COLUMN_CSV'),
                                                                 "TYPE_COLUMN": record.get('COLUMN_TYPE'),
                                                                 "CSV_PIVOT_EDIT": record.get('DELETE_EDIT_FIELD'),
                                                                 "REQUIRED_COLUMN": record.get('REQ_COLUMN')
-		                                    };
-		                                    _dblFieldsCustom.push(item);
-		                                  }
-		                                });
-		                                
-		                                _jsonFieldsCustom = Ext.util.JSON.encode(_dblFieldsCustom); 
-		                               		                               
-		                                waitLoading.show();
-		                                
-		                                Ext.Ajax.request({
-		                                    params : {        
-		                                      matchFields : _jsonFieldsCustom,
-		                                      idInbox	  : _dblIdInbox,
-		                                      option      : 'saveConfigCSV',
-		                                      firstLineHeader : _isCheckedFirstLineAs,
-		                                      radioOption : _isCheckedOption
-		                                    },
-		                                    url : pathPluginActionsPhp,
-		                                    success : function(result, request) {
-		                                     waitLoading.hide();
-		                                     var resp=Ext.util.JSON.decode(result.responseText);
-		                                     if(typeof(resp.success) != 'undefined' && resp.success === true){
-		                                         PMExt.notify(_MSG_TITLE_SAVE_CONFIG_CSV, _MSG_SAVE_CONFIG_CSV);
-		                                         //winMatchData.close();
-		                                      }else{
-		                                        PMExt.warning(_('ID_ERROR'), resp.message);
-		                                     }
-		                                    },
-		                                    failure : function() {
-		                                      waitLoading.hide();
-		                                      PMExt.warning(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-		                                    }
-		                                });
-		                            } 
-		                          },
-		                          '-',
-		                          {
-		                		      text: 'Reset Configuration',
-		                		      iconCls :'button_menu_ext cvrgl_reset',
-		                		      handler: function() {
-		                		            waitLoading.show();
-		                		            Ext.Ajax.request({
-		                		                params : {        
-		                		                idInbox : _dblIdInbox,
-		                		                tableName   : table
-		                		                },
-		                		                url : '../convergenceList/actions/actionCSV.php?option=resetConfigCSV',
-		                		                success : function(result, request) {
-		                		                  waitLoading.hide();
-		                		                  var resp=Ext.util.JSON.decode(result.responseText);
-		                		                   if(typeof(resp.success)!= 'undefined' && resp.success ==true){
-		                		                    //winConfigDoublon.close();
-		                		                	   storeMatchData.load();
-		                		                	   PMExt.notify(_MSG_TITLE_SAVE_RESET_CSV, _RESET_SAVED_OK);
-		                		                   }else{
-		                		                      PMExt.error(_('ID_ERROR'), resp.message);
-		                		                   }
-		                		                },
-		                		                failure : function() {
-		                		                  waitLoading.show();
-		                		                  PMExt.error(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-		                		                }
-		                		            });
-		                		          }
-		                		  }
-	                          ],
-	                          columnLines    : true,
-	                          clicksToEdit   : 1,
-	                          stateId        : 'grid',
-	                          border         : false,
-	                          loadMask       : true,
-	                          autoShow       : true, 
-	                          autoFill       : true,
-	                          nocache        : true,
-	                          stateful       : true,
-	                          animCollapse   : true,
-	                          enableDragDrop : true,
-	                          stripeRows     : true,
-	                          bbar           : pager,
-	                          selModel       : new Ext.grid.RowSelectionModel({singleSelect : true}),
-	                          viewConfig     : {
-	                            forceFit     : true,
-	                            scrollOffset : 2,
-	                            emptyText    : ( _('ID_NO_RECORDS_FOUND')),
-	                            sm           : new Ext.grid.RowSelectionModel({singleSelect:true})
-	                          }
-	                        });
+                                            };
+                                            _dblFieldsCustom.push(item);
+                                          }
+                                        });
+                                        
+                                        _jsonFieldsCustom = Ext.util.JSON.encode(_dblFieldsCustom); 
+                                                                           
+                                        waitLoading.show();
+                                        
+                                        Ext.Ajax.request({
+                                            params : {        
+                                              matchFields : _jsonFieldsCustom,
+                                              idInbox     : _dblIdInbox,
+                                              option      : 'saveConfigCSV',
+                                              firstLineHeader : _isCheckedFirstLineAs,
+                                              radioOption : _isCheckedOption
+                                            },
+                                            url : pathPluginActionsPhp,
+                                            success : function(result, request) {
+                                             waitLoading.hide();
+                                             var resp=Ext.util.JSON.decode(result.responseText);
+                                             if(typeof(resp.success) != 'undefined' && resp.success === true){
+                                                 PMExt.notify(_MSG_TITLE_SAVE_CONFIG_CSV, _MSG_SAVE_CONFIG_CSV);
+                                                 //winMatchData.close();
+                                              }else{
+                                                PMExt.warning(_('ID_ERROR'), resp.message);
+                                             }
+                                            },
+                                            failure : function() {
+                                              waitLoading.hide();
+                                              PMExt.warning(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
+                                            }
+                                        });
+                                    } 
+                                  },
+                                  '-',
+                                  {
+                                      text: 'Reset Configuration',
+                                      iconCls :'button_menu_ext cvrgl_reset',
+                                      handler: function() {
+                                            waitLoading.show();
+                                            Ext.Ajax.request({
+                                                params : {        
+                                                idInbox : _dblIdInbox,
+                                                tableName   : table
+                                                },
+                                                url : '../convergenceList/actions/actionCSV.php?option=resetConfigCSV',
+                                                success : function(result, request) {
+                                                  waitLoading.hide();
+                                                  var resp=Ext.util.JSON.decode(result.responseText);
+                                                   if(typeof(resp.success)!= 'undefined' && resp.success ==true){
+                                                    //winConfigDoublon.close();
+                                                       storeMatchData.load();
+                                                       PMExt.notify(_MSG_TITLE_SAVE_RESET_CSV, _RESET_SAVED_OK);
+                                                   }else{
+                                                      PMExt.error(_('ID_ERROR'), resp.message);
+                                                   }
+                                                },
+                                                failure : function() {
+                                                  waitLoading.show();
+                                                  PMExt.error(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
+                                                }
+                                            });
+                                          }
+                                  }
+                              ],
+                              columnLines    : true,
+                              clicksToEdit   : 1,
+                              stateId        : 'grid',
+                              border         : false,
+                              loadMask       : true,
+                              autoShow       : true, 
+                              autoFill       : true,
+                              nocache        : true,
+                              stateful       : true,
+                              animCollapse   : true,
+                              enableDragDrop : true,
+                              stripeRows     : true,
+                              bbar           : pager,
+                              selModel       : new Ext.grid.RowSelectionModel({singleSelect : true}),
+                              viewConfig     : {
+                                forceFit     : true,
+                                scrollOffset : 2,
+                                emptyText    : ( _('ID_NO_RECORDS_FOUND')),
+                                sm           : new Ext.grid.RowSelectionModel({singleSelect:true})
+                              }
+                            });
 
-	                        winMatchData = new Ext.Window({
-	                            closeAction  : 'hide',
-	                            autoDestroy  : true,
-	                            maximizable  : true,
-	                            id           : 'winMatchData',
-	                            title        : _WINTITLE_MATCHDATA,
-	                            width        : 900,
-	                            height       : 400,
-	                            modal        : true,
-	                            closable     : true,
-	                            constrain    : true,
-	                            autoScroll   : true,
-	                            layout       : 'fit',
-	                            items        : gridMatchData
-	                        });     
-	                        winMatchData.show();
-	                        winMatchData.on('hide',function(){
-	                          if(Ext.getCmp(_dblIdMainGrid)) Ext.getCmp(_dblIdMainGrid).getStore().reload();
-	                        });
-	                      }else{
+                            winMatchData = new Ext.Window({
+                                closeAction  : 'hide',
+                                autoDestroy  : true,
+                                maximizable  : true,
+                                id           : 'winMatchData',
+                                title        : _WINTITLE_MATCHDATA,
+                                width        : 900,
+                                height       : 400,
+                                modal        : true,
+                                closable     : true,
+                                constrain    : true,
+                                autoScroll   : true,
+                                layout       : 'fit',
+                                items        : gridMatchData
+                            });     
+                            winMatchData.show();
+                            winMatchData.on('hide',function(){
+                              if(Ext.getCmp(_dblIdMainGrid)) Ext.getCmp(_dblIdMainGrid).getStore().reload();
+                            });
+                          }else{
 
-	                      }
-	                    }, ///success
-	                    failure: function(o, resp){
-	                      w.close();
-	                      PMExt.error(_('ID_ERROR'), _MSG_ERROR);
-	                    }
-	                  });
-	                }
-	              } else {
-	                Ext.MessageBox.show({ 
-	                  title   : '', 
-	                  msg     : _('ID_INVALID_EXTENSION') + ' ' + fileType,
-	                  buttons : Ext.MessageBox.OK,
-	                  animEl  : 'mb9', 
-	                  fn      : function(){},
-	                  icon    : Ext.MessageBox.ERROR
-	                });
-	              }
-	            }
-	        },{
-	          text    : TRANSLATIONS.ID_CANCEL,
-	          handler : function(){
-	            w.close();
-	          }
-	        }]
-	      })
-	    ]
-	  });
-	  w.show();
+                          }
+                        }, ///success
+                        failure: function(o, resp){
+                          w.close();
+                          PMExt.error(_('ID_ERROR'), _MSG_ERROR);
+                        }
+                      });
+                    }
+                  } else {
+                    Ext.MessageBox.show({ 
+                      title   : '', 
+                      msg     : _('ID_INVALID_EXTENSION') + ' ' + fileType,
+                      buttons : Ext.MessageBox.OK,
+                      animEl  : 'mb9', 
+                      fn      : function(){},
+                      icon    : Ext.MessageBox.ERROR
+                    });
+                  }
+                }
+            },{
+              text    : TRANSLATIONS.ID_CANCEL,
+              handler : function(){
+                w.close();
+              }
+            }]
+          })
+        ]
+      });
+      w.show();
 }
 
 function loadDataStore(option,jsonreg, store, idInbox) {
@@ -3175,624 +3176,624 @@ function doublon(uidTask, fldNamStat, fldValStat){
 }
 ////////////////////////////////////////////////////////
 function configDoublon(){
-	  
-	  var _MSG_TITLE_SAVE_CONFIG_DOUBLON  = "Enregistrer les modifications"; //"Save Changes";
-	  var _MSG_TITLE_SAVE_RESET_DOUBLON   = "Reset Configuration Doublon"; //"Save Changes";
-	  var _OPERATION_NO_COMPLETED         = "L'op&eacute;ration n'a pas &eacute;t&eacute; compl&eacute;t&eacute;e avec succ&egrave;s!";//'The operation was not completed sucessfully!';
-	  var _WINTITLE_CONFIG_DOUBLON        = "D&eacute;doublonner Configuration";//'Doublon Configuration';
-	  var _DATA_SAVED_OK                  = "Les donn&eacute;es ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s!";//'The data was saved sucessfully!';
-	  var _TITLE_GRID_COLUMN_LIST         = "Liste des colonnes"; //'COLUMNS LIST';
-	  var _SELECTED_ITEMS                 = "S&eacute;lectionnez les &eacute;l&eacute;ments merci.";//'Select Items please..';
-	  var _RESET_SAVED_OK 				  = "Reset fields sucessfully";
+      
+      var _MSG_TITLE_SAVE_CONFIG_DOUBLON  = "Enregistrer les modifications"; //"Save Changes";
+      var _MSG_TITLE_SAVE_RESET_DOUBLON   = "Reset Configuration Doublon"; //"Save Changes";
+      var _OPERATION_NO_COMPLETED         = "L'op&eacute;ration n'a pas &eacute;t&eacute; compl&eacute;t&eacute;e avec succ&egrave;s!";//'The operation was not completed sucessfully!';
+      var _WINTITLE_CONFIG_DOUBLON        = "D&eacute;doublonner Configuration";//'Doublon Configuration';
+      var _DATA_SAVED_OK                  = "Les donn&eacute;es ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s!";//'The data was saved sucessfully!';
+      var _TITLE_GRID_COLUMN_LIST         = "Liste des colonnes"; //'COLUMNS LIST';
+      var _SELECTED_ITEMS                 = "S&eacute;lectionnez les &eacute;l&eacute;ments merci.";//'Select Items please..';
+      var _RESET_SAVED_OK                 = "Reset fields sucessfully";
 
-	  _dblIdInbox = myApp.getIdInbox();
-	  _dblProUid  = myApp.getProUid();
-	  var winConfigDoublon;
-	  
-	  var storeConfigDoublon = new Ext.data.JsonStore({
-	      url           : '../convergenceList/actions/doublonData.php?option=configDoublon&idInbox=' + _dblIdInbox+ '&proUid=' + _dblProUid,
-	      root          : 'data',
-	      totalProperty : 'total', 
-	      remoteSort    : true,
-	      autoWidth     : true,
-	      fields        : ['FIELD_NAME',
-	                       'FIELD_NAME_UPPER',
-	                       'FIELD_DESC', 
-	                       'TYPE',
-	                       'FIELD_POSITION',
-	                       'TYPE_CONFIGURATION',
-	                       'CONFIG_PMTABLE',
-	                       'CONFIG_FIELD_SHOW',
-	                       'CONFIG_FIELD_CONDITION',
-	                       {name: 'FIELD_INCLUDE', type: 'bool',convert:function(v)
-	    	  				{return (v === "1" || v === true) ? true : false;}}]
-	  });
-	  storeConfigDoublon.load();
-	  var pager = new Ext.PagingToolbar({
-	      store       : storeConfigDoublon, 
-	      displayInfo : true,
-	      autoHeight  : true,
-	      displayMsg  : _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
-	      emptyMsg    : _('ID_DISPLAY_EMPTY'),
-	      pageSize    : 500
-	  });  
-	  
-	  var checkColumnInclude = new Ext.grid.CheckColumn({
-	    header    : 'Include ?',
-	    dataIndex : 'FIELD_INCLUDE',
-	    id        : 'check',
-	    flex      : 1,
-	    width     : 10,
-	    processEvent: function () { return false; }
-	  });
-	   var txtDescription =  new Ext.form.TextField ({
-	    allowBlank : true,
-	    height     : 50,
-	    disabled   : true,
-	    editable   : false,
-	    anchor     : '100%'
-	  });
-	   
-	  var gridcolumns = new Ext.grid.ColumnModel({
-	    defaults : {
-	        width    : 20,
-	        sortable : true
-	    },
-	    columns : [
-	    new Ext.grid.RowNumberer(),
-	    {
-	      dataIndex : 'FIELD_NAME',
-	      hidden    :true
-	    },
-	    {
-	      dataIndex : 'TYPE',
-	      hidden    :true
-	    },
-	   {
-	      header    : "Field Name",
-	      width     : 15,
-	      sortable  : true,
-	      dataIndex : 'FIELD_NAME_UPPER'
-	    }, {
-	      header    : "Field Description",
-	      width     : 15,
-	      sortable  : true,
-	      dataIndex : 'FIELD_DESC',
-	      editor    : txtDescription
-	    }, checkColumnInclude ,
-	    {
-      	header    : "Configuration",
-	        width     : 10,
-	        sortable  : true,
-	        dataIndex : 'TYPE_CONFIGURATION',
-	        hidden    : false
-	    } , {
-	        header    : "Table",
-	        width     : 10,
-	        sortable  : true,
-	        dataIndex : 'CONFIG_PMTABLE',
-	        hidden    : true
-		} , {
-	        header    : "Field",
-	        width     : 10,
-	        sortable  : true,
-	        hidden    : true,
-	        dataIndex : 'CONFIG_FIELD_SHOW'
-	    } , {
-	        header    : "Condition",
-	        width     : 10,
-	        sortable  : true,
-	        hidden    : true,
-	        dataIndex : 'CONFIG_FIELD_CONDITION'
-	    }]
-	  });
-	
-	  var waitLoading = {};
-	  waitLoading.show = function() {
-	    var mask = Ext.getBody().mask(_("ID_SAVING"), 'x-mask-loading', false);
-	    mask.setStyle('z-index', Ext.WindowMgr.zseed + 1000);
-	  };
-	  waitLoading.hide = function() {
-	    Ext.getBody().unmask();
-	  };
-	  var gridFieldCustomDoublon = new Ext.grid.EditorGridPanel({
-	    store           : storeConfigDoublon,
-	    //disableSelection: true,
-	    columnLines     : true,
-	    id              : 'grid',
-	    ddGroup 		: 'gridDD',
-	    enableDragDrop  : true,
-	    cm              : gridcolumns,
-	    selType			: 'rowmodel',
-	    clicksToEdit	: 1,
-	    listeners: {
-			  "render": {
-				scope: this,
-				fn: function(grid) {
-		  			
-					var ddrow = new Ext.dd.DropTarget(grid.container, {
-						ddGroup : 'gridDD',
-						copy:false,
-						notifyDrop : function(dd, e, data){
-							var ds = grid.store;
-							var sm = gridFieldCustomDoublon.getSelectionModel();
-		                  var rows = sm.getSelections();
-		                  if(dd.getDragData(e)) {
-		                  	var cindex=dd.getDragData(e).rowIndex;
-		                      if(typeof(cindex) != "undefined") {
-		                      	for(i = 0; i <  rows.length; i++) {
-		                      		ds.remove(ds.getById(rows[i].id));
-		                          }
-		                          ds.insert(cindex,data.selections);
-		                          sm.clearSelections();
-		                       }
-		                  }
-						}
-		       });
-		       
-		    gridFieldCustomDoublon.store.on('load', function(store, records, options){
-                              	
+      _dblIdInbox = myApp.getIdInbox();
+      _dblProUid  = myApp.getProUid();
+      var winConfigDoublon;
+      
+      var storeConfigDoublon = new Ext.data.JsonStore({
+          url           : '../convergenceList/actions/doublonData.php?option=configDoublon&idInbox=' + _dblIdInbox+ '&proUid=' + _dblProUid,
+          root          : 'data',
+          totalProperty : 'total', 
+          remoteSort    : true,
+          autoWidth     : true,
+          fields        : ['FIELD_NAME',
+                           'FIELD_NAME_UPPER',
+                           'FIELD_DESC', 
+                           'TYPE',
+                           'FIELD_POSITION',
+                           'TYPE_CONFIGURATION',
+                           'CONFIG_PMTABLE',
+                           'CONFIG_FIELD_SHOW',
+                           'CONFIG_FIELD_CONDITION',
+                           {name: 'FIELD_INCLUDE', type: 'bool',convert:function(v)
+                            {return (v === "1" || v === true) ? true : false;}}]
+      });
+      storeConfigDoublon.load();
+      var pager = new Ext.PagingToolbar({
+          store       : storeConfigDoublon, 
+          displayInfo : true,
+          autoHeight  : true,
+          displayMsg  : _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
+          emptyMsg    : _('ID_DISPLAY_EMPTY'),
+          pageSize    : 500
+      });  
+      
+      var checkColumnInclude = new Ext.grid.CheckColumn({
+        header    : 'Include ?',
+        dataIndex : 'FIELD_INCLUDE',
+        id        : 'check',
+        flex      : 1,
+        width     : 10,
+        processEvent: function () { return false; }
+      });
+       var txtDescription =  new Ext.form.TextField ({
+        allowBlank : true,
+        height     : 50,
+        disabled   : true,
+        editable   : false,
+        anchor     : '100%'
+      });
+       
+      var gridcolumns = new Ext.grid.ColumnModel({
+        defaults : {
+            width    : 20,
+            sortable : true
+        },
+        columns : [
+        new Ext.grid.RowNumberer(),
+        {
+          dataIndex : 'FIELD_NAME',
+          hidden    :true
+        },
+        {
+          dataIndex : 'TYPE',
+          hidden    :true
+        },
+       {
+          header    : "Field Name",
+          width     : 15,
+          sortable  : true,
+          dataIndex : 'FIELD_NAME_UPPER'
+        }, {
+          header    : "Field Description",
+          width     : 15,
+          sortable  : true,
+          dataIndex : 'FIELD_DESC',
+          editor    : txtDescription
+        }, checkColumnInclude ,
+        {
+        header    : "Configuration",
+            width     : 10,
+            sortable  : true,
+            dataIndex : 'TYPE_CONFIGURATION',
+            hidden    : false
+        } , {
+            header    : "Table",
+            width     : 10,
+            sortable  : true,
+            dataIndex : 'CONFIG_PMTABLE',
+            hidden    : true
+        } , {
+            header    : "Field",
+            width     : 10,
+            sortable  : true,
+            hidden    : true,
+            dataIndex : 'CONFIG_FIELD_SHOW'
+        } , {
+            header    : "Condition",
+            width     : 10,
+            sortable  : true,
+            hidden    : true,
+            dataIndex : 'CONFIG_FIELD_CONDITION'
+        }]
+      });
+    
+      var waitLoading = {};
+      waitLoading.show = function() {
+        var mask = Ext.getBody().mask(_("ID_SAVING"), 'x-mask-loading', false);
+        mask.setStyle('z-index', Ext.WindowMgr.zseed + 1000);
+      };
+      waitLoading.hide = function() {
+        Ext.getBody().unmask();
+      };
+      var gridFieldCustomDoublon = new Ext.grid.EditorGridPanel({
+        store           : storeConfigDoublon,
+        //disableSelection: true,
+        columnLines     : true,
+        id              : 'grid',
+        ddGroup         : 'gridDD',
+        enableDragDrop  : true,
+        cm              : gridcolumns,
+        selType         : 'rowmodel',
+        clicksToEdit    : 1,
+        listeners: {
+              "render": {
+                scope: this,
+                fn: function(grid) {
+                    
+                    var ddrow = new Ext.dd.DropTarget(grid.container, {
+                        ddGroup : 'gridDD',
+                        copy:false,
+                        notifyDrop : function(dd, e, data){
+                            var ds = grid.store;
+                            var sm = gridFieldCustomDoublon.getSelectionModel();
+                          var rows = sm.getSelections();
+                          if(dd.getDragData(e)) {
+                            var cindex=dd.getDragData(e).rowIndex;
+                              if(typeof(cindex) != "undefined") {
+                                for(i = 0; i <  rows.length; i++) {
+                                    ds.remove(ds.getById(rows[i].id));
+                                  }
+                                  ds.insert(cindex,data.selections);
+                                  sm.clearSelections();
+                               }
+                          }
+                        }
+               });
+               
+            gridFieldCustomDoublon.store.on('load', function(store, records, options){
+                                
               lengthGrid = gridFieldCustomDoublon.getStore().totalLength;
               for(var i=0;i < lengthGrid; i++)
               {
-              	if(gridFieldCustomDoublon.store.data.items[i].data.FIELD_NAME == 'NUM_DOSSIER')
-              	{
-              		gridFieldCustomDoublon.getView().getRow(i).style.display = 'none';      
-              	}
+                if(gridFieldCustomDoublon.store.data.items[i].data.FIELD_NAME == 'NUM_DOSSIER')
+                {
+                    gridFieldCustomDoublon.getView().getRow(i).style.display = 'none';      
+                }
               }
               /*Ext.each(records, function(item){
-              	
-              	console.log(item);
-	            });*/
+                
+                console.log(item);
+                });*/
            }); 
-				//store.load();
-		    }
-		  } 
-	    },
-	    tbar : [{
-	      text: _('ID_SAVE_CHANGES'),
-	      iconCls :'button_menu_ext ss_save',
-	      handler: function() {
+                //store.load();
+            }
+          } 
+        },
+        tbar : [{
+          text: _('ID_SAVE_CHANGES'),
+          iconCls :'button_menu_ext ss_save',
+          handler: function() {
 
-	          var _dblFieldsCustom = new Array ();
-	          var _jsonFieldsCustom  = '';
-	          var _dblFlag=false;
-	          
-	          storeConfigDoublon.each(function(record)  { 
-	            var _dblInclude = (record.get('FIELD_INCLUDE') == true) ? '1':'0';
-	            
-	            var	typeAs = 0;
-	            
-	            if(record.get('TYPE_CONFIGURATION') == 'Yes-No')
-	            	typeAs = 1;
-	            
-	            if(record.get('TYPE_CONFIGURATION') == 'Query')
-	            	typeAs = 2;
-	            
-	            if(record.get('FIELD_INCLUDE')) _dblFlag =true;
-	            var item = {
-	                "FIELD_NAME"      : record.get('FIELD_NAME'),
-	                "FIELD_DESC"      : record.get('FIELD_DESC'),
-	                "FIELD_POSITION"  : record.get('FIELD_POSITION'),
-	                "FIELD_INCLUDE"   : _dblInclude,
-	                "TYPE_CONFIGURATION"      : typeAs,
-	                "CONFIG_PMTABLE"          : record.get('CONFIG_PMTABLE'),
-	                "CONFIG_FIELD_SHOW"       : record.get('CONFIG_FIELD_SHOW'),
-	                "CONFIG_FIELD_CONDITION"  : record.get('CONFIG_FIELD_CONDITION')
-	            };
-	            _dblFieldsCustom.push(item);
-	          });
-	          
-	          if(_dblFlag){
-	            _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom);
-	            waitLoading.show();
-	            Ext.Ajax.request({
-	                params : {        
-	                fieldsDoublon : _jsonFieldsCustom,
-	                idInbox : _dblIdInbox
-	                },
-	                url : '../convergenceList/actions/doublonData.php?option=saveConfigDoublon',
-	                success : function(result, request) {
-	                  waitLoading.hide();
-	                  var resp=Ext.util.JSON.decode(result.responseText);
-	                   if(typeof(resp.success)!= 'undefined' && resp.success ==true){
-	                    winConfigDoublon.close();
-	                    PMExt.notify(_MSG_TITLE_SAVE_CONFIG_DOUBLON, _DATA_SAVED_OK);
-	                   }else{
-	                      PMExt.error(_('ID_ERROR'), resp.message);
-	                   }
-	                },
-	                failure : function() {
-	                  waitLoading.show();
-	                  PMExt.error(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-	                }
-	            });
-	          }
-	          else{
-	            PMExt.info(_('ID_INFO'), _SELECTED_ITEMS);
-	          }///
-	      } 
-	    },
-	    '-',
-	    {
-	      text: _('ID_CANCEL'),
-	      iconCls: 'button_menu_ext ss_sprite ss_cancel',
-	      handler: function() {winConfigDoublon.close();}
-	    },
-	    '-',
-	    {
-		      text: 'Reset Configuration',
-		      iconCls :'button_menu_ext cvrgl_reset',
-		      handler: function() {
-		            waitLoading.show();
-		            Ext.Ajax.request({
-		                params : {        
-		                idInbox : _dblIdInbox,
-		                proUid : _dblProUid
-		                },
-		                url : '../convergenceList/actions/doublonData.php?option=resetConfigDoublon',
-		                success : function(result, request) {
-		                  waitLoading.hide();
-		                  var resp=Ext.util.JSON.decode(result.responseText);
-		                   if(typeof(resp.success)!= 'undefined' && resp.success ==true){
-		                    //winConfigDoublon.close();
-		                	   storeConfigDoublon.load();
-		                    PMExt.notify(_MSG_TITLE_SAVE_RESET_DOUBLON, _RESET_SAVED_OK);
-		                   }else{
-		                      PMExt.error(_('ID_ERROR'), resp.message);
-		                   }
-		                },
-		                failure : function() {
-		                  waitLoading.show();
-		                  PMExt.error(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
-		                }
-		            });
-		          }
-		  }///
-		        
-	    ],
-	    columnLines    : true,
-	    plugins        : checkColumnInclude,
-	    title          : '<center><b> ' + _TITLE_GRID_COLUMN_LIST + ' </b></center>',
-	    stateId        : 'grid',
-	    border         : false,
-	    loadMask       : true,
-	    autoShow       : true, 
-	    autoFill       : true,
-	    nocache        : true,
-	    stateful       : true,
-	    animCollapse   : true,
-	    enableDragDrop : true,
-	    stripeRows     : true,
-	    bbar           : pager,
-	    selModel       : new Ext.grid.RowSelectionModel({
-	    					singleSelect : true,
-	   				     	listeners: {
-	    				        rowselect: function(sm, row, rec) {
-	        						Ext.getCmp("gridFormConfig").getForm().loadRecord(rec);
-	        						if(rec.get('TYPE_CONFIGURATION') == 0)
-	        						{
-	        							Ext.getCmp('idTypeConfiguration').setValue(0);
-	        							Ext.getCmp('idTypeConfiguration').setRawValue('Select');
-	        						}
-	        						else
-	        							Ext.getCmp('idTypeConfiguration').setValue(rec.get('TYPE_CONFIGURATION'));
-	        						
-	        						TableCombo=Ext.getCmp('idTableCombo');
-      							FieldCombo=Ext.getCmp('idFieldCombo');
-	        						FieldConditionCombo=Ext.getCmp('idFieldConditionCombo');
-	        						
-	        						if(rec.get('TYPE_CONFIGURATION') == 'Query')
-		        					{
-		        							TableCombo.setVisible(true);
-		        							Ext.getCmp('idTableCombo').setValue(rec.get('CONFIG_PMTABLE'));
-		        		            		FieldCombo.setVisible(true);
-		        		            		Ext.getCmp('idFieldCombo').setValue(rec.get('CONFIG_FIELD_SHOW'));
-		        		            		FieldConditionCombo.setVisible(true);
-		        		            		Ext.getCmp('idFieldConditionCombo').setValue(rec.get('CONFIG_FIELD_CONDITION'));
-		        					}
-		        		            else
-		        		            {
-		        		            		TableCombo.setVisible(false);
-		        		            		TableComboStore.load();
-		        		            		TableCombo.clearValue();
-		        		            		
-		        		            		FieldCombo.setVisible(false);
-		        		            		FieldComboStore.load();
-		        		            		FieldCombo.clearValue();
-		        		            		
-		        		            		FieldConditionCombo.setVisible(false);
-		        		            		FieldComboStore.load();
-		        		            		FieldCombo.clearValue();
-		        		            }
-	    				        }
-	    				    }
-	    				}),
-	    width		   : 620,
-	    height     	   : 300,  
-	    viewConfig     : {
-	      forceFit     : true,
-	      emptyText    : ( _('ID_NO_RECORDS_FOUND')),
-	      scrollOffset : 2
-	    }
-	  });
-	  
-	  var bd = Ext.getBody();
-	  bd.createChild({tag: 'h2', html: 'Using a Grid with a Form'});
+              var _dblFieldsCustom = new Array ();
+              var _jsonFieldsCustom  = '';
+              var _dblFlag=false;
+              
+              storeConfigDoublon.each(function(record)  { 
+                var _dblInclude = (record.get('FIELD_INCLUDE') == true) ? '1':'0';
+                
+                var typeAs = 0;
+                
+                if(record.get('TYPE_CONFIGURATION') == 'Yes-No')
+                    typeAs = 1;
+                
+                if(record.get('TYPE_CONFIGURATION') == 'Query')
+                    typeAs = 2;
+                
+                if(record.get('FIELD_INCLUDE')) _dblFlag =true;
+                var item = {
+                    "FIELD_NAME"      : record.get('FIELD_NAME'),
+                    "FIELD_DESC"      : record.get('FIELD_DESC'),
+                    "FIELD_POSITION"  : record.get('FIELD_POSITION'),
+                    "FIELD_INCLUDE"   : _dblInclude,
+                    "TYPE_CONFIGURATION"      : typeAs,
+                    "CONFIG_PMTABLE"          : record.get('CONFIG_PMTABLE'),
+                    "CONFIG_FIELD_SHOW"       : record.get('CONFIG_FIELD_SHOW'),
+                    "CONFIG_FIELD_CONDITION"  : record.get('CONFIG_FIELD_CONDITION')
+                };
+                _dblFieldsCustom.push(item);
+              });
+              
+              if(_dblFlag){
+                _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom);
+                waitLoading.show();
+                Ext.Ajax.request({
+                    params : {        
+                    fieldsDoublon : _jsonFieldsCustom,
+                    idInbox : _dblIdInbox
+                    },
+                    url : '../convergenceList/actions/doublonData.php?option=saveConfigDoublon',
+                    success : function(result, request) {
+                      waitLoading.hide();
+                      var resp=Ext.util.JSON.decode(result.responseText);
+                       if(typeof(resp.success)!= 'undefined' && resp.success ==true){
+                        winConfigDoublon.close();
+                        PMExt.notify(_MSG_TITLE_SAVE_CONFIG_DOUBLON, _DATA_SAVED_OK);
+                       }else{
+                          PMExt.error(_('ID_ERROR'), resp.message);
+                       }
+                    },
+                    failure : function() {
+                      waitLoading.show();
+                      PMExt.error(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
+                    }
+                });
+              }
+              else{
+                PMExt.info(_('ID_INFO'), _SELECTED_ITEMS);
+              }///
+          } 
+        },
+        '-',
+        {
+          text: _('ID_CANCEL'),
+          iconCls: 'button_menu_ext ss_sprite ss_cancel',
+          handler: function() {winConfigDoublon.close();}
+        },
+        '-',
+        {
+              text: 'Reset Configuration',
+              iconCls :'button_menu_ext cvrgl_reset',
+              handler: function() {
+                    waitLoading.show();
+                    Ext.Ajax.request({
+                        params : {        
+                        idInbox : _dblIdInbox,
+                        proUid : _dblProUid
+                        },
+                        url : '../convergenceList/actions/doublonData.php?option=resetConfigDoublon',
+                        success : function(result, request) {
+                          waitLoading.hide();
+                          var resp=Ext.util.JSON.decode(result.responseText);
+                           if(typeof(resp.success)!= 'undefined' && resp.success ==true){
+                            //winConfigDoublon.close();
+                               storeConfigDoublon.load();
+                            PMExt.notify(_MSG_TITLE_SAVE_RESET_DOUBLON, _RESET_SAVED_OK);
+                           }else{
+                              PMExt.error(_('ID_ERROR'), resp.message);
+                           }
+                        },
+                        failure : function() {
+                          waitLoading.show();
+                          PMExt.error(_('ID_ERROR'), _OPERATION_NO_COMPLETED);
+                        }
+                    });
+                  }
+          }///
+                
+        ],
+        columnLines    : true,
+        plugins        : checkColumnInclude,
+        title          : '<center><b> ' + _TITLE_GRID_COLUMN_LIST + ' </b></center>',
+        stateId        : 'grid',
+        border         : false,
+        loadMask       : true,
+        autoShow       : true, 
+        autoFill       : true,
+        nocache        : true,
+        stateful       : true,
+        animCollapse   : true,
+        enableDragDrop : true,
+        stripeRows     : true,
+        bbar           : pager,
+        selModel       : new Ext.grid.RowSelectionModel({
+                            singleSelect : true,
+                            listeners: {
+                                rowselect: function(sm, row, rec) {
+                                    Ext.getCmp("gridFormConfig").getForm().loadRecord(rec);
+                                    if(rec.get('TYPE_CONFIGURATION') == 0)
+                                    {
+                                        Ext.getCmp('idTypeConfiguration').setValue(0);
+                                        Ext.getCmp('idTypeConfiguration').setRawValue('Select');
+                                    }
+                                    else
+                                        Ext.getCmp('idTypeConfiguration').setValue(rec.get('TYPE_CONFIGURATION'));
+                                    
+                                    TableCombo=Ext.getCmp('idTableCombo');
+                                FieldCombo=Ext.getCmp('idFieldCombo');
+                                    FieldConditionCombo=Ext.getCmp('idFieldConditionCombo');
+                                    
+                                    if(rec.get('TYPE_CONFIGURATION') == 'Query')
+                                    {
+                                            TableCombo.setVisible(true);
+                                            Ext.getCmp('idTableCombo').setValue(rec.get('CONFIG_PMTABLE'));
+                                            FieldCombo.setVisible(true);
+                                            Ext.getCmp('idFieldCombo').setValue(rec.get('CONFIG_FIELD_SHOW'));
+                                            FieldConditionCombo.setVisible(true);
+                                            Ext.getCmp('idFieldConditionCombo').setValue(rec.get('CONFIG_FIELD_CONDITION'));
+                                    }
+                                    else
+                                    {
+                                            TableCombo.setVisible(false);
+                                            TableComboStore.load();
+                                            TableCombo.clearValue();
+                                            
+                                            FieldCombo.setVisible(false);
+                                            FieldComboStore.load();
+                                            FieldCombo.clearValue();
+                                            
+                                            FieldConditionCombo.setVisible(false);
+                                            FieldComboStore.load();
+                                            FieldCombo.clearValue();
+                                    }
+                                }
+                            }
+                        }),
+        width          : 620,
+        height         : 300,  
+        viewConfig     : {
+          forceFit     : true,
+          emptyText    : ( _('ID_NO_RECORDS_FOUND')),
+          scrollOffset : 2
+        }
+      });
+      
+      var bd = Ext.getBody();
+      bd.createChild({tag: 'h2', html: 'Using a Grid with a Form'});
 
-	  var TableComboStore = new Ext.data.Store({
-			proxy : new Ext.data.HttpProxy({url: '../convergenceList/ajaxTableCombo.php?TYPE=TableCombo'}),
-			reader : new Ext.data.JsonReader({
-				root   : 'data',
-				fields : [
-					{name : 'ID'},
-					{name : 'NAME'},
-					{name : 'INNER_JOIN'}
-				]
-			})
-		});
-		TableComboStore.load();
+      var TableComboStore = new Ext.data.Store({
+            proxy : new Ext.data.HttpProxy({url: '../convergenceList/ajaxTableCombo.php?TYPE=TableCombo'}),
+            reader : new Ext.data.JsonReader({
+                root   : 'data',
+                fields : [
+                    {name : 'ID'},
+                    {name : 'NAME'},
+                    {name : 'INNER_JOIN'}
+                ]
+            })
+        });
+        TableComboStore.load();
 
-		var TableCombo = new Ext.form.ComboBox({
-			valueField    : 'ID',
-			displayField  : 'NAME',
-			id            : 'idTableCombo',
-			fieldLabel    : 'Select Table',
-			emptyText     : 'Select a Table...',
-			typeAhead     : true,
-			triggerAction : 'all',
-			editable      : false,
-			mode          : 'local',
-			width         : 200,
-			allowBlank    : false,
-			store         : TableComboStore,
-			name		  : 'idTableCombo',
-			hiddenName	  : 'idTableCombo',
-			disabled      : false,
-			selectOnFocus : false,
-			hidden        : true, 
-			listeners     :{
-				select : function(combo, record) {
-					FieldCombo.setDisabled(false);
-					FieldConditionCombo.setDisabled(false);
-					FieldComboAux=Ext.getCmp('idFieldCombo');
-					FieldComboConditionAux=Ext.getCmp('idFieldConditionCombo');
-					FieldComboAux.clearValue();
-					FieldComboConditionAux.clearValue();
-					var idTable = combo.getValue();	
-					FieldComboStore.load({
-						params : {
-						idTable : idTable
-						}
-					});
-				}  
-			}
-		});
-		
-		
-		  var FieldComboStore = new Ext.data.Store({
-				proxy : new Ext.data.HttpProxy({url: '../convergenceList/ajaxFieldCombo.php?TYPE=FieldCombo'}),
-				reader : new Ext.data.JsonReader({
-					root   : 'data',
-					fields : [
-						{name : 'ID'},
-						{name : 'NAME'},
-						{name : 'INNER_JOIN'}
-					]
-				})
-			});
-			
+        var TableCombo = new Ext.form.ComboBox({
+            valueField    : 'ID',
+            displayField  : 'NAME',
+            id            : 'idTableCombo',
+            fieldLabel    : 'Select Table',
+            emptyText     : 'Select a Table...',
+            typeAhead     : true,
+            triggerAction : 'all',
+            editable      : false,
+            mode          : 'local',
+            width         : 200,
+            allowBlank    : false,
+            store         : TableComboStore,
+            name          : 'idTableCombo',
+            hiddenName    : 'idTableCombo',
+            disabled      : false,
+            selectOnFocus : false,
+            hidden        : true, 
+            listeners     :{
+                select : function(combo, record) {
+                    FieldCombo.setDisabled(false);
+                    FieldConditionCombo.setDisabled(false);
+                    FieldComboAux=Ext.getCmp('idFieldCombo');
+                    FieldComboConditionAux=Ext.getCmp('idFieldConditionCombo');
+                    FieldComboAux.clearValue();
+                    FieldComboConditionAux.clearValue();
+                    var idTable = combo.getValue(); 
+                    FieldComboStore.load({
+                        params : {
+                        idTable : idTable
+                        }
+                    });
+                }  
+            }
+        });
+        
+        
+          var FieldComboStore = new Ext.data.Store({
+                proxy : new Ext.data.HttpProxy({url: '../convergenceList/ajaxFieldCombo.php?TYPE=FieldCombo'}),
+                reader : new Ext.data.JsonReader({
+                    root   : 'data',
+                    fields : [
+                        {name : 'ID'},
+                        {name : 'NAME'},
+                        {name : 'INNER_JOIN'}
+                    ]
+                })
+            });
+            
 
-			var FieldCombo = new Ext.form.ComboBox({
-				valueField    : 'ID',
-				displayField  : 'NAME',
-				id            : 'idFieldCombo',
-				fieldLabel    : 'Select Show Field',
-				emptyText     : 'Select a Field...',
-				typeAhead     : true,
-				triggerAction : 'all',
-				editable      : false,
-				mode          : 'local',
-				width         : 200,
-				allowBlank    : false,
-				store         : FieldComboStore,
-				name		  : 'idFieldCombo',
-				hiddenName	  : 'idFieldCombo',
-				disabled      : true,
-				selectOnFocus : false,
-				hidden		  : true,
-				listeners     :{
-					select : function(combo, record) {
-					}  
-				}
-			});
-			
-			var FieldConditionCombo = new Ext.form.ComboBox({
-				valueField    : 'ID',
-				displayField  : 'NAME',
-				id            : 'idFieldConditionCombo',
-				fieldLabel    : 'Select Field Condition',
-				emptyText     : 'Select a Field Condition...',
-				typeAhead     : true,
-				triggerAction : 'all',
-				editable      : false,
-				mode          : 'local',
-				width         : 200,
-				allowBlank    : false,
-				store         : FieldComboStore,
-				name		  : 'idFieldConditionCombo',
-				hiddenName	  : 'idFieldConditionCombo',
-				disabled      : true,
-				selectOnFocus : false,
-				hidden		  : true,
-				listeners     :{
-					select : function(combo, record) {
-					}  
-				}
-			});
-	
-		var typeAS = new Ext.form.ComboBox({
-			valueField    : 'ID',
-			displayField  : 'NAME',
-			id            : 'idTypeConfiguration',
-			fieldLabel    : 'Type Configuration',
-          editable	  : false,
-			typeAhead     : true,
-			triggerAction : 'all',
-			mode          : 'local',
-			width         : 200,
-			autoHeight	  : true,
-			listWidth	  : 250,
-			allowBlank    : false,
-			disabled      : false,
-			defaultValue  : "0",
-			value         : "0",
-			store: new Ext.data.SimpleStore({
-		            fields: ["ID", "NAME"],
-		            data : [["0","Select"],
-		                    ["1","Yes-No"],
-		                    ["2","Query"]
-		                   ]
-		        }),
-			listeners   :{
-		           load: function () {
-		               var combo = Ext.getCmp('idTypeConfiguration');
-		                combo.setValue("0");
-		                combo.setRawValue("Select");
-		                TableCombo.setVisible(false);
-	            		FieldCombo.setVisible(false);
-	            		FieldConditionCombo.setVisible(false);
-		            } ,
-		            select : function(combo, record) {
-		            	TableCombo=Ext.getCmp('idTableCombo');
-		            	FieldCombo=Ext.getCmp('idFieldCombo');
-						FieldConditionCombo=Ext.getCmp('idFieldConditionCombo');
-		            	if(combo.getValue() == '2')
-		            	{
-		            		TableCombo.setVisible(true);
-		            		FieldCombo.setVisible(true);
-		            		FieldConditionCombo.setVisible(true);
-		            	}
-		            	else
-		            	{
-		            		TableCombo.setVisible(false);
-		            		FieldCombo.setVisible(false);
-		            		FieldConditionCombo.setVisible(false);
-		            	}
-		            	
-						
-						
-					}
-	    	}
-	    });
-		
-		
-		var gridForm = new Ext.FormPanel({
-		      id: 'gridFormConfig',
-		      frame: true,
-		      labelAlign: 'left',
-		      title: 'Fields Configuration',
-		      bodyStyle:'padding:5px',
-		      width: 1020,
-		      height: 320,  
-		      layout: 'column',  
-		      items: [gridFieldCustomDoublon,{
-		          columnWidth: 0.9,
-		          xtype: 'fieldset',
-		          labelWidth: 100,
-		          title:'Fields details',
-		          defaults: {width: 270, border:false},
-		          defaultType: 'textfield',
-		          autoHeight: true,
-		          bodyStyle: Ext.isIE ? 'padding:0 0 5px 15px;' : 'padding:10px 15px;',
-		          border: false,
-		          items: [{
-		              fieldLabel: 'Name',
-		              name: 'FIELD_NAME_UPPER',
-		              editable : false,
-		              disabled : true
-		          },{
-		              fieldLabel: 'Description',
-		              name: 'FIELD_DESC',
-		              editable : false,
-		              disabled : true
-		          }, {
-		        	  xtype : 'checkbox',
-		        	  header    : 'Include ?',
-		        	  dataIndex : 'FIELD_INCLUDE',
-		        	  id        : 'check',
-		        	  disabled  : true,
-		        	  disabled : true
-		         } , typeAS,
-		           TableCombo,
-		           FieldCombo,
-		           FieldConditionCombo,
-		         {
-		 			xtype	: 'button',
-		          	text    : 'Save Grid',
-		          	align   : 'center',
-		 			id      : 'idButtonDelRow',
-		 			width   : 100,
-		 			disabled: false,
-		 			icon    : '/plugin/convergenceList/table_save.png', 
-		 			//iconCls :'button_menu_ext ss_del',
-		 			//iconCls : 'delField',
-		 			tooltip : 'Edit',
-		 			
-		 			handler : function() {
-							
-		        	 		var record = Ext.getCmp('grid').getSelectionModel().getSelected();
-		        	 		if(record.data.FIELD_NAME)
-		        	 		{
-		        	 			record.set('TYPE_CONFIGURATION' , Ext.getCmp('idTypeConfiguration').getRawValue());
-			        	 		if(Ext.getCmp('idTypeConfiguration').getValue() == 2)
-			        	 		{	
-									record.set('CONFIG_PMTABLE' , Ext.getCmp('idTableCombo').getRawValue());
-									record.set('CONFIG_FIELD_SHOW' , Ext.getCmp('idFieldCombo').getRawValue());
-									record.set('CONFIG_FIELD_CONDITION' , Ext.getCmp('idFieldConditionCombo').getRawValue());
-			        	 		}
-		        	 		}
-		        	 		else
-		        	 		{
+            var FieldCombo = new Ext.form.ComboBox({
+                valueField    : 'ID',
+                displayField  : 'NAME',
+                id            : 'idFieldCombo',
+                fieldLabel    : 'Select Show Field',
+                emptyText     : 'Select a Field...',
+                typeAhead     : true,
+                triggerAction : 'all',
+                editable      : false,
+                mode          : 'local',
+                width         : 200,
+                allowBlank    : false,
+                store         : FieldComboStore,
+                name          : 'idFieldCombo',
+                hiddenName    : 'idFieldCombo',
+                disabled      : true,
+                selectOnFocus : false,
+                hidden        : true,
+                listeners     :{
+                    select : function(combo, record) {
+                    }  
+                }
+            });
+            
+            var FieldConditionCombo = new Ext.form.ComboBox({
+                valueField    : 'ID',
+                displayField  : 'NAME',
+                id            : 'idFieldConditionCombo',
+                fieldLabel    : 'Select Field Condition',
+                emptyText     : 'Select a Field Condition...',
+                typeAhead     : true,
+                triggerAction : 'all',
+                editable      : false,
+                mode          : 'local',
+                width         : 200,
+                allowBlank    : false,
+                store         : FieldComboStore,
+                name          : 'idFieldConditionCombo',
+                hiddenName    : 'idFieldConditionCombo',
+                disabled      : true,
+                selectOnFocus : false,
+                hidden        : true,
+                listeners     :{
+                    select : function(combo, record) {
+                    }  
+                }
+            });
+    
+        var typeAS = new Ext.form.ComboBox({
+            valueField    : 'ID',
+            displayField  : 'NAME',
+            id            : 'idTypeConfiguration',
+            fieldLabel    : 'Type Configuration',
+          editable    : false,
+            typeAhead     : true,
+            triggerAction : 'all',
+            mode          : 'local',
+            width         : 200,
+            autoHeight    : true,
+            listWidth     : 250,
+            allowBlank    : false,
+            disabled      : false,
+            defaultValue  : "0",
+            value         : "0",
+            store: new Ext.data.SimpleStore({
+                    fields: ["ID", "NAME"],
+                    data : [["0","Select"],
+                            ["1","Yes-No"],
+                            ["2","Query"]
+                           ]
+                }),
+            listeners   :{
+                   load: function () {
+                       var combo = Ext.getCmp('idTypeConfiguration');
+                        combo.setValue("0");
+                        combo.setRawValue("Select");
+                        TableCombo.setVisible(false);
+                        FieldCombo.setVisible(false);
+                        FieldConditionCombo.setVisible(false);
+                    } ,
+                    select : function(combo, record) {
+                        TableCombo=Ext.getCmp('idTableCombo');
+                        FieldCombo=Ext.getCmp('idFieldCombo');
+                        FieldConditionCombo=Ext.getCmp('idFieldConditionCombo');
+                        if(combo.getValue() == '2')
+                        {
+                            TableCombo.setVisible(true);
+                            FieldCombo.setVisible(true);
+                            FieldConditionCombo.setVisible(true);
+                        }
+                        else
+                        {
+                            TableCombo.setVisible(false);
+                            FieldCombo.setVisible(false);
+                            FieldConditionCombo.setVisible(false);
+                        }
+                        
+                        
+                        
+                    }
+            }
+        });
+        
+        
+        var gridForm = new Ext.FormPanel({
+              id: 'gridFormConfig',
+              frame: true,
+              labelAlign: 'left',
+              title: 'Fields Configuration',
+              bodyStyle:'padding:5px',
+              width: 1020,
+              height: 320,  
+              layout: 'column',  
+              items: [gridFieldCustomDoublon,{
+                  columnWidth: 0.9,
+                  xtype: 'fieldset',
+                  labelWidth: 100,
+                  title:'Fields details',
+                  defaults: {width: 270, border:false},
+                  defaultType: 'textfield',
+                  autoHeight: true,
+                  bodyStyle: Ext.isIE ? 'padding:0 0 5px 15px;' : 'padding:10px 15px;',
+                  border: false,
+                  items: [{
+                      fieldLabel: 'Name',
+                      name: 'FIELD_NAME_UPPER',
+                      editable : false,
+                      disabled : true
+                  },{
+                      fieldLabel: 'Description',
+                      name: 'FIELD_DESC',
+                      editable : false,
+                      disabled : true
+                  }, {
+                      xtype : 'checkbox',
+                      header    : 'Include ?',
+                      dataIndex : 'FIELD_INCLUDE',
+                      id        : 'check',
+                      disabled  : true,
+                      disabled : true
+                 } , typeAS,
+                   TableCombo,
+                   FieldCombo,
+                   FieldConditionCombo,
+                 {
+                    xtype   : 'button',
+                    text    : 'Save Grid',
+                    align   : 'center',
+                    id      : 'idButtonDelRow',
+                    width   : 100,
+                    disabled: false,
+                    icon    : '/plugin/convergenceList/table_save.png', 
+                    //iconCls :'button_menu_ext ss_del',
+                    //iconCls : 'delField',
+                    tooltip : 'Edit',
+                    
+                    handler : function() {
+                            
+                            var record = Ext.getCmp('grid').getSelectionModel().getSelected();
+                            if(record.data.FIELD_NAME)
+                            {
+                                record.set('TYPE_CONFIGURATION' , Ext.getCmp('idTypeConfiguration').getRawValue());
+                                if(Ext.getCmp('idTypeConfiguration').getValue() == 2)
+                                {   
+                                    record.set('CONFIG_PMTABLE' , Ext.getCmp('idTableCombo').getRawValue());
+                                    record.set('CONFIG_FIELD_SHOW' , Ext.getCmp('idFieldCombo').getRawValue());
+                                    record.set('CONFIG_FIELD_CONDITION' , Ext.getCmp('idFieldConditionCombo').getRawValue());
+                                }
+                            }
+                            else
+                            {
                         alert('Veuillez sélectionner une ligne!');
-								return 0;
-		        	 		}
-		         	}
-		      }]
-		          
-		      }]
-		  });
-		
-	  winConfigDoublon = new Ext.Window({
-	      closeAction : 'hide',
-	      autoDestroy : true,
-	      maximizable: true,
-	      plain: true,
-	      id: 'winConfigDoublon',
-	      title: _WINTITLE_CONFIG_DOUBLON,
-	      width : 1120,
-	      height : 400,
-	      modal : true,
-	      closable: true,
-	      constrain: true,
-	      autoScroll: true,
-	      layout: 'fit',
-	      loadMask : true,
-	      items: [gridForm],
-	      listeners:{
-	          'hide':function(win){
-	                   //winConfigDoublon.hide();
-	                   winConfigDoublon.close();
-	           }
-	  	}
-	  });     
-	  winConfigDoublon.show();
-	  //winConfigDoublon.maximize();
-	  //winConfigDoublon.on('hide',function(){  
+                                return 0;
+                            }
+                    }
+              }]
+                  
+              }]
+          });
+        
+      winConfigDoublon = new Ext.Window({
+          closeAction : 'hide',
+          autoDestroy : true,
+          maximizable: true,
+          plain: true,
+          id: 'winConfigDoublon',
+          title: _WINTITLE_CONFIG_DOUBLON,
+          width : 1120,
+          height : 400,
+          modal : true,
+          closable: true,
+          constrain: true,
+          autoScroll: true,
+          layout: 'fit',
+          loadMask : true,
+          items: [gridForm],
+          listeners:{
+              'hide':function(win){
+                       //winConfigDoublon.hide();
+                       winConfigDoublon.close();
+               }
+        }
+      });     
+      winConfigDoublon.show();
+      //winConfigDoublon.maximize();
+      //winConfigDoublon.on('hide',function(){  
     //});
-	  //winConfigDoublon.toFront();
-	  
-	}
+      //winConfigDoublon.toFront();
+      
+    }
     // End Doublon
 
 function editForms(appUid,accessComment){   
@@ -3817,13 +3818,13 @@ function modificationEnMasse(taskuid, champs){
      Ext.each(_AppUids, function(record){
        
         var _dblFieldsCustom    = new Array ();
-	    var _jsonFieldsCustom   = '';
+        var _jsonFieldsCustom   = '';
         var item = {
-	        "APP_UID"   : record.APP_UID,
-	        "APP_NUMBER": record.APP_NUMBER
-	                                    };
-	   _dblFieldsCustom.push(item);
-	   _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom); 
+            "APP_UID"   : record.APP_UID,
+            "APP_NUMBER": record.APP_NUMBER
+                                        };
+       _dblFieldsCustom.push(item);
+       _jsonFieldsCustom= Ext.util.JSON.encode(_dblFieldsCustom); 
         urlData = "../convergenceList/actions/massUpdate.php";
      //console.log(_jsonFieldsCustom);
         test = Ext.MessageBox.show({

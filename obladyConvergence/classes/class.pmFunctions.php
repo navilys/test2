@@ -644,7 +644,7 @@ function convergence_concatFiles($files) {
 }
 
 //GLOBAL
-function convergence_exportToAS400($process_id, $file_base, $code, $liste = null, $makeRetourProdTxtForRecette = 0, $onlyThisCodeOper = 0) {
+function convergence_exportToAS400($process_id, $file_base, $code, $liste = null, $makeRetourProdTxtForRecette = 0, $onlyThisCodeOper = 0, $useCodeOper = 1) {
     if (!isset($process_id))
     {
         return 'Le process_uid n\'est pas renseigné pour l\'export de fichier';
@@ -673,7 +673,7 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
     /*     * *****  récupération des different code opération pour le dispositif et génération d'un fichier de production par code ** */
     $whereOper = ' WHERE 1';
     // Si l'on ne souhaite lancer la production que sur un seul code opération
-    if (intval($onlyThisCodeOper) != 0)
+    if (intval($onlyThisCodeOper) != 0 && $useCodeOper == 1)
     {
         $whereOper .= ' AND NUM_OPER = ' . intval($onlyThisCodeOper);
     }
@@ -698,12 +698,15 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
     $nb_result = 0;
     foreach ($listOper as $codeOper)
     {
-        if (count($listOper) > 1 || $onlyThisCodeOper != 0)
+        if ((count($listOper) > 1 || $onlyThisCodeOper != 0) && $useCodeOper == 1)
             $whereCodeOper = ' AND CODE_OPERATION =' . $codeOper;
         else
             $whereCodeOper = '';
         $dateFile = date("YmdHis");
-        $file = $file_base . $codeOper . '_' . $dateFile . '.txt';
+        if ($useCodeOper == 1)
+            $file = $file_base . $codeOper . '_' . $dateFile . '.txt';
+        else
+            $file = $file_base;
 
         $query = 'SELECT * FROM ' . $config['TABLENAME'] . ' ' . $config['JOIN_CONFIG'] . ' WHERE 1 ' . $config['CONFIG_WHERE'] . $whereCodeOper;
         $result = executeQuery($query);
@@ -774,6 +777,9 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                                 $line .= substr(str_pad($codeOper, $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
                                 break;
                             // ajouter les autres cas possible, par defaut les champs sont comblés avec des espaces à droite
+                            case 'Ignore':
+                                $line .= substr(str_pad('', $field['LENGTH'], $token), 0, $field['LENGTH']);
+                                break;
                             default:
                                 $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], $token), 0, $field['LENGTH']);
                                 break;
@@ -796,6 +802,8 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
             }
             fclose($ftic);
         }
+        if ($useCodeOper == 0)
+            break;
     }
     /*     * *** autogenrate a sample file of return from as400 for test on debug mode***** */
     if ($makeRetourProdTxtForRecette == 1)
@@ -1030,30 +1038,37 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
             $nbcurrentLine++; // N° de la ligne courante
             foreach ($select as $field)
             { // pour chaque champs configuré
-                switch ($field['AS400_TYPE'])
-                { // traitement de la valeur
-                    case 'Integer':
-                    case 'Entier':
-                        $importLine[$field['FIELD_NAME']] = intval(trim(substr($current_line, 0, $field['LENGTH']), $token));
-                        break;
-                    case 'Ignore':
-                        //$forget = trim(substr($current_line, 0, $field['LENGTH']), $token);
-                        break;
-                    case 'Decimal':
-                        $importLine[$field['FIELD_NAME']] = floatval(substr_replace(substr($current_line, 0, $field['LENGTH']), '.', -2, 0));
-                        break;
-                    case 'Telephone':
-                        $stringTel = trim(substr($current_line, 0, $field['LENGTH']), $token);
-                        $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
-                        break;
-                    case 'Date':
-                        $importLine[$field['FIELD_NAME']] = str_replace('.', '-', trim(substr($current_line, 0, $field['LENGTH']), $token));
-                        break;
-                    default:
-                        $importLine[$field['FIELD_NAME']] = trim(substr($current_line, 0, $field['LENGTH']), $token);
-                        break;
+                if (!empty($field['CONSTANT']))
+                {
+                    $importLine[$field['FIELD_NAME']] = $field['CONSTANT'];
                 }
-                $current_line = substr($current_line, $field['LENGTH']);
+                else
+                {
+                    switch ($field['AS400_TYPE'])
+                    { // traitement de la valeur
+                        case 'Integer':
+                        case 'Entier':
+                            $importLine[$field['FIELD_NAME']] = intval(trim(substr($current_line, 0, $field['LENGTH']), $token));
+                            break;
+                        case 'Ignore':
+                            //$forget = trim(substr($current_line, 0, $field['LENGTH']), $token);
+                            break;
+                        case 'Decimal':
+                            $importLine[$field['FIELD_NAME']] = floatval(substr_replace(substr($current_line, 0, $field['LENGTH']), '.', -2, 0));
+                            break;
+                        case 'Telephone':
+                            $stringTel = trim(substr($current_line, 0, $field['LENGTH']), $token);
+                            $importLine[$field['FIELD_NAME']] = wordwrap($stringTel, 2, "-", 1);
+                            break;
+                        case 'Date':
+                            $importLine[$field['FIELD_NAME']] = str_replace('.', '-', trim(substr($current_line, 0, $field['LENGTH']), $token));
+                            break;
+                        default:
+                            $importLine[$field['FIELD_NAME']] = trim(substr($current_line, 0, $field['LENGTH']), $token);
+                            break;
+                    }
+                    $current_line = substr($current_line, $field['LENGTH']);
+                }
                 //on vérifie la valeur obtenue en fonction de la configuration. 'txt' pour un fichier plat type AS400
                 $checkLog = convergence_checkFieldLog($importLine[$field['FIELD_NAME']], $field, 'txt');
                 if ($checkLog != 1)
@@ -1077,6 +1092,7 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0)
                 //$data contien tous les importLine
                 if ($childProc == 1)
                 {
+                    $importLine['APPUID_RELATION'] = $app_id; // use it if you need relation fields from the parent process in the child process
                     new_case_for_import($importLine, $config);
                 }
             }
@@ -1268,6 +1284,8 @@ function new_case_for_import($line, $config) {
     $newFields = $caseInstance->loadCase($data['APPLICATION']);
     /* $newFields['APP_DATA']['FLAG_ACTION'] = 'actionCreateCase';
       $newFields['APP_DATA']['FLAGTYPO3'] = 'Off'; */
+    $newFields['APP_DATA']['APPUID_RELATION'] = $line['APPUID_RELATION'];
+    unset($line['APPUID_RELATION']);
     $newFields['APP_DATA']['LINE_IMPORT'] = $line;
     $newFields['APP_DATA']['CONFIG_IMPORT'] = $config;
 
@@ -1340,6 +1358,44 @@ function convergence_getNumDossier($app_id) {
     }
 }
 
+function convergence_getPathDispositif() {
+    try
+    {
+        $query = 'SELECT PATH_FILE FROM PMT_LISTE_OPER';
+        $result = executeQuery($query);
+        return $result[1]['PATH_FILE'];
+    }
+    catch (Exception $e)
+    {
+        var_dump($e);
+        G::pr("Le répertoire des fichiers ou ftp n'est pas renseigné dans la table PMT_LISTE_OPER");
+        die();
+    }
+}
+
+function convergence_setVnForRmh() {
+    $sql = 'select SUM(VN_TITRE) as total, CODE_PRESTA as code FROM PMT_CHEQUES where ETAT_TITRE < 300 and STATUT = "15" group by CODE_PRESTA';
+    $res = executeQuery($sql);
+    if (!empty($res))
+    {
+        $insert = array();
+        foreach ($res as $row)
+        {
+           $insert[] = '("' . $row['code'] . '","' . $row['total'] . '")';
+        }
+        $value = implode(',', $insert);
+        $qInsert = 'INSERT INTO PMT_VN_FOR_RMH (CONV_PRESTA,VN_TOTAL) VALUES ' . $value;
+        $result = executeQuery($query);
+    }
+}
+
+function convergence_unsetVnForRmh() {
+    $sql = 'TRUNCATE PMT_VN_FOR_RMH';
+    $res = executeQuery($sql);
+    $sqlUpdate = 'update PMT_CHEQUES set STATUT="10" where ETAT_TITRE < 300 and STATUT = "15"';
+    $resU = executeQuery($sqlUpdate);
+}
+
 //GLOBAL
 function convergence_updateListeRemboursement($app_id, $res) {
     $field = convergence_getAllAppData($app_id);
@@ -1381,14 +1437,18 @@ function convergence_InsertLineImport($line, $config) {
 
 //GLOBAL
 /* * ***** Met à jour les titres lors des remboursements effectués par l'AS400 via le fichier importé RMB ************* */
-function convergence_updateTitreRmb($line, $config) {
+function convergence_updateTitreRmb($line, $config, $uid_rmb = '') {
 
+    $sqlRmb = 'SELECT * FROM PMT_LISTE_RMBT WHERE APP_UID ="' . $uid_rmb . '"';
+    $rRmb = executeQuery($sqlRmb);    
     $array = array();
     foreach ($line as $key => $value)
     {
         $array [] = $key . '="' . $value . '"';
     }
+    $array[] = 'ID_RMB ="' . $rRmb[1]['NUM_DOSSIER'] . '"';
     $set = implode(',', $array);
+
 
     try
     {
