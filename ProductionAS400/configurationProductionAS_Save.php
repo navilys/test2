@@ -41,7 +41,7 @@ if ( isset( $_POST ['idProcess']) ) {
 	$_POST ['joinConfig'] = isset($_POST ['joinConfig'])?$_POST ['joinConfig']:'';	$_POST ['tokenCsv'] = isset($_POST ['tokenCsv'])?$_POST ['tokenCsv']:'';	$_POST ['configWhere'] = isset($_POST ['configWhere'])?$_POST ['configWhere']:'';
 	if($idConfigAS != 0)
 	{
-		$updateConfig = "UPDATE  PMT_AS400_CONFIG  SET
+		$updateConfig = "UPDATE PMT_AS400_CONFIG  SET
 				   TABLENAME = '" . $_POST ['tableName'] . "',
 				   JOIN_CONFIG = '" . $_POST ['joinConfig'] . "',
 				   TOKEN_CSV = '" . mysql_real_escape_string($_POST ['tokenCsv']) . "',
@@ -124,8 +124,8 @@ foreach ( $data as $name => $value )
 				'" . $as400Type . "',
 				'" . $required . "',
 				'" . $idConfigAS . "',
-				'" . $descripField. "',
-				'" . $constant . "')
+				'" . mysql_real_escape_string($descripField). "',
+				'" . mysql_real_escape_string($constant) . "')
 			  ";
 	executeQuery ( $insert );
 	$res = true;

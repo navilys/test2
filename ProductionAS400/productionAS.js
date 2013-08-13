@@ -590,31 +590,22 @@ Ext.onReady(function()
     	disabled   : false,
     	anchor	   : '100%'
     });
-
-     var typeAS = new Ext.form.ComboBox({
-		valueField    : 'ID',
-		displayField  : 'NAME',
-		id            : 'idtypeAS',
-		fieldLabel    : '<span style="color: red">*</span>Choose Type ',
-		typeAhead     : true,
-		triggerAction : 'all',
-		editable      : true,
-		mode          : 'local',
-		width         : 200,
-		autoHeight	  : true,
-		listWidth	  : 250,
-		allowBlank    : false,
-		disabled      : false,
-		defaultValue  : "String",
-		value         : "String",
-		store: new Ext.data.SimpleStore({
-	            fields: ["ID", "NAME"],
-	            data : [["String","Chaine"],
+    
+    Ext.util.Format.comboRenderer = function(combo){
+	return function(value){
+		var record = combo.findRecord(combo.valueField, value);
+		
+		return record ? record.get(combo.displayField) : combo.valueNotFoundText;
+	    }
+	} 
+	
+	var typeAsComboStore = new Ext.data.SimpleStore({
+	fields: ['ID', 'NAME'],
+	data: [["String","Chaine"],
 	                    ["Integer","Entier"],
 	                    ["Date","Date"],		
-            ["Decimal", "Décimal"],
-            ["mail", "E-mail"],
-            ["Telephone", "Téléphone"],
+	                    ["Decimal","Decimal"],
+	                    ["Telephone","Telephone"],
             ["AI", "Actif / Inactif"],
             ["cp", "Code postal"],
             ["Yesno", "O ou N"],
@@ -622,40 +613,45 @@ Ext.onReady(function()
             ["binaire", "0 ou 1"],
             ["NCommande", "Numéro Commande"],
 	                    ["codeOper","Code Opération"],
-	                    ["Ignore","Ignorer cette donnée"]
-	                   ]
-	        }),
+	                    ["Ignore","Ignorer cette donnée"]],
+	autoLoad: true 
+	});
+				
+	var typeAS = new Ext.form.ComboBox({
+		valueField    : 'ID',
+		displayField  : 'NAME',
+		id            : 'idtypeAS',
+		fieldLabel    : '<span style="color: red">*</span>Choose Type',
+		typeAhead     : true,
+		triggerAction : 'all',
+		editable      : false,
+		mode          : 'local',
+		anchor	      : '95%',
+		hidden	      : false,
+		hideLabel     : false,
+		width         : 200,
+		allowBlank    : false,
+		msgTarget	  : 'side',
+		store         : typeAsComboStore,
+		name		  : 'idtypeASCombo',
+		hiddenName	  : 'idtypeASCombo', 
+		disabled      : false,
+		selectOnFocus : true,
+		forceSelection: true,
 		listeners   :{
 	           beforerender : function(combo){
 	              combo.setValue("String");
-	              Ext.getCmp('idtypeAS').setValue("String");
+	              Ext.getCmp('idtypeAS').setValue("Chaine");
 	           },
 	           load: function () {
 	               var combo = Ext.getCmp('idtypeAS');
 	                combo.setValue("String");
 	            }
-    	}
-    });
-     Ext.getCmp('idtypeAS').setValue("String");
-    
-    /*typeAS = new Ext.form.ComboBox({
-        id: 'status',
-        fieldLabel: "Estado ",
-        maxLength: 60,
-        allowBlank: false,
-        anchor: '95%',
-        hidden: false,
-        hideLabel: false,
-        triggerAction: 'all',
-        store: new Ext.data.SimpleStore({
-            fields: ["id", "description"],
-            data : [[2,"Pendiente"],[3,"Cobrada"]]
-        }),
-        displayField: 'description',
-        valueField: 'id',
-        mode: 'local'
-    });*/
-    
+		}
+	});
+	Ext.getCmp('idtypeAS').setValue("String");
+	//Ext.getCmp('idtypeAS').setRawValue("Chaine");
+   
     var FieldNameStore = new Ext.data.Store({
         proxy: new Ext.data.HttpProxy({url: 'ajaxInnerJoin.php?rolID=' + rolID}),
         
@@ -729,7 +725,8 @@ Ext.onReady(function()
     		dataIndex : 'AS400_TYPE', 
     		width     : 15,
     		sortable  : true,
-    		editor    : typeAS
+    		editor    : typeAS,
+		renderer  : Ext.util.Format.comboRenderer(typeAS)
 		}, checkColumnRequired 
 		, {
     		header    : "Constant",
@@ -749,10 +746,10 @@ Ext.onReady(function()
 	var gridConfiguration = new Ext.grid.EditorGridPanel({
 		store 		   : store,
 		columnLines	   : true,
-		id 			   : 'grid',
+		id 		   : 'grid',
 		ddGroup		   :'gridDD',
-		enableDragDrop : true,
-		cm 			   : gridcolumns,
+		enableDragDrop 	   : true,
+		cm 		   : gridcolumns,
 		tbar           : FieldPanelToolBars,
 		columnLines    : true,
 		plugins        : [checkColumnInclude,checkColumnRequired],
