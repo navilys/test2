@@ -30,19 +30,19 @@ $libelRes = executeQuery($libelStatut);
 switch (strtolower($libelRes[1]['TITLE'])) {
 
         case 'refusé' :
-            if (count(explode('<br/>&nbsp;-&nbsp;', $Fields['APP_DATA']['msgRefus'])) > 2)
-        {
+            if (count(explode('<br/>&nbsp;-&nbsp;', isset($Fields['APP_DATA']['msgRefus']) ? $Fields['APP_DATA']['msgRefus'] : '')) > 2)
+            {
                 $messageInfo = 'Le dossier est <b>' . strtolower($libelRes[1]['TITLE']) . '</b> pour les raisons suivantes :';
             }
             else
             {
                 $messageInfo = 'Le dossier est <b>' . strtolower($libelRes[1]['TITLE']) . '</b> pour la raison suivante :';
             }
-            $messageInfo .= $Fields['APP_DATA']['msgRefus'];
+            $messageInfo .= isset($Fields['APP_DATA']['msgRefus']) ? $Fields['APP_DATA']['msgRefus'] : '';
         break;
 
-        case 'incomplet' :          
-            if (count(explode('<br/>&nbsp;-&nbsp;', $Fields['APP_DATA']['msgIncomplet'])) > 2)
+        case 'incomplet' :        
+            if (count(explode('<br/>&nbsp;-&nbsp;', isset($Fields['APP_DATA']['msgIncomplet']) ? $Fields['APP_DATA']['msgIncomplet'] : '')) > 2)
             {
                 $messageInfo = 'Le dossier est <b>' . strtolower($libelRes[1]['TITLE']) . '</b> car les éléments suivants sont manquants :';
             }
@@ -50,7 +50,7 @@ switch (strtolower($libelRes[1]['TITLE'])) {
             {
                 $messageInfo = 'Le dossier est <b>' . strtolower($libelRes[1]['TITLE']) . '</b> car l\'élément suivant est manquant :';
             }
-            $messageInfo .= $Fields['APP_DATA']['msgIncomplet'];
+            $messageInfo .= isset($Fields['APP_DATA']['msgIncomplet']) ? $Fields['APP_DATA']['msgIncomplet'] : '';
             break;
 
         default :

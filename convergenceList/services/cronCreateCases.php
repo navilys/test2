@@ -10,8 +10,18 @@ class cronCreateCasesClassCron
     
   }
 
-  function executeCron(){
-    /*if(SYS_SYS == "CheqLivreApp"){
+  function executeCron()
+  {
+    $pluginFile = PATH_PLUGINS.'convergenceList'.PATH_SEP.'services'.PATH_SEP.'class.createCasescron.php';
+    if(file_exists($pluginFile)){
+        G::LoadClass('plugin');
+        require_once($pluginFile);
+    }
+      
+    $plugin = new archivedCasesClassCron();
+    $plugin->followUpActions();
+    /*
+    if(SYS_SYS == "CheqLivreApp"){
         $pluginFile = PATH_PLUGINS.'convergenceList'.PATH_SEP.'services'.PATH_SEP.'class.createCasescron.php';
         if(file_exists($pluginFile)){
           G::LoadClass('plugin');
@@ -52,14 +62,7 @@ class cronCreateCasesClassCron
       $plugin->followUpActions();
     }*/
    
-     $pluginFile = PATH_PLUGINS.'convergenceList'.PATH_SEP.'services'.PATH_SEP.'class.createCasescron.php';
-        if(file_exists($pluginFile)){
-          G::LoadClass('plugin');
-          require_once($pluginFile);
-        }
-      
-      $plugin = new archivedCasesClassCron();
-      $plugin->followUpActions();
+    
   }
 
 }

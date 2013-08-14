@@ -151,16 +151,14 @@ function ajaxPostRequest(url, callback_function, id){
       	setTimeout(function(){
       	
       		TabPanel.setActiveTab(1);
-  		}, 1000);
+  		}, 200);
       
       function fn_add_tab_principal(sName,sUrl,TabPanel)
       {       	  
-    	  //console.log(sName+","+sUrl+","+TabPanel);
           TabPanel.add({
             id: 'iframe-' + sName,      
             title: sName,
-            frameConfig:{name: sName + 'Frame', id: sName + 'Frame'},
-            //defaultSrc : '../convergenceList/' + sUrl,        
+            frameConfig:{name: sName + 'Frame', id: sName + 'Frame'},     
             loadMask:{msg:'Chargement ...'},
             closable:false,
             autoScroll: true,       

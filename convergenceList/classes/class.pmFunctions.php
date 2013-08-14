@@ -123,7 +123,7 @@ function frderivateCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber
 				$oDerivation = new Derivation();
 				$aFields['TASK']= $oDerivation->prepareInformation( array ('USER_UID' => $userId,'APP_UID' => $fcaseUID,'DEL_INDEX' => $DelIndex[1]['DEL_INDEX']) );
 				if (empty( $aFields['TASK'] )) {  
-				    $_SESSION['USER_LOGGED'] = $userLoggedIni ;               
+				    $_SESSION['USER_LOGGED'] = $userLoggedIni ;           
 					throw (new Exception( G::LoadTranslation( 'ID_NO_DERIVATION_RULE' ) ));
 				}	
 				else
@@ -244,8 +244,7 @@ function executeTriggers($processId,$caseUID,$userId){
 	}
 	if($userLoggedIni !='')
 		$_SESSION['USER_LOGGED'] = $userLoggedIni ; 
-   // FredirectTypo3($caseUID);
-        
+    
 }
 
 function frExecuteTriggersCase($processId, $currentTask , $fcaseUID,$userId,$taskNumber, $userLoggedIni)

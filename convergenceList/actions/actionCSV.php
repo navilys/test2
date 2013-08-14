@@ -1,7 +1,8 @@
 <?php
 
 ## (c) req - last change May 23
-
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', True);
 G::loadClass ( 'pmFunctions' );
 G::LoadClass ( 'form' );
 //include ("doublonData.php");
@@ -274,8 +275,100 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
     return $dataCSV;
 }
 
-function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader){
+function dataDynaforms($resultDynaform,$proUid)
+{
+    $_dataForms =  array();
+    foreach($resultDynaform As $rowDynaform)
+	{
+		$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
+			
+		foreach ($dynaform->fields as $fieldName => $field) 
+		{
+			if( $field->type == 'dropdown')
+			{
+				$aData = array();
+				$dataSQL = array();
+				$data = array();
+				if(strlen($field->sql))
+				{
+					$query = $field->sql;
+					$valueData = explode(",",$query);
+					$valueId = explode(" ",$valueData[0]);
+					$position = count($valueId)-1 ;
+					$valueId = $valueId[$position];
+					$valueDataCount = count($valueData);
+					$valueName = explode(" ",$valueData[$valueDataCount-1]);
+					for($i = 0; $i <count($valueName) ; $i++)
+					{
+						if($valueName[$i]=="from" || $valueName[$i]=="FROM")
+						{
+							$dataName = $valueName[$i-1];	
+							break;
+						}
+					}
+					
+					$aData = executeQuery($field->sql);
+				}	
+				if(sizeof($aData))
+				{
+					foreach($aData As $key => $row)
+					{
+						$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
+						$dataSQL[] = $rowData;
+					}
+				}
+					
+				if(sizeof($field->option))
+				{
+					foreach($field->option As $key => $row)
+					{
+						$rowData = array ( 'id'=>$key,'descrip'=>$row);
+						$data[] = $rowData;
+					}
+				}
+					
+				$record = array (
+						"FIELD_NAME" => $field->name, 
+						"FIELD_LABEL" => $field->label,
+						"FIELD_TYPE" => $field->type,
+						"FIELD_DEFAULT_VALUE" => $field->defaultValue,
+						"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
+						"FIELD_OPTION" => $data,
+						"FIELD_READONLY" => $field->readonly,
+						"FIELD_SQL_CONNECTION" => $field->sqlConnection,
+						"FIELD_SQL" => $field->sql,
+						"FIELD_SQL_OPTION" => $dataSQL,
+						"FIELD_SELECTED_VALUE" => $field->selectedValue,
+						"FIELD_SAVE_LABEL" => $field->saveLabel
+						);
+				$_dataForms[] = $record;
+			}
+		}
+	}
+	return $_dataForms;
+}
 
+function createFileTmpCSV($csv,$csv_file)
+{
+    if($csv != '')
+    {
+        $sPathName = PATH_DOCUMENT . "csvTmp" ;
+        if (!is_dir($sPathName)) 
+       	    G::verifyPath($sPathName, true);
+        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
+           echo "Cannot open file";  
+           exit;  
+        }  
+        if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
+           echo "Cannot write to file";  
+           exit;  
+        }  
+        fclose($handle);  
+    }
+}
+
+function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader, $typeAction)
+{
 	G::LoadClass('case');
     $items   = json_decode($jsonMatchFields,true); 
     $dataCSV = isset($_SESSION['REQ_DATA_CSV']) ?$_SESSION['REQ_DATA_CSV']: array();
@@ -284,80 +377,14 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $proUid  = getProUid($tableName);
     $totalCases = 0;
    
+    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader);
+    
     // load Dynaforms of process
-    $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader);
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
-
-    $_dataForms =  array();
-	foreach($resultDynaform As $rowDynaform)
-	{
-			$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
-			
-			foreach ($dynaform->fields as $fieldName => $field) {
-				if( $field->type == 'dropdown')
-				{
-					$aData = array();
-					$dataSQL = array();
-					$data = array();
-					if(strlen($field->sql)) 
-					{
-						$query = $field->sql;
-						$valueData = explode(",",$query);
-						$valueId = explode(" ",$valueData[0]);
-						$position = count($valueId)-1 ;
-						$valueId = $valueId[$position];
-						$valueDataCount = count($valueData);
-						$valueName = explode(" ",$valueData[$valueDataCount-1]);
-						for($i = 0; $i <count($valueName) ; $i++)
-						{
-							if($valueName[$i]=="from" || $valueName[$i]=="FROM")
-							{
-								$dataName = $valueName[$i-1];
-								break;		
-							}
-						}
-						
-						$aData = executeQuery($field->sql);
-					}	
-					if(sizeof($aData))
-					{
-						foreach($aData As $key => $row)
-						{
-							$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
-							$dataSQL[] = $rowData;
-						}
-					}
-					
-					if(sizeof($field->option))
-					{
-						foreach($field->option As $key => $row)
-						{
-							$rowData = array ( 'id'=>$key,'descrip'=>$row);
-							$data[] = $rowData;
-						}
-					}
-					
-					$record = array (
-							"FIELD_NAME" => $field->name, 
-							"FIELD_LABEL" => $field->label,
-							"FIELD_TYPE" => $field->type,
-							"FIELD_DEFAULT_VALUE" => $field->defaultValue,
-							"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
-							"FIELD_OPTION" => $data,
-							"FIELD_READONLY" => $field->readonly,
-							"FIELD_SQL_CONNECTION" => $field->sqlConnection,
-							"FIELD_SQL" => $field->sql,
-							"FIELD_SQL_OPTION" => $dataSQL,
-							"FIELD_SELECTED_VALUE" => $field->selectedValue,
-							"FIELD_SAVE_LABEL" => $field->saveLabel
-					);
-					$_dataForms[] = $record;
-				}
-			}
-	}
-	
-// end load dynaforms process 
+    $_dataForms =  dataDynaforms($resultDynaform,$proUid);
+ 	// end load dynaforms process 
+ 	
     $select = executeQuery("SELECT MAX(IMPCSV_IDENTIFY) AS IDENTIFY FROM PMT_IMPORT_CSV_DATA WHERE IMPCSV_TABLE_NAME = '$tableName' ");
     $identify = isset($select[1]['IDENTIFY'])? $select[1]['IDENTIFY']:0;
     $identify = $identify + 1;
@@ -372,7 +399,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         $totRow = sizeof($row);
         $totIni = 1;
        
-        if($totalCases >= 150)
+        if($totalCases >= 100)
         {
             foreach($row as $value)
             {
@@ -392,7 +419,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
                 { 
                     $insert = "INSERT INTO PMT_IMPORT_CSV_DATA 
                           (IMPCSV_ID, IMPCSV_FIELD_NAME, IMPCSV_VALUE,IMPCSV_TAS_UID, IMPCSV_TABLE_NAME, IMPCSV_FIRSTLINEHEADER, IMPCSV_IDENTIFY, IMPCSV_TYPE_ACTION) VALUES
-                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', 'ADD')";
+                          ('$maxId','".$field['FIELD_NAME']."', '".$field['COLUMN_CSV']."', '$uidTask', '$tableName','$firstLineHeader', '$identify', '$typeAction')";
                     executeQuery($insert);
                     $swInsert = 1;
                     $maxId++;
@@ -424,9 +451,8 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
                 else
                 {
                     $aCol = explode(' ', trim($field['COLUMN_CSV']));
-               
                     if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-                    {
+                    {   
                         $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
                     }
                     else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
@@ -446,7 +472,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 					
 					if($key == $row['FIELD_NAME'])
 					{
-						//$i = isset($fields[$key])?$fields[$key]:$row['FIELD_DEFAULT_VALUE'];
 						$i = isset($fields) ? $fields : $row['FIELD_DEFAULT_VALUE'];
 
                         if(count($row['FIELD_SQL_OPTION']))
@@ -472,7 +497,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 							}
 							
 							$record[$row['FIELD_NAME']] = $id;
-							//$appData = array_merge($record,$appData); Coment all this line because shift the current label to the next row MISTAKE
                             $record[$row['FIELD_NAME']."_label"] = $label;
 							$appData = array_merge($record,$appData);
 						}
@@ -495,7 +519,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 								
 								$record = Array();
 								$record[$row['FIELD_NAME']] = $id;
-								//$appData = array_merge($record,$appData);
                                 $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record, $appData);
                             }
@@ -512,7 +535,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 						$row['FIELD_DEFAULT_VALUE'] = 0;
 						
 					$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])?$appData[$row['FIELD_NAME']."_label"]:'';
-					//if(!isset($appData[$row['FIELD_NAME']."_label"]))
 					if($appData[$row['FIELD_NAME']."_label"] =="")
 					{
 						$i = $row['FIELD_DEFAULT_VALUE'];	
@@ -539,7 +561,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 							}
 							
 							$record[$row['FIELD_NAME']] = $id;
-							//$appData = array_merge($record,$appData);
                             $record[$row['FIELD_NAME']."_label"] = $label;
 							$appData = array_merge($record, $appData);
                         }
@@ -567,7 +588,6 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 								}
 							
 								$record[$row['FIELD_NAME']] = $id;
-								//$appData = array_merge($record,$appData);
                                 $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record, $appData);
                                
@@ -578,10 +598,15 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 	        }
 	    
 	     // end labels 
+	    
             foreach ($appData as $key => $value)
-            {
-              $appData[$key] = utf8_decode($value);
+            {   
+                if(!is_array($value))
+                    $appData[$key] = htmlspecialchars_decode($value);
+                else
+                    $appData[$key] = $value;
             } 
+            
             $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
@@ -589,34 +614,27 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
             $appData['FLAG_EDIT'] = 1;
             $appData['STATUT'] = 1;
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
+            $appData['LOOP'] = 1;
+           
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
-            if($caseUID >0) {
+            if($caseUID >0) 
+            {   
                 autoDerivate($proUid,$caseUID,$USR_UID);
                 $oCase = new Cases ();
-                $FieldsCase = $oCase->loadCase ( $caseUID );
-                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                
-                $oCase->updateCase($caseUID,$FieldsCase);
+			    $FieldsCase = $oCase->loadCase ( $caseUID );
+			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
+			    $FieldsCase['APP_DATA']['STATUT'] = 1;
+			    $FieldsCase['APP_DATA']['LOOP'] = '';
+			    $oCase->updateCase($caseUID,$FieldsCase);
             }
+            
         }
         $totalCases++;
     }
+     
     # create file tmp
-    if($csv != '')
-    {
-        $sPathName = PATH_DOCUMENT . "csvTmp" ;
-        if (!is_dir($sPathName)) 
-       	    G::verifyPath($sPathName, true);
-        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
-           echo "Cannot open file";  
-           exit;  
-        }  
-        if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-           echo "Cannot write to file";  
-           exit;  
-        }  
-        fclose($handle);  
-    }
-    # end create file tmp
+    createFileTmpCSV($csv,$csv_file);   
+    # end create file tmp 
     
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
@@ -632,78 +650,14 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
-    $dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader); // corriger pour la suppression
+    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader); // corriger pour la suppression
     // load Dynaforms of process
 	$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
 	$idCasesGenerate = "''";	
-	$_dataForms =  array();
-	foreach($resultDynaform As $rowDynaform)
-	{
-		$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
-			
-		foreach ($dynaform->fields as $fieldName => $field) {
-			if( $field->type == 'dropdown')
-			{
-				$aData = array();
-				$dataSQL = array();
-				$data = array();
-				if(strlen($field->sql))
-				{
-					$query = $field->sql;
-					$valueData = explode(",",$query);
-					$valueId = explode(" ",$valueData[0]);
-					$position = count($valueId)-1 ;
-					$valueId = $valueId[$position];
-					$valueDataCount = count($valueData);
-					$valueName = explode(" ",$valueData[$valueDataCount-1]);
-					for($i = 0; $i <count($valueName) ; $i++)
-					{
-						if($valueName[$i]=="from" || $valueName[$i]=="FROM")
-						{
-							$dataName = $valueName[$i-1];	
-						}
-					}
-					
-					$aData = executeQuery($field->sql);
-				}	
-				if(sizeof($aData))
-				{
-					foreach($aData As $key => $row)
-					{
-						$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
-						$dataSQL[] = $rowData;
-					}
-				}
-					
-				if(sizeof($field->option))
-				{
-					foreach($field->option As $key => $row)
-					{
-						$rowData = array ( 'id'=>$key,'descrip'=>$row);
-						$data[] = $rowData;
-					}
-				}
-					
-				$record = array (
-							"FIELD_NAME" => $field->name, 
-							"FIELD_LABEL" => $field->label,
-							"FIELD_TYPE" => $field->type,
-							"FIELD_DEFAULT_VALUE" => $field->defaultValue,
-							"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
-							"FIELD_OPTION" => $data,
-							"FIELD_READONLY" => $field->readonly,
-							"FIELD_SQL_CONNECTION" => $field->sqlConnection,
-							"FIELD_SQL" => $field->sql,
-							"FIELD_SQL_OPTION" => $dataSQL,
-							"FIELD_SELECTED_VALUE" => $field->selectedValue,
-							"FIELD_SAVE_LABEL" => $field->saveLabel
-						);
-				$_dataForms[] = $record;
-			}
-		}
-	}
 	
+	$_dataForms =  dataDynaforms($resultDynaform,$proUid);
+		
 	$select = executeQuery("SELECT MAX(IMPCSV_IDENTIFY) AS IDENTIFY FROM PMT_IMPORT_CSV_DATA WHERE IMPCSV_TABLE_NAME = '$tableName' ");
     $identify = isset($select[1]['IDENTIFY'])? $select[1]['IDENTIFY']:0;
     $identify = $identify + 1;
@@ -718,7 +672,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         $totRow = sizeof($row);
         $totIni = 1;
       
-        if($totalCases >= 150) 
+        if($totalCases >= 100) 
         {
             foreach($row as $value)
             {
@@ -812,7 +766,6 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    				}
 		    				
 		    				$record[$row['FIELD_NAME']] = $id;
-		    				//$appData = array_merge($record,$appData);
                             $record[$row['FIELD_NAME']."_label"] = $label;
 		    				$appData = array_merge($record,$appData);
 		    			}
@@ -835,7 +788,6 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    					
 		    					$record = Array();
 		    					$record[$row['FIELD_NAME']] = $id;
-		    					//$appData = array_merge($record,$appData);
                                 $record[$row['FIELD_NAME']."_label"] = $label;
 		    					$appData = array_merge($record,$appData);
 		    				}
@@ -876,7 +828,6 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    					$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
 		    				}
 		    				$record[$row['FIELD_NAME']] = $id;
-		    				//$appData = array_merge($record,$appData);
                             $record[$row['FIELD_NAME']."_label"] = $label;
 		    				$appData = array_merge($record,$appData);
 		    			}
@@ -903,13 +854,13 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    						$label = $row['FIELD_OPTION'][0]['descrip'];
 		    					}
 		    					$record[$row['FIELD_NAME']] = $id;
-		    					//$appData = array_merge($record,$appData);
                                 $record[$row['FIELD_NAME']."_label"] = $label;
 		    					$appData = array_merge($record,$appData);
 		    				}
 		    			}
 		    		}
 		    	}
+		    	// delete cases 
 		    	foreach ($itemsDeleteEdit as $field ) 
     	    	{ 
    		    		$fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
@@ -921,11 +872,12 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 		    				$whereDelete = $whereDelete." AND " .$key." = '".$fields."'";
    		    		}
     	    	} 
+    	    	// end delete cases 
 		    	
 	        }
 	        // end labels
-	        // delete cases 
-	       
+	        
+	        // delete cases 	       
 	        if($whereDelete != '')
 	        {
 	            genDataReport($tableName);
@@ -945,7 +897,10 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 	        // end delete cases
 	        foreach ($appData as $key => $value)
             {
-              $appData[$key] = utf8_decode($value);
+                if(!is_array($value))
+                    $appData[$key] = htmlspecialchars_decode($value);
+                else
+                    $appData[$key] = $value;
             } 
             $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
@@ -954,6 +909,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
             $appData['FLAG_EDIT'] = 1;
             $appData['STATUT'] = 1;
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
+            $appData['LOOP'] = 1;
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
             if($totalCases == 0)
             	$idCasesGenerate = "'".$caseUID."'";
@@ -964,34 +920,20 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
                 autoDerivate($proUid,$caseUID,$USR_UID);
                 $oCase = new Cases ();
                 $FieldsCase = $oCase->loadCase ( $caseUID );
-                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                
+                $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
+               
+                $FieldsCase['APP_DATA']['STATUT'] = 1;     
+                $FieldsCase['APP_DATA']['LOOP'] = '';  
                 $oCase->updateCase($caseUID,$FieldsCase);
             }
-            
-            $totalCases++;
-
         }
+        $totalCases++;
     }
-    genDataReport($tableName);
+    //genDataReport($tableName);
     
     # create file tmp
-    if($csv != '')
-    {
-        $sPathName = PATH_DOCUMENT . "csvTmp" ;
-        if (!is_dir($sPathName)) 
-       	    G::verifyPath($sPathName, true);
-        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
-           echo "Cannot open file";  
-           exit;  
-        }  
-        if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-           echo "Cannot write to file";  
-           exit;  
-        }  
-        fclose($handle);  
-    }
-    # end create file tmp
-    
+    createFileTmpCSV($csv,$csv_file);   
+    # end create file tmp 
     
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
@@ -1012,74 +954,8 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
+	$_dataForms =  dataDynaforms($resultDynaform,$proUid);	
 		
-	$_dataForms =  array();
-	foreach($resultDynaform As $rowDynaform)
-	{
-		$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
-			
-		foreach ($dynaform->fields as $fieldName => $field) {
-			if( $field->type == 'dropdown')
-			{
-				$aData = array();
-				$dataSQL = array();
-				$data = array();
-				if(strlen($field->sql))
-				{
-					$query = $field->sql;
-					$valueData = explode(",",$query);
-					$valueId = explode(" ",$valueData[0]);
-					$position = count($valueId)-1 ;
-					$valueId = $valueId[$position];
-					$valueDataCount = count($valueData);
-					$valueName = explode(" ",$valueData[$valueDataCount-1]);
-					for($i = 0; $i <count($valueName) ; $i++)
-					{
-						if($valueName[$i]=="from" || $valueName[$i]=="FROM")
-						{
-							$dataName = $valueName[$i-1];	
-						}
-					}
-					
-					$aData = executeQuery($field->sql);
-				}	
-				if(sizeof($aData))
-				{
-					foreach($aData As $key => $row)
-					{
-						$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
-						$dataSQL[] = $rowData;
-					}
-				}
-					
-				if(sizeof($field->option))
-				{
-					foreach($field->option As $key => $row)
-					{
-						$rowData = array ( 'id'=>$key,'descrip'=>$row);
-						$data[] = $rowData;
-					}
-				}
-					
-				$record = array (
-							"FIELD_NAME" => $field->name, 
-							"FIELD_LABEL" => $field->label,
-							"FIELD_TYPE" => $field->type,
-							"FIELD_DEFAULT_VALUE" => $field->defaultValue,
-							"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
-							"FIELD_OPTION" => $data,
-							"FIELD_READONLY" => $field->readonly,
-							"FIELD_SQL_CONNECTION" => $field->sqlConnection,
-							"FIELD_SQL" => $field->sql,
-							"FIELD_SQL_OPTION" => $dataSQL,
-							"FIELD_SELECTED_VALUE" => $field->selectedValue,
-							"FIELD_SAVE_LABEL" => $field->saveLabel
-						);
-				$_dataForms[] = $record;
-			}
-		}
-	}
-
     $select = executeQuery("SELECT MAX(IMPCSV_IDENTIFY) AS IDENTIFY FROM PMT_IMPORT_CSV_DATA WHERE IMPCSV_TABLE_NAME = '$tableName' ");
     $identify = isset($select[1]['IDENTIFY'])? $select[1]['IDENTIFY']:0;
     $identify = $identify + 1;
@@ -1189,7 +1065,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                             }
 
                             $record[$row['FIELD_NAME']] = $id;
-                            //$appData = array_merge($record, $appData);
                             $record[$row['FIELD_NAME'] . "_label"] = $label;
                             $appData = array_merge($record, $appData);
                         }
@@ -1212,7 +1087,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 
                                 $record = Array();
                                 $record[$row['FIELD_NAME']] = $id;
-                                //$appData = array_merge($record, $appData);
                                 $record[$row['FIELD_NAME'] . "_label"] = $label;
                                 $appData = array_merge($record, $appData);
                             }
@@ -1253,7 +1127,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                                 $label = $row['FIELD_SQL_OPTION'][0]['descrip'];
                             }
                             $record[$row['FIELD_NAME']] = $id;
-                            //$appData = array_merge($record, $appData);
                             $record[$row['FIELD_NAME'] . "_label"] = $label;
                             $appData = array_merge($record, $appData);
                         }
@@ -1279,7 +1152,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                                     $label = $row['FIELD_OPTION'][0]['descrip'];
                                 }
                                 $record[$row['FIELD_NAME']] = $id;
-                                //$appData = array_merge($record, $appData);
                                 $record[$row['FIELD_NAME'] . "_label"] = $label;
                                 $appData = array_merge($record, $appData);
                             }
@@ -1303,7 +1175,10 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
             // update cases
             foreach ($appData as $key => $value)
             {
-              $appData[$key] = utf8_decode($value);
+                if(!is_array($value))
+                    $appData[$key] = htmlspecialchars_decode($value);
+                else
+                    $appData[$key] = $value;
             } 
             $query = "SELECT APP_UID FROM $tableName WHERE $whereUpdate ";
             $updateData = executeQuery($query);
@@ -1318,17 +1193,12 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     $appData['EXEC_AUTO_DERIVATE'] = 'NO';
                     $appData['eligible'] = 0; // only process beneficiary
                     $appData['FLAG_EDIT'] = 1;
-                    //$appData['FLAG_UPDATE'] = 1;
                     $appData['STATUT'] = 1;
                     $appData['CurrentUserAutoDerivate'] = $USR_UID;
                     $appData = array_merge($FieldsCase['APP_DATA'], $appData);
                     $FieldsCase['APP_DATA'] = $appData;
                     $oCase->updateCase($index['APP_UID'], $FieldsCase);
-                    executeTriggers($proUid, $index['APP_UID'], $USR_UID);
-                    $oCase = new Cases ();
-                    $FieldsCase = $oCase->loadCase($index['APP_UID']);
-//                    $FieldsCase['APP_DATA']['STATUT'] = 1;
-                    $oCase->updateCase($index['APP_UID'], $FieldsCase);
+                    
                 }
             }
             else
@@ -1340,45 +1210,76 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 $appData['STATUT'] = 1;
                 $appData['FLAG_EDIT'] = 1;
                 $appData['CurrentUserAutoDerivate'] = $USR_UID;
+                $appData['LOOP'] = 1;
                 $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);
                 if ($caseUID > 0)
                 {
                     autoDerivate($proUid, $caseUID, $USR_UID);
                     $oCase = new Cases ();
                     $FieldsCase = $oCase->loadCase($caseUID);
-                    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                    
+                    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                   
+                    $FieldsCase['APP_DATA']['STATUT'] = 1;    
+                    $FieldsCase['APP_DATA']['LOOP'] = '';     
                     $oCase->updateCase($caseUID, $FieldsCase);
+                    autoDerivate($proUid, $caseUID, $USR_UID);
                 }
             }
-
-            $totalCases++;
         }
+        $totalCases++;
     }
 
     genDataReport($tableName);
     
     # create file tmp
-    if($csv != '')
-    {
-        $sPathName = PATH_DOCUMENT . "csvTmp" ;
-        if (!is_dir($sPathName)) 
-       	    G::verifyPath($sPathName, true);
-        if (!$handle = fopen($sPathName."/".$csv_file, "w")) {  
-           echo "Cannot open file";  
-           exit;  
-        }  
-        if (fwrite($handle, utf8_decode($csv)) === FALSE) {  
-           echo "Cannot write to file";  
-           exit;  
-        }  
-        fclose($handle);  
-    }
+    createFileTmpCSV($csv,$csv_file);   
     # end create file tmp
-    
     
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
 }
+
+function DeleteDir($dir){
+  
+    if(file_exists($dir)) 
+    { 
+        foreach(glob($dir."/*") as $files_dire)
+        {
+            
+            if(is_dir($files_dire)) DeleteDir($files_dire);
+            else unlink($files_dire);
+        }
+        rmdir($dir); 
+	} 
+}
+
+
+function importCreateCaseTruncate($jsonMatchFields,$uidTask, $tableName,$firstLineHeader)
+{
+   // delete cases 
+	genDataReport($tableName);
+	$query = "SELECT APP_UID FROM $tableName "; 
+	$deleteData = executeQuery($query);
+	if(sizeof($deleteData))
+	{
+	    foreach($deleteData as $index)
+	    {	
+	        $CurDateTime=date('Y-m-d H:i:s');
+	        //insertHistoryLogPlugin($index['APP_UID'],$_SESSION['USER_LOGGED'],$CurDateTime,'1',$index['APP_UID'],'Delete Case');
+	        deletePMCases($index['APP_UID']); 
+	       
+	        $dir = PATH_DOCUMENT . $index['APP_UID']; 
+	        DeleteDir($dir);
+		   
+	    }
+	}
+	genDataReport($tableName);
+	// end delete cases 
+	$typeAction = 'ADD_TRUNCATE';
+	$totalCases = importCreateCase($jsonMatchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
+    
+    return $totalCases;
+}
+
 
 function saveFieldsCSV($idInbox, $fieldsImport,$firstLineHeader) {
 	$items = json_decode($fieldsImport,true);
@@ -1387,7 +1288,7 @@ function saveFieldsCSV($idInbox, $fieldsImport,$firstLineHeader) {
 	executeQuery($sSQL);
 
 	foreach ($items as $row) {
-		
+		$requireColumn = isset($row['REQUIRED_COLUMN']) ? $row['REQUIRED_COLUMN'] : '';
 		$sSQL = "INSERT INTO PMT_CONFIG_CSV_IMPORT (CSV_FIELD_NAME, CSV_COLUMN, CSV_FIRST_LINE_HEADER, ROL_CODE, ID_INBOX, CSV_TYPE, CSV_PIVOT_EDIT, CSV_REQUIRED) VALUES(
 			'".$row['CSV_FIELD_NAME']."',
 			'".mysql_real_escape_string($row['CSV_COLUMN'])."',
@@ -1396,7 +1297,7 @@ function saveFieldsCSV($idInbox, $fieldsImport,$firstLineHeader) {
 			'" . $idInbox . "',
             '" . $row['TYPE_COLUMN'] . "',
             '" . $row['CSV_PIVOT_EDIT'] . "',
-            '" . $row['REQUIRED_COLUMN'] . "')";
+            '" . $requireColumn . "')";
 
         executeQuery($sSQL);
 	}
@@ -1458,7 +1359,8 @@ try {
                 $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
                 $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
                 $firstLineHeader = isset($_REQUEST["firstLineHeader"]) ? $_REQUEST["firstLineHeader"] : 'on';
-                $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader);
+                $typeAction = 'ADD';
+                $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
                 echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
                 break;
             case "deleteAdd": 
@@ -1477,6 +1379,14 @@ try {
                 $dataEdit  = isset($_REQUEST["dataEditDelete"])?$_REQUEST["dataEditDelete"]:'';
                 $firstLineHeader   = isset($_REQUEST["firstLineHeader"])?$_REQUEST["firstLineHeader"]:'on';
                 $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataEdit);
+                echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+                break;
+          case "truncateAdd": 
+                $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
+                $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
+                $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
+                $firstLineHeader   = isset($_REQUEST["firstLineHeader"])?$_REQUEST["firstLineHeader"]:'on';
+                $totalCases = importCreateCaseTruncate($matchFields,$uidTask,$tableName,$firstLineHeader);
                 echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
                 break;
             }

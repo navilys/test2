@@ -10,8 +10,7 @@ $USR_UID = isset($_GET['USR_UID'])?$_GET['USR_UID']:null;
 $ACTIONTYPE = isset($_GET['ACTIONTYPE'])?$_GET['ACTIONTYPE']:null;
 $ADAPTIVEHEIGHT = isset($_GET['adaptiveHeight'])?$_GET['adaptiveHeight']:null;
 $NUM_DOSSIER = isset($_GET['num_dossier'])?$_GET['num_dossier']:null;
-$TABLE = isset($_GET['table'])?$_GET['table']:null;
-  
+$TABLE = isset($_GET['table'])?$_GET['table']:null;  
 
 if($actionAjax=="HistoryLog"){    
     global $G_PUBLISH;        
@@ -235,8 +234,6 @@ if($actionAjax== 'historyDynaformGridPreview')
 ?>
       <script language="Javascript">
       
-      
-      
         //!Code that simulated reload library javascript maborak
         var leimnud = {};        
         leimnud.exec = "";
@@ -248,16 +245,7 @@ if($actionAjax== 'historyDynaformGridPreview')
         leimnud.iphone.make = function(){};      
         function ajax_function(ajax_server, funcion, parameters, method){          
         }
-        /* <?php
-            if(isset($_REQUEST['ACTIONSAVE']) && $_REQUEST['ACTIONSAVE'] == 1)
-            {        
-        ?>
-            alert('Vos changements ont \u00E9t\u00E9 enregistr\u00E9s avec succ\u00E9s');
-        <?php
-            $_REQUEST['SAVEDATA'] = 0;
-            }
-        ?>*/
-        //!
+       
       </script>
 <?php
     
@@ -266,25 +254,100 @@ if($actionAjax== 'historyDynaformGridPreview')
       
       G::LoadClass('case');
       global $G_PUBLISH;
-	    global $_DBArray;
+	  global $_DBArray;
       $G_PUBLISH = new Publisher();
       $oCase = new Cases();
-      # Get APP_NUMBER initial case
+      //G::pr($_COOKIE);
+      if(isset($_REQUEST['ACTIONSAVE']) && $_REQUEST['ACTIONSAVE'] == 1 && !isset($_COOKIE['fe_typo_user']))
+      { 
+         echo "<script language=Javascript>alert('Vos changements ont \u00E9t\u00E9 enregistr\u00E9s avec succ\u00E9s');</script>";
+         $_REQUEST['SAVEDATA'] = 0;
+      }
+      if(isset($_REQUEST['ACTIONSAVE']) && $_REQUEST['ACTIONSAVE'] == 1)
+      { 
+        echo "<script language='javascript'>  var TabPanel = parent.parent.Ext.getCmp('iframe-DynaForms'); console.log(TabPanel); TabPanel.doAutoLoad();</script>";
+      }          
+      
 	  if(isset($_SESSION['APPLICATION_EDIT']) && $_SESSION['APPLICATION_EDIT'] != '')
   			$APP_UID = $_SESSION['APPLICATION_EDIT'];  	
   	  else 
   	  	 	$_SESSION['PROCESS'] = $PRO_UID;
-       #End get APP_NUMBER initial case
+     
       $Fields = $oCase->loadCase($APP_UID);
-      //$Fields["APP_DATA"] = array_merge( $Fields["APP_DATA"], G::getSystemConstants() );
+      $userLoggedIni = '';
+      if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
+      {     
+            $Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
+            if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
+            {
+                $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
+                $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+            }
+            $oCase->updateCase($APP_UID, $Fields);
+            # execute Triggers task Ini
+		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	        $startTasks = executeQuery($query);
+	        foreach($startTasks as $rowTask){
+		        $taskId = $rowTask['TAS_UID'];
+		        $stepsByTask = getStepsByTask($taskId);
+	            foreach ($stepsByTask as $caseStep){
+				    $caseStepRes[] = 	 $caseStep->getStepUidObj();
+			    }
+			    break;
+	        }
+	        
+			$totStep = 0;
+			foreach($caseStepRes as $index)
+			{
+				$stepUid = $index;
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+				$totStep++;
+			} 
+			# end execute Triggers task Ini
+	  }
+	  else if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
+	  {
+	        $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
+	        $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+            $oCase->updateCase($APP_UID, $Fields);
+            # execute Triggers task Ini
+		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	        $startTasks = executeQuery($query);
+	        foreach($startTasks as $rowTask){
+		        $taskId = $rowTask['TAS_UID'];
+		        $stepsByTask = getStepsByTask($taskId);
+	            foreach ($stepsByTask as $caseStep){
+				    $caseStepRes[] = $caseStep->getStepUidObj();
+			    }
+			    break;
+	        }
+	        
+			$totStep = 0;
+			foreach($caseStepRes as $index)
+			{
+				$stepUid = $index;
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+				$totStep++;
+			} 
+			# end execute Triggers task Ini 
+	  }
+      if($userLoggedIni != '')
+      {
+            $Fields = $oCase->loadCase($APP_UID);
+            $Fields['APP_DATA']['USER_LOGGED'] = $userLoggedIni;
+            $oCase->updateCase($APP_UID, $Fields);
+      }
+      $Fields = $oCase->loadCase($APP_UID);
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['PREVIOUS_STEP_LABEL'] = '';
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['NEXT_STEP_LABEL'] = ''; 
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['NEXT_STEP'] = '#';
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['NEXT_ACTION'] = 'return false;';      
       $Fields['APP_DATA']['external'] = 1;
-      $Fields['APP_DATA']['RequestAux'] = isset($Fields['APP_DATA']['RequestNumber'])?$Fields['APP_DATA']['RequestNumber']:'';
-      //G::pr($Fields);
-      //G::pr($_POST['DYN_UID']);
+      $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+      		
+      $Fields['APP_DATA']['RequestAux'] = isset($Fields['APP_DATA']['RequestNumber'])? $Fields['APP_DATA']['RequestNumber']:'';
       
       $_SESSION['DYN_UID_PRINT'] = $_POST['DYN_UID'];
       $postInfo = '';
@@ -295,7 +358,7 @@ if($actionAjax== 'historyDynaformGridPreview')
       {
         $postInfo = 'saveDynaformLog.php?APP_UID='.$APP_UID.'&CURRENTDATETIME='.$CURRENTDATETIME.'&DYN_UID='.$_POST['DYN_UID'].'&PROCESS='.$PRO_UID;
        
-        $query = "SELECT * FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID != '".$_SESSION['USER_LOGGED']."'  ";
+        $query = "SELECT APP_UID FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID != '".$_SESSION['USER_LOGGED']."'  ";
 	    $dataUsrCase = executeQuery($query);
         if(sizeof($dataUsrCase) > 0)
 	    {
@@ -335,7 +398,7 @@ if($actionAjax== 'historyDynaformGridPreview')
 			}
 		}
 		
-// end load dynaforms process 
+    // end load dynaforms process 
       $G_PUBLISH->AddContent('dynaform', 'xmlform', $PRO_UID . '/' . $_POST['DYN_UID'], '', $Fields['APP_DATA'], $postInfo,'', $ACTIONTYPE);
       G::RenderPage('publish', 'blank');
       

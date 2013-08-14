@@ -12,7 +12,7 @@ G::loadClass ( 'pmFunctions' );
 $idTable = isset($_GET ['idTable'])? $_GET ['idTable']:'';
 $idInbox = isset($_GET ['idInbox'])? $_GET ['idInbox']:'';
 $start 	 = isset ( $_POST ['start'] ) ? $_POST ['start'] : 0; 
-$limit = isset($_POST ['limit']) ? $_POST ['limit'] : 800;
+$limit = isset($_POST ['limit']) ? $_POST ['limit'] : 100;
 
 
 $sJoins 	= '';
@@ -64,7 +64,7 @@ try {
 	
 	##### new config users
 	
-	$sQuery = "SELECT * FROM PMT_INBOX_WHERE_USER WHERE ROL_CODE = '$sRol' AND INBOX_ID = '$idInbox' ";
+	$sQuery = "SELECT IWHERE_USR_QUERY,INBOX_ID_TABLE,INBOX_FIELD_NAME,IWHERE_USR_OPERATOR FROM PMT_INBOX_WHERE_USER WHERE ROL_CODE = '$sRol' AND INBOX_ID = '$idInbox' ";
 	$sData = executeQuery($sQuery);
 	if(sizeof($sData))
 	{	$sDataConfig = '';
@@ -241,11 +241,11 @@ try {
 	##### Query and Result
 	if($fieldSelectQuery != '')
 	{
-		$sSQL = "SELECT $fieldSelectQuery, $dataSelected FROM  $idTable $sJoins $sWhere $sOrderBy"; 
+		$sSQL = "SELECT $fieldSelectQuery, $dataSelected FROM  $idTable $sJoins $sWhere $sOrderBy "; 
 	}
 	else 
 	{
-		$sSQL = "SELECT $dataSelected  FROM  $idTable $sJoins $sWhere $sOrderBy";	
+		$sSQL = "SELECT $dataSelected  FROM  $idTable $sJoins $sWhere $sOrderBy ";	
 	}
 	
 	$aData = executeQuery($sSQL);

@@ -14,11 +14,11 @@ function FpostNote($appUid,$noteText)
 
     $result = $appNotes->postNewNote($appUid, $usrUid, $noteContent, false);
   //  insertHistoryLogPlugin($APP_UID,$USR_UID,$CURRENTDATETIME,$VERSION,$NEWAPP_UID,$ACTION,$STATUT="")
-    $sql = 'SELECT HLOG_STATUS FROM PMT_HISTORY_LOG WHERE HLOG_DATECREATED = (SELECT MAX(HLOG_DATECREATED) AS DCREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID = "'. $APP_UID ."' OR HLOG_CHILD_APP_UID = '". $APP_UID ."')";
+    $sql = "SELECT HLOG_STATUS FROM PMT_HISTORY_LOG WHERE HLOG_DATECREATED = (SELECT MAX(HLOG_DATECREATED) AS DCREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID = '$appUid' OR HLOG_CHILD_APP_UID = '$appUid' )";
     $res = executeQuery($sql);
-
+    $hlogStatus = isset($res[1]['HLOG_STATUS']) ? $res[1]['HLOG_STATUS'] : '';
     $CURRENTDATETIME=date('Y-m-d H:i:s');
-    insertHistoryLogPlugin($appUid,$usrUid,$CURRENTDATETIME,'0','','Ajout d\'un commentaire',$res[1]['HLOG_STATUS']);
+    insertHistoryLogPlugin($appUid,$usrUid,$CURRENTDATETIME,'0','','Ajout d&#39;un commentaire',$hlogStatus);
 
 }
 $APP_UID = $_REQUEST['APP_UID'];

@@ -1809,6 +1809,7 @@ function importCSV (_uidTask){
       var _isCheckedAdd           = 'on';
       var _isCheckedDeleteAdd     = 'off';
       var _isCheckedEditAdd       = 'off';
+      var _isCheckedTruncateAdd   = 'off';
       var _isCheckedOption        = 'add';
       var _SELECT_OPTION          = 'Select...' ;  
 
@@ -1816,6 +1817,7 @@ function importCSV (_uidTask){
     var _USE_ADD = 'Importer et ajouter';
     var _USE_DELETE_ADD = 'Supprimer puis importer';
     var _USE_EDIT_ADD = 'Importer et mettre à jour';
+    var _USE_TRUNCATE_ADD = 'Truncate puis importer';
     var _WINTITLE_MATCHDATA = 'Configurer le mapping Nom du champ - Colonne CSV';
     var _IMPORT_CREATE_CASES = 'Importer et créer';
     var _UPOLADING_FILE = 'chargement du fichier...';
@@ -1836,10 +1838,10 @@ function importCSV (_uidTask){
     var _RESET_SAVED_OK = "Mapping réinitialisé";
     var _DELETE_EDIT_FIELD = "Supprimer le champs";
     var _REQUIRED_COLUMN = "Champ requis";
-      var hiddenDeleteEdit       = true;
-      var _dblIdInbox = myApp.getIdInbox();
-      var winMatchData;
-      var waitLoading = {};
+    var hiddenDeleteEdit       = true;
+    var _dblIdInbox = myApp.getIdInbox();
+    var winMatchData;
+    var waitLoading = {};
       waitLoading.show = function() {
         var mask = Ext.getBody().mask(_("ID_SAVING"), 'x-mask-loading', false);
         mask.setStyle('z-index', Ext.WindowMgr.zseed + 1000);
@@ -1848,7 +1850,7 @@ function importCSV (_uidTask){
         Ext.getBody().unmask();
       };
       
-var radiosGroup = new Ext.form.RadioGroup({   
+    var radiosGroup = new Ext.form.RadioGroup({   
         
        columns: 1, //display the radiobuttons in two columns   
        items: [   
@@ -1874,10 +1876,9 @@ var radiosGroup = new Ext.form.RadioGroup({
                 _isCheckedOption    = 'deleteAdd';
                 _DELETE_EDIT_FIELD  = "Delete Field";
                 hiddenDeleteEdit    = false;
-                   //console.log(_isCheckedOption);
                  }
               }
-         },   
+            },   
             { 
              boxLabel: _USE_EDIT_ADD,
              name: 'radioGroupOption',
@@ -1888,10 +1889,21 @@ var radiosGroup = new Ext.form.RadioGroup({
                    _isCheckedOption    = 'editAdd';
                     _DELETE_EDIT_FIELD = "Clé logique pour modifier";
                    hiddenDeleteEdit    = false;
-                   //console.log(_isCheckedOption);
                  }
              }
-         }  
+            },
+            { 
+             boxLabel: _USE_TRUNCATE_ADD,
+             name: 'radioGroupOption',
+             checked: false,
+             id: 'truncateAdd',
+             listeners: {
+                 'change' : function(){
+                   _isCheckedOption    = 'truncateAdd';
+                   hiddenDeleteEdit    = true;
+                 }
+             }
+            }  
               
        ],
        listeners: {
@@ -1901,16 +1913,20 @@ var radiosGroup = new Ext.form.RadioGroup({
                     if(_isCheckedOption == 'deleteAdd')
                     {
                         _DELETE_EDIT_FIELD  = "Delete Field";
-               hiddenDeleteEdit    = false;
+                        hiddenDeleteEdit    = false;
                     }
                     if(_isCheckedOption == 'editAdd')
                     {
-                    _DELETE_EDIT_FIELD = "Clé logique pour modifier";
-               hiddenDeleteEdit    = false;
+                        _DELETE_EDIT_FIELD = "Clé logique pour modifier";
+                        hiddenDeleteEdit    = false;
                     }
                     if(_isCheckedOption == 'add')
                     {
-               hiddenDeleteEdit    = true;
+                        hiddenDeleteEdit    = true;
+                    }
+                    if(_isCheckedOption == 'truncateAdd')
+                    {
+                        hiddenDeleteEdit    = true;
                     }
                     console.log(_isCheckedOption);
                 }
@@ -1957,8 +1973,8 @@ var radiosGroup = new Ext.form.RadioGroup({
               name: 'chkFirstRow',
               checked: false,
               listeners: {
-                  change: function(checkbox, checked){
-                    _isCheckedFirstLineAs = (checked)?'on':'off';
+                  'check': function(checkbox, checked) {
+                    _isCheckedFirstLineAs = (checked)?'on':'off'; 
                     Ext.getCmp('hdnCheckedFirstRow').setValue(_isCheckedFirstLineAs);
                   }
               }
@@ -2217,7 +2233,7 @@ var radiosGroup = new Ext.form.RadioGroup({
                                     }
                                     //console.log(_isCheckedOption);
                                     
-                                    if(_isCheckedOption == 'add' || (_isCheckedOption != 'add' && _jsonFieldsDeleteEdit != '' ) )
+                                    if(_isCheckedOption == 'add' || (_isCheckedOption != 'add' && _jsonFieldsDeleteEdit != '' ) || _isCheckedOption == 'truncateAdd' )
                                     {
                                         waitLoading.show();
                                         Ext.Ajax.request({

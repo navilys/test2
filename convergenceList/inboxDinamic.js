@@ -114,51 +114,6 @@ Ext.onReady(function()
 	}	
 	    // End Dynamic Assignation
    
-	var optionMenuFile = new Ext.Action({
-		text: 'PHP File',
-		iconCls: 'x-tree-node-icon ss_application_form',
-			    
-		menu: [
-		       {
-	                text: 'Redirect',
-	                handler: function() {
-	            		var requestFile = 'inboxDinamic.php?idInbox=' + idInbox; 
-						redirect(requestFile);
-			        }
-	            }, {
-	                text: 'Pop up',
-	                handler: function() {
-						dataGridreview();
-			        }
-	            }
-	        ] 
-	});
-		
-		
-
-	var optionMenuSend = new Ext.Action({
-		text:'Send Array ',
-		iconCls: 'ICON_CASES_NOTES',
-		handler: function() {
-			dataGridreview();
-		}
-	});
-
-	var optionMenuPopup = new Ext.Action({
-		text: 'PopUp Action',
-		iconCls: 'ICON_CASES_PAUSED',
-		handler:function (){
-		var idField = '';
-			printData(idField);
-		}
-	});
-		 
-	var optionMenuOutput = new Ext.Action({
-		text: 'Output Document',
-		iconCls: 'ICON_CASES_TO_REASSIGN',
-		handler:  caseOutputDocuments
-	});
-		 
 	var UserCombo = new Ext.data.JsonStore({
 		url : 'ajaxFiltersProcess.php?Type=UserCombo',
 		root : 'data',
@@ -244,20 +199,6 @@ Ext.onReady(function()
 	}
 
  
-		   
-	var optionMenuSummary = new Ext.Action({
-		text: _('ID_SUMMARY'),
-		iconCls: 'x-tree-node-icon ss_application_form',
-		handler: caseSummary,
-		ref: "optionMenuSummary"
-	});
-
-	var optionMenuNotes = new Ext.Action({
-		text: _('ID_CASES_NOTES'),
-		iconCls: 'ICON_CASES_NOTES',
-		handler: caseNotes
-	});
-		
 	var storeGenericFileds = new Ext.data.JsonStore({
 		url : 'ajaxFiltersProcess.php?Type=UserCombo',
 		root : 'data',
@@ -375,41 +316,6 @@ Ext.onReady(function()
 	  };
 	///////// End Section Filters
 
-	function caseSummary () {
-		var rowModel = gridInboxDinamic.getSelectionModel().getSelected();
-		if (rowModel) {
-			openSummaryWindow(rowModel.data.APP_UID, rowModel.data.DEL_INDEX, action);
-		}
-		else {
-			msgBox(_('ID_INFORMATION'), _('ID_SELECT_ONE_AT_LEAST'));
-		}
-	};
-			  	
-	function caseOutputDocuments () {
-
-		var rowModel = gridInboxDinamic.getSelectionModel().getSelected();
-		if (rowModel) {
-			openOutputsDocuments(rowModel.data.APP_UID, rowModel.data.DEL_INDEX, action);
-				  		
-		}
-		else {
-			msgBox(_('ID_INFORMATION'), _('ID_SELECT_ONE_AT_LEAST'));
-		}
-	};
-			  		
-	
-	function caseNotes(){
-		var rowModel = gridInboxDinamic.getSelectionModel().getSelected();
-		if(rowModel){
-			var appUid   = rowModel.data.APP_UID;
-			var delIndex = rowModel.data.DEL_INDEX;
-			var caseTitle = (rowModel.data.APP_TITLE) ? rowModel.data.APP_TITLE : rowModel.data.APP_UID;
-			openCaseNotesWindow(appUid,true);
-		}else{
-			msgBox(_('ID_INFORMATION'), _('ID_SELECT_ONE_AT_LEAST') );
-		}
-	}
-
 	myApp.addTab_inside = function()
 	{	
 		var miArray = new Array(); 
@@ -512,7 +418,7 @@ Ext.onReady(function()
 		      text: _('ID_ACTIONS'),
 		      menu: menuItems
 		}		
-	}		
+	}
 	
 	
 	contextMenuItems = new Array();

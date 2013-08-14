@@ -50,7 +50,8 @@ class archivedCasesClassCron
 		        		);
 		        	$dataImportCSV[] = $record;
 		        }
-		        
+		        $USR_UID = '00000000000000000000000000000001';
+		        $_SESSION['USER_LOGGED'] = $USR_UID;
 		        $actionType = $row['IMPCSV_TYPE_ACTION'];
 		        $matchFields = $dataImportCSV;
 		        $uidTask     = isset($row["IMPCSV_TAS_UID"])? $row["IMPCSV_TAS_UID"]:'';
@@ -58,36 +59,42 @@ class archivedCasesClassCron
 		        $csvIdentify   = isset($row["IMPCSV_IDENTIFY"])? $row["IMPCSV_IDENTIFY"]:'';
 		        $firstLineHeader   = isset($row["IMPCSV_FIRSTLINEHEADER"])? $row["IMPCSV_FIRSTLINEHEADER"]:'on';
 		        $fileCSV     = $tableName.'_'.$row['IMPCSV_IDENTIFY'];
-		        $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV);
+		        $queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
+		        $totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
+		        $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV, $totCasesCSV);
 		        $dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
 		        	
 		        switch ($actionType) 
 		    	{
 		    		case "ADD": 
-		    		$totalCases = $this->importCreateCaseCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV);
+		    		$totalCases = $this->importCreateCaseCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV,$csvIdentify,$totCasesCSV);
 		    		$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
 		    		$this->deleteFileCSV($fileCSV);
 		    		break;
 		    	
 		    	    case "ADD_DELETE": 
-		    		$totalCases = $this->importCreateCaseDeleteCSV($matchFields,$uidTask,$tableName,$firstLineHeader, $informationCSV,$dataDeleteEdit);
+		    		$totalCases = $this->importCreateCaseDeleteCSV($matchFields,$uidTask,$tableName,$firstLineHeader, $informationCSV,$dataDeleteEdit,$csvIdentify,$totCasesCSV);
 		    		$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
 		    		$this->deleteFileCSV($fileCSV);
 		    		break;
-		    	    case "ADD_UPDATE": 
 		    		
-		    		$totalCases = $this->importCreateCaseEditCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit);
+		    	    case "ADD_UPDATE": 		    		
+		    		$totalCases = $this->importCreateCaseEditCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit,$csvIdentify,$totCasesCSV);
+		    		$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
+		    		$this->deleteFileCSV($fileCSV);
+		    		break;
+		    		
+		    		case "ADD_TRUNCATE": 		    		
+		    		$totalCases = $this->importCreateCaseCSV($matchFields,$uidTask,$tableName,$firstLineHeader,$informationCSV,$csvIdentify,$totCasesCSV);
 		    		$delete = executeQuery("DELETE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ");
 		    		$this->deleteFileCSV($fileCSV);
 		    		break;
 		    	}   
 		    }
 		}
-		
-		
 	}
 	
-	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV)
+	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $queryTot)
 	{
 	    set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
 		if (!$handle = fopen(PATH_DOCUMENT . "csvTmp/".$fileCSV.".csv", "r")) {  
@@ -96,16 +103,19 @@ class archivedCasesClassCron
 		} 
 		$csvData = array(); 
 		$csvDataIni = array();
-		while ($data = fgetcsv($handle, 4096, ";")) {
+		$i = 0;
+		while ($data = fgetcsv($handle, 4096, ";")) 
+		{
 		    $num = count ($data);
-		    $i = 0; 
-		    foreach($data as $row) {
-	
-		        $csvDataIni[]= $row;
-	
-		    }
-		    $csvData[] = $csvDataIni;
+		    foreach($data as $row) 
+		    {
+	            if($queryTot <= $i)
+		            $csvDataIni[]= $row;
+	        }
+	        if($queryTot <= $i)
+		        $csvData[] = $csvDataIni;
 		    $csvDataIni = '';
+		    $i++;
 		}
 		
 		return $csvData;
@@ -122,11 +132,82 @@ class archivedCasesClassCron
 		else 
 		    print "The file is not present. "; 
 	}
+	function dataDynaforms($resultDynaform,$proUid)
+    {
+        $_dataForms =  array();
+        foreach($resultDynaform As $rowDynaform)
+    	{
+    		$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
+    			
+    		foreach ($dynaform->fields as $fieldName => $field) 
+    		{
+    			if( $field->type == 'dropdown')
+    			{
+    				$aData = array();
+    				$dataSQL = array();
+    				$data = array();
+    				if(strlen($field->sql))
+    				{
+    					$query = $field->sql;
+    					$valueData = explode(",",$query);
+    					$valueId = explode(" ",$valueData[0]);
+    					$position = count($valueId)-1 ;
+    					$valueId = $valueId[$position];
+    					$valueDataCount = count($valueData);
+    					$valueName = explode(" ",$valueData[$valueDataCount-1]);
+    					for($i = 0; $i <count($valueName) ; $i++)
+    					{
+    						if($valueName[$i]=="from" || $valueName[$i]=="FROM")
+    						{
+    							$dataName = $valueName[$i-1];	
+    							break;
+    						}
+    					}
+    					
+    					$aData = executeQuery($field->sql);
+    				}	
+    				if(sizeof($aData))
+    				{
+    					foreach($aData As $key => $row)
+    					{
+    						$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
+    						$dataSQL[] = $rowData;
+    					}
+    				}
+    					
+    				if(sizeof($field->option))
+    				{
+    					foreach($field->option As $key => $row)
+    					{
+    						$rowData = array ( 'id'=>$key,'descrip'=>$row);
+    						$data[] = $rowData;
+    					}
+    				}
+    					
+    				$record = array (
+    						"FIELD_NAME" => $field->name, 
+    						"FIELD_LABEL" => $field->label,
+    						"FIELD_TYPE" => $field->type,
+    						"FIELD_DEFAULT_VALUE" => $field->defaultValue,
+    						"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
+    						"FIELD_OPTION" => $data,
+    						"FIELD_READONLY" => $field->readonly,
+    						"FIELD_SQL_CONNECTION" => $field->sqlConnection,
+    						"FIELD_SQL" => $field->sql,
+    						"FIELD_SQL_OPTION" => $dataSQL,
+    						"FIELD_SELECTED_VALUE" => $field->selectedValue,
+    						"FIELD_SAVE_LABEL" => $field->saveLabel
+    						);
+    				$_dataForms[] = $record;
+    			}
+    		}
+    	}
+    	return $_dataForms;
+    }
 		
-	 function importCreateCaseCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV)
-	 {
-	       
-        G::LoadClass('case');
+	function importCreateCaseCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV,$csvIdentify,$totCasesCSV)
+	{
+	    G::LoadClass('case');
 		$items   =$jsonMatchFields; 
 		$dataCSV = isset($informationCSV) ? $informationCSV: array();
 		$USR_UID = '00000000000000000000000000000001';
@@ -138,82 +219,519 @@ class archivedCasesClassCron
 		{
 		    $proUid =$aResult[1]['PRO_UID'];
 		} 
-		$totalCases = 0;
+		$totalCases = $totCasesCSV;
 	    
 		// load Dynaforms of process
 		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 		$resultDynaform = executeQuery($select);
-		
-		$_dataForms =  array();
-		foreach($resultDynaform As $rowDynaform)
-		{
-			$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
+		$_dataForms =  $this->dataDynaforms($resultDynaform,$proUid);
+		// end load Dynaforms of process
 			
-			foreach ($dynaform->fields as $fieldName => $field) 
+		foreach ($dataCSV as $row) 
+		{   
+		    $appData =  array();
+			foreach ($items as $field) 
+			{ 
+			    if($firstLineHeader == 'on'){
+				
+				    if(isset($row[$field['COLUMN_CSV']]))
+				    {
+				        if($row[$field['COLUMN_CSV']])
+					        $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+				        else
+					        $appData[$field['FIELD_NAME']] = ' ';
+				    }
+				    else
+				    {
+				        if($field['COLUMN_CSV'])
+					        $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+				        else
+					        $appData[$field['FIELD_NAME']] = ' ';
+				    } 
+			    }
+			    else
+			    {
+				    $aCol = explode(' ', trim($field['COLUMN_CSV']));
+                  
+                    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
+                    {   
+                        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+                    }
+                    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
+                        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+                    }       
+			    }
+			}  		
+		    
+			foreach($appData As $key => $fields)
 			{
-				if( $field->type == 'dropdown')
+				foreach ($_dataForms As $row)
 				{
-					$aData = array();
-					$dataSQL = array();
-					$data = array();
-					if(strlen($field->sql))
+					if($row['FIELD_DEFAULT_VALUE'] == '')
+						$row['FIELD_DEFAULT_VALUE'] = 0;
+					
+					if($key == $row['FIELD_NAME'])
 					{
-						$query = $field->sql;
-						$valueData = explode(",",$query); 
-						$valueId = explode(" ",$valueData[0]);
-						$position = count($valueId)-1 ;
-						$valueId = $valueId[$position];
-						$valueDataCount = count($valueData);
-						$valueName = explode(" ",$valueData[$valueDataCount-1]);
-						for($i = 0; $i <count($valueName) ; $i++)
+						$i = isset($fields)? $fields:$row['FIELD_DEFAULT_VALUE'];
+						
+						if(count($row['FIELD_SQL_OPTION']))
 						{
-							if($valueName[$i]=="from" || $valueName[$i]=="FROM")
+							$options = $row['FIELD_SQL_OPTION'];
+							$id = "";
+							$label = "";
+							foreach($options As $row2)
 							{
-								$dataName = $valueName[$i-1];
-								break;		
+								if($row2['id'] == $i)
+								{
+									$id = $row2['id'];
+									$label = $row2['descrip'];
+									break;
+								}
+							}
+							
+							if($id=="" && $label=="")
+							{
+								$id = $row['FIELD_SQL_OPTION'][0]['id'];
+								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+							}
+							
+							$record[$row['FIELD_NAME']] = $id;
+							$record[$row['FIELD_NAME']."_label"] = $label;
+							$appData = array_merge($record,$appData);
+						}
+						else
+						{
+							if(count($row['FIELD_OPTION']))
+							{
+								$options = $row['FIELD_OPTION'];
+								$id = "";
+								$label = "";
+								foreach($options As $row2)
+								{
+									if($row2['id'] == $i)
+									{
+										$id = $row2['id'];
+										$label = $row2['descrip'];
+										break;
+									}
+								}
+								
+								$record = Array();
+								
+								$record[$row['FIELD_NAME']] = $id;
+                               $record[$row['FIELD_NAME']."_label"] = $label;
+								$appData = array_merge($record,$appData);
+								
 							}
 						}
+					}
+				}	
+			}
+		       
+		 
+			foreach($appData As $key => $fields)
+			{
+				foreach ($_dataForms As $row)
+				{
+					if($row['FIELD_DEFAULT_VALUE'] == '')
+						$row['FIELD_DEFAULT_VALUE'] = 0;
 						
-						$aData = executeQuery($field->sql);
-						
-					}	
-					if(sizeof($aData))
+					$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])? $appData[$row['FIELD_NAME']."_label"]:'';
+					
+					if($appData[$row['FIELD_NAME']."_label"] =="")
 					{
-						foreach($aData As $key => $row)
+						$i = $row['FIELD_DEFAULT_VALUE'];	
+						if(count($row['FIELD_SQL_OPTION']))
 						{
-							$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
-							$dataSQL[] = $rowData;
+							
+							$options = $row['FIELD_SQL_OPTION'];
+							$id = "";
+							$label = "";
+							foreach($options As $row2)
+							{
+								if($row2['id'] == $i)
+								{
+									$id = $row2['id'];
+									$label = $row2['descrip'];
+									break;
+								}
+							}
+							
+							if($id=="" && $label=="")
+							{
+								$id = $row['FIELD_SQL_OPTION'][0]['id'];
+								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+							}
+							
+							$record[$row['FIELD_NAME']] = $id;
+                            $record[$row['FIELD_NAME']."_label"] = $label;
+							$appData = array_merge($record,$appData);
+							
+						}
+						else
+						{
+							if(count($row['FIELD_OPTION']))
+							{
+								$options = $row['FIELD_OPTION'];
+								$id = "";
+								$label = "";
+								foreach($options As $row2)
+								{
+									if($row2['id'] == $i)
+									{
+										$id = $row2['id'];
+										$label = $row2['descrip'];
+										break;
+									}
+								}
+								
+								if($id=="" && $label=="")
+								{
+									$id = $row['FIELD_OPTION'][0]['id'];
+									$label = $row['FIELD_OPTION'][0]['descrip'];
+								}
+								
+								$record[$row['FIELD_NAME']] = $id;
+                                $record[$row['FIELD_NAME']."_label"] = $label;
+								$appData = array_merge($record,$appData);
+								
+							}
 						}
 					}
-					
-					if(sizeof($field->option))
-					{
-						foreach($field->option As $key => $row)
-						{
-							$rowData = array ( 'id'=>$key,'descrip'=>$row);
-							$data[] = $rowData;
-						}
-					}
-					
-					$record = array (
-							"FIELD_NAME" => $field->name, 
-							"FIELD_LABEL" => $field->label,
-							"FIELD_TYPE" => $field->type,
-							"FIELD_DEFAULT_VALUE" => $field->defaultValue,
-							"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
-							"FIELD_OPTION" => $data,
-							"FIELD_READONLY" => $field->readonly,
-							"FIELD_SQL_CONNECTION" => $field->sqlConnection,
-							"FIELD_SQL" => $field->sql,
-							"FIELD_SQL_OPTION" => $dataSQL,
-							"FIELD_SELECTED_VALUE" => $field->selectedValue,
-							"FIELD_SAVE_LABEL" => $field->saveLabel
-					);
-					$_dataForms[] = $record;
 				}
 			}
+		  
+		    // end labels //
+		    foreach ($appData as $key => $value)
+            {   
+                if(!is_array($value))
+                    $appData[$key] = htmlspecialchars_decode($value);
+                else
+                    $appData[$key] = $value;
+            } 
+            
+		    $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
+		    $appData['FLAG_ACTION'] = 'multipleDerivation';
+		    $appData['EXEC_AUTO_DERIVATE'] = 'NO';
+		    $appData['eligible'] = 0; // only process beneficiary
+		    $appData['FLAG_EDIT'] = 1;
+		    $appData['CurrentUserAutoDerivate'] = $USR_UID;
+		    $appData['LOOP'] = 1;
+		    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
+		    if($caseUID >0) {
+			    autoDerivate($proUid,$caseUID,$USR_UID);
+			    $oCase = new Cases ();
+			    $FieldsCase = $oCase->loadCase ( $caseUID );
+			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
+			    $FieldsCase['APP_DATA']['STATUT'] = 1;
+			    $FieldsCase['APP_DATA']['LOOP'] = ''; 
+			    $oCase->updateCase($caseUID,$FieldsCase);			    
+		    }
+		    $totalCases++;
+		    $update = "UPDATE wf_".$this->workspace.".PMT_IMPORT_CSV_DATA SET IMPCSV_TOTCASES = '$totalCases' WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ";
+		    executeQuery($update);
 		}
+	       
+		
+		unset($informationCSV);
+		return $totalCases;
+	}
+	    
+	 function importCreateCaseEditCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit,$csvIdentify,$totCasesCSV)
+	 {
+	    G::LoadClass('case');
+		$items   =$jsonMatchFields; 
+		$dataCSV = isset($informationCSV) ?$informationCSV: array();
+		$USR_UID = '00000000000000000000000000000001';
+		$_SESSION['USER_LOGGED_INI'] = $USR_UID;
+		$sSQL ="SELECT * FROM wf_".$this->workspace.".ADDITIONAL_TABLES WHERE ADD_TAB_NAME ='$tableName'";
+		$aResult= executeQuery($sSQL);
+		$proUid = '0';
+		$itemsDeleteEdit   = json_decode($dataDeleteEdit,true);
+		if(is_array($aResult) && count($aResult)>0)
+		{
+		    $proUid =$aResult[1]['PRO_UID'];
+		} 
+		$totalCases = $totCasesCSV;
+	    
+		// load Dynaforms of process
+		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
+		$resultDynaform = executeQuery($select);
+		$_dataForms =  $this->dataDynaforms($resultDynaform,$proUid);	
+		// end load Dynaforms of process
+		
+		$this->genDataReport($tableName);
+		foreach ($dataCSV as $row) 
+		{
+		    $appData =  array();
+			foreach ($items as $field) 
+			{ 
+			    if($firstLineHeader == 'on'){
+				
+				    if(isset($row[$field['COLUMN_CSV']]))
+				    {
+				        if($row[$field['COLUMN_CSV']])
+				    	    $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+				        else
+				    	    $appData[$field['FIELD_NAME']] = ' ';
+				    }
+				    else
+				    {
+				        if($field['COLUMN_CSV'])
+				    	    $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+				        else
+				    	    $appData[$field['FIELD_NAME']] = ' ';
+				    } 
+			    }
+			    else
+			    {
+				    $aCol = explode(' ', trim($field['COLUMN_CSV']));
+				    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
+				        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+				    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  )
+				        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+				            
+			    }
+			}  
 			
+			// labels //			
+			foreach($appData As $key => $fields)
+			{
+				foreach ($_dataForms As $row)
+				{
+					if($row['FIELD_DEFAULT_VALUE'] == '')
+						$row['FIELD_DEFAULT_VALUE'] = 0;
+					
+					if($key == $row['FIELD_NAME'])
+					{
+						$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
+						
+						if(count($row['FIELD_SQL_OPTION']))
+						{
+							$options = $row['FIELD_SQL_OPTION'];
+							$id = "";
+							$label = "";
+							foreach($options As $row2)
+							{
+								if($row2['id'] == $i)
+								{
+									$id = $row2['id'];
+									$label = $row2['descrip'];
+									break;
+								}
+							}
+							
+							if($id=="" && $label=="")
+							{
+								$id = $row['FIELD_SQL_OPTION'][0]['id'];
+								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+							}
+							
+							$record[$row['FIELD_NAME']] = $id;
+                            $record[$row['FIELD_NAME']."_label"] = $label;
+							$appData = array_merge($record,$appData);
+						}
+						else
+						{
+							if(count($row['FIELD_OPTION']))
+							{
+								$options = $row['FIELD_OPTION'];
+								$id = "";
+								$label = "";
+								foreach($options As $row2)
+								{
+									if($row2['id'] == $i)
+									{
+										$id = $row2['id'];
+										$label = $row2['descrip'];
+										break;
+									}
+								}
+								
+								$record = Array();
+								
+								$record[$row['FIELD_NAME']] = $id;
+                                $record[$row['FIELD_NAME']."_label"] = $label;
+								$appData = array_merge($record,$appData);
+								
+							}
+						}
+					}
+				}	
+			}
+			
+		    $caseUID = '0';
+		    $whereUpdate = '';   
+			foreach($appData As $key => $fields)
+			{
+				foreach ($_dataForms As $row)
+				{
+					if($row['FIELD_DEFAULT_VALUE'] == '')
+						$row['FIELD_DEFAULT_VALUE'] = 0;
+						
+					$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])? $appData[$row['FIELD_NAME']."_label"]:'';
+					
+					if($appData[$row['FIELD_NAME']."_label"] =="")
+					{
+						$i = $row['FIELD_DEFAULT_VALUE'];	
+						if(count($row['FIELD_SQL_OPTION']))
+						{
+							
+							$options = $row['FIELD_SQL_OPTION'];
+							$id = "";
+							$label = "";
+							foreach($options As $row2)
+							{
+								if($row2['id'] == $i)
+								{
+									$id = $row2['id'];
+									$label = $row2['descrip'];
+									break;
+								}
+							}
+							
+							if($id=="" && $label=="")
+							{
+								$id = $row['FIELD_SQL_OPTION'][0]['id'];
+								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+							}
+							
+							$record[$row['FIELD_NAME']] = $id;
+                            $record[$row['FIELD_NAME']."_label"] = $label;
+							$appData = array_merge($record,$appData);
+							
+						}
+						else
+						{
+							if(count($row['FIELD_OPTION']))
+							{
+								$options = $row['FIELD_OPTION'];
+								$id = "";
+								$label = "";
+								foreach($options As $row2)
+								{
+									if($row2['id'] == $i)
+									{
+										$id = $row2['id'];
+										$label = $row2['descrip'];
+										break;
+									}
+								}
+								
+								if($id=="" && $label=="")
+								{
+									$id = $row['FIELD_OPTION'][0]['id'];
+									$label = $row['FIELD_OPTION'][0]['descrip'];
+								}
+								
+								$record[$row['FIELD_NAME']] = $id;
+                                $record[$row['FIELD_NAME']."_label"] = $label;
+								$appData = array_merge($record,$appData);
+								
+							}
+						}
+					}
+				}
+				foreach ($itemsDeleteEdit as $field ) 
+			    { 
+				    $fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
+				    if($fieldNameEditDelete == $key )
+				    {
+				        if($whereUpdate == '')
+						    $whereUpdate = $key." = '".$fields."'";
+					    else 
+						    $whereUpdate = $whereUpdate." AND " .$key." = '".$fields."'";
+				    }
+			    } 
+			}
+		    // end labels //
+		    
+		    foreach ($appData as $key => $value)
+            {   
+                if(!is_array($value))
+                    $appData[$key] = htmlspecialchars_decode($value);
+                else
+                    $appData[$key] = $value;
+            } 
+		     // update cases 
+			
+		    $query = "SELECT APP_UID FROM wf_".$this->workspace.".$tableName WHERE $whereUpdate "; 
+			$updateData = executeQuery($query);
+			if(sizeof($updateData))
+			{  
+				foreach($updateData as $index)
+				{	
+				    $oCase = new Cases ();
+					$FieldsCase = $oCase->loadCase ( $index['APP_UID'] );
+					$appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
+			        $appData['FLAG_ACTION'] = 'multipleDerivation';
+			        $appData['EXEC_AUTO_DERIVATE'] = 'NO';
+			        $appData['eligible'] = 0; // only process beneficiary
+			        $appData['FLAG_EDIT'] = 1;
+			        $appData['CurrentUserAutoDerivate'] = $USR_UID;
+			        $appData['STATUT'] = 1;
+			        $appData = array_merge($FieldsCase['APP_DATA'],$appData);
+			        $FieldsCase['APP_DATA'] = $appData;
+					$oCase->updateCase($index['APP_UID'],$FieldsCase);
+					
+				}
+			}
+			else 
+			{
+			    $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
+			    $appData['FLAG_ACTION'] = 'multipleDerivation';
+			    $appData['EXEC_AUTO_DERIVATE'] = 'NO';
+			    $appData['eligible'] = 0; // only process beneficiary
+			    $appData['FLAG_EDIT'] = 1;
+			    $appData['CurrentUserAutoDerivate'] = $USR_UID;
+			    $appData['LOOP'] = 1;
+			    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
+			    if($caseUID >0) 
+			    {
+				    autoDerivate($proUid,$caseUID,$USR_UID);
+				    $oCase = new Cases ();
+				    $FieldsCase = $oCase->loadCase ( $caseUID );
+				    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
+				    $FieldsCase['APP_DATA']['STATUT'] = 1;
+				    $FieldsCase['APP_DATA']['LOOP'] = '';
+				    $oCase->updateCase($caseUID,$FieldsCase);
+			    }
+			}   
+		    
+		    $totalCases++;
+		    $update = "UPDATE wf_".$this->workspace.".PMT_IMPORT_CSV_DATA SET IMPCSV_TOTCASES = '$totalCases' WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ";
+		    executeQuery($update);
+		} 
+		
+		unset($informationCSV);
+		return $totalCases;
+	 }
+	    
+	 function importCreateCaseDeleteCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit,$csvIdentify,$totCasesCSV)
+	 {
+		
+		G::LoadClass('case');
+		$items   =$jsonMatchFields; 
+		$dataCSV = isset($informationCSV) ?$informationCSV: array();
+		$USR_UID = '00000000000000000000000000000001';
+		$_SESSION['USER_LOGGED_INI'] = $USR_UID;
+		$sSQL ="SELECT * FROM wf_".$this->workspace.".ADDITIONAL_TABLES WHERE ADD_TAB_NAME ='$tableName'";
+		$aResult= executeQuery($sSQL);
+		$proUid = '0';
+		$itemsDeleteEdit   = json_decode($dataDeleteEdit,true);
+		$idCasesGenerate = "''";	
+		if(is_array($aResult) && count($aResult)>0)
+		{
+		    $proUid =$aResult[1]['PRO_UID'];
+		} 
+		$totalCases = $totCasesCSV;
+	    
+		// load Dynaforms of process
+		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
+		$resultDynaform = executeQuery($select);
+		$_dataForms =  $this->dataDynaforms($resultDynaform,$proUid);
+		// end load Dynaforms of process
+		
 		foreach ($dataCSV as $row) 
 		{
 		    $appData =  array();
@@ -238,113 +756,59 @@ class archivedCasesClassCron
 			    }
 			    else
 			    {
-				$aCol = explode(' ', trim($field['COLUMN_CSV']));
-				if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-				    $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
-				else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-				    $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
-				}        
+				    $aCol = explode(' ', trim($field['COLUMN_CSV']));
+				    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
+				        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+				    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
+				        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+				    }        
 			    }
 			}  
-			$appData['FLAG_ACTION'] = 'multipleDerivation';
-		    
-			$appData['EXEC_AUTO_DERIVATE'] = 'NO';
-			$appData['eligible'] = 0; // only process beneficiary
-			$appData['FLAG_EDIT'] = 1;
-			$appData['CurrentUserAutoDerivate'] = $USR_UID;       
-		    
-			    $appData['SIRET'] = isset($appData['SIRET'])? $appData['SIRET']:'';
-			$query = "SELECT APP_UID FROM wf_".$this->workspace.".PMT_PRESTATAIRE WHERE STATUT = 1 AND SIRET ='".$appData['SIRET']."'";
-			$result= executeQuery($query);
 			
 			$caseUID = '0';
-		   
-			 // labels //
-		    
+			
+			// labels //			
 			foreach($appData As $key => $fields)
 			{
 				foreach ($_dataForms As $row)
+				{
+					if($row['FIELD_DEFAULT_VALUE'] == '')
+						$row['FIELD_DEFAULT_VALUE'] = 0;
+					
+					if($key == $row['FIELD_NAME'])
 					{
-						if($row['FIELD_DEFAULT_VALUE'] == '')
-							$row['FIELD_DEFAULT_VALUE'] = 0;
+						$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
 						
-						if($key == $row['FIELD_NAME'])
+						if(count($row['FIELD_SQL_OPTION']))
 						{
-							$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
+							$options = $row['FIELD_SQL_OPTION'];
+							$id = "";
+							$label = "";
+							foreach($options As $row2)
+							{
+								if($row2['id'] == $i)
+								{
+									$id = $row2['id'];
+									$label = $row2['descrip'];
+									break;
+								}
+							}
 							
-							if(count($row['FIELD_SQL_OPTION']))
+							if($id=="" && $label=="")
 							{
-								$options = $row['FIELD_SQL_OPTION'];
-								$id = "";
-								$label = "";
-								foreach($options As $row2)
-								{
-									if($row2['id'] == $i)
-									{
-										$id = $row2['id'];
-										$label = $row2['descrip'];
-										break;
-									}
-								}
-								
-								if($id=="" && $label=="")
-								{
-									$id = $row['FIELD_SQL_OPTION'][0]['id'];
-									$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-								}
-								
-								$record[$row['FIELD_NAME']] = $id;
-								//$appData = array_merge($record,$appData);
+								$id = $row['FIELD_SQL_OPTION'][0]['id'];
+								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+							}
+							
+							$record[$row['FIELD_NAME']] = $id;
                             $record[$row['FIELD_NAME']."_label"] = $label;
-								$appData = array_merge($record,$appData);
-							}
-							else
-							{
-								if(count($row['FIELD_OPTION']))
-								{
-									$options = $row['FIELD_OPTION'];
-									$id = "";
-									$label = "";
-									foreach($options As $row2)
-									{
-										if($row2['id'] == $i)
-										{
-											$id = $row2['id'];
-											$label = $row2['descrip'];
-											break;
-										}
-									}
-									
-									$record = Array();
-									
-									$record[$row['FIELD_NAME']] = $id;
-									//$appData = array_merge($record,$appData);
-                                $record[$row['FIELD_NAME']."_label"] = $label;
-									$appData = array_merge($record,$appData);
-									
-								}
-							}
+							$appData = array_merge($record,$appData);
 						}
-					}	
-			}
-		       
-		 
-			foreach($appData As $key => $fields)
-			{
-				foreach ($_dataForms As $row)
-					{
-						if($row['FIELD_DEFAULT_VALUE'] == '')
-							$row['FIELD_DEFAULT_VALUE'] = 0;
-							
-						$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])? $appData[$row['FIELD_NAME']."_label"]:'';
-						
-						if($appData[$row['FIELD_NAME']."_label"] =="")
+						else
 						{
-							$i = $row['FIELD_DEFAULT_VALUE'];	
-							if(count($row['FIELD_SQL_OPTION']))
+							if(count($row['FIELD_OPTION']))
 							{
-								
-								$options = $row['FIELD_SQL_OPTION'];
+								$options = $row['FIELD_OPTION'];
 								$id = "";
 								$label = "";
 								foreach($options As $row2)
@@ -357,709 +821,99 @@ class archivedCasesClassCron
 									}
 								}
 								
-								if($id=="" && $label=="")
-								{
-									$id = $row['FIELD_SQL_OPTION'][0]['id'];
-									$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-								}
+								$record = Array();
 								
 								$record[$row['FIELD_NAME']] = $id;
-							//	$appData = array_merge($record,$appData);
                             $record[$row['FIELD_NAME']."_label"] = $label;
 								$appData = array_merge($record,$appData);
 								
-							}
-							else
-							{
-								if(count($row['FIELD_OPTION']))
-								{
-									$options = $row['FIELD_OPTION'];
-									$id = "";
-									$label = "";
-									foreach($options As $row2)
-									{
-										if($row2['id'] == $i)
-										{
-											$id = $row2['id'];
-											$label = $row2['descrip'];
-											break;
-										}
-									}
-									
-									if($id=="" && $label=="")
-									{
-										$id = $row['FIELD_OPTION'][0]['id'];
-										$label = $row['FIELD_OPTION'][0]['descrip'];
-									}
-									
-									$record[$row['FIELD_NAME']] = $id;
-								//	$appData = array_merge($record,$appData);
-                                $record[$row['FIELD_NAME']."_label"] = $label;
-									$appData = array_merge($record,$appData);
-									
-								}
 							}
 						}
 					}
+				}	
 			}
-		  
-		    // end labels //
-		    $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
-		    $appData['FLAG_ACTION'] = 'multipleDerivation';
-		    $appData['EXEC_AUTO_DERIVATE'] = 'NO';
-		    $appData['eligible'] = 0; // only process beneficiary
-		    $appData['FLAG_EDIT'] = 1;
-		    $appData['CurrentUserAutoDerivate'] = $USR_UID;
-		    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
-		    if($caseUID >0) {
-			//$resInfo = PMFDerivateCase($caseUID, 1,true, $USR_UID); 
-			autoDerivate($proUid,$caseUID,$USR_UID);
-			$oCase = new Cases ();
-			$FieldsCase = $oCase->loadCase ( $caseUID );
-			$FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-			$FieldsCase['APP_DATA']['STATUT'] = 1;
-			$oCase->updateCase($caseUID,$FieldsCase);
-		    }
-		    $totalCases++;
-		}
-	       
-		
-		unset($informationCSV);
-		return $totalCases;
-	    }
-	    
-	    function importCreateCaseEditCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit)
-	    {
-	       
-		G::LoadClass('case');
-		$items   =$jsonMatchFields; 
-		$dataCSV = isset($informationCSV) ?$informationCSV: array();
-		$USR_UID = '00000000000000000000000000000001';
-		$_SESSION['USER_LOGGED_INI'] = $USR_UID;
-		$sSQL ="SELECT * FROM wf_".$this->workspace.".ADDITIONAL_TABLES WHERE ADD_TAB_NAME ='$tableName'";
-		$aResult= executeQuery($sSQL);
-		$proUid = '0';
-		$itemsDeleteEdit   = json_decode($dataDeleteEdit,true);
-		if(is_array($aResult) && count($aResult)>0)
-		{
-		    $proUid =$aResult[1]['PRO_UID'];
-		} 
-		$totalCases = 0;
-	    
-		// load Dynaforms of process
-		 $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
-			$resultDynaform = executeQuery($select);
-			
-			$_dataForms =  array();
-			foreach($resultDynaform As $rowDynaform)
+		    
+		    $whereDelete = '';   
+			foreach($appData As $key => $fields)
 			{
-				$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
-				
-				foreach ($dynaform->fields as $fieldName => $field) {
-					if( $field->type == 'dropdown')
+				foreach ($_dataForms As $row)
+				{
+					if($row['FIELD_DEFAULT_VALUE'] == '')
+						$row['FIELD_DEFAULT_VALUE'] = 0;
+						
+					$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])? $appData[$row['FIELD_NAME']."_label"]:'';
+					
+					if($appData[$row['FIELD_NAME']."_label"] =="")
 					{
-						$aData = array();
-						$dataSQL = array();
-						$data = array();
-						if(strlen($field->sql))
+						$i = $row['FIELD_DEFAULT_VALUE'];	
+						if(count($row['FIELD_SQL_OPTION']))
 						{
-							$query = $field->sql;
-							$valueData = explode(",",$query); 
-							$valueId = explode(" ",$valueData[0]);
-							$position = count($valueId)-1 ;
-							$valueId = $valueId[$position];
-							$valueDataCount = count($valueData);
-							$valueName = explode(" ",$valueData[$valueDataCount-1]);
-							for($i = 0; $i <count($valueName) ; $i++)
+							
+							$options = $row['FIELD_SQL_OPTION'];
+							$id = "";
+							$label = "";
+							foreach($options As $row2)
 							{
-								if($valueName[$i]=="from" || $valueName[$i]=="FROM")
+								if($row2['id'] == $i)
 								{
-									$dataName = $valueName[$i-1];
-									break;		
+									$id = $row2['id'];
+									$label = $row2['descrip'];
+									break;
 								}
 							}
 							
-							$aData = executeQuery($field->sql);
+							if($id=="" && $label=="")
+							{
+								$id = $row['FIELD_SQL_OPTION'][0]['id'];
+								$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
+							}
 							
-						}	
-						if(sizeof($aData))
+							$record[$row['FIELD_NAME']] = $id;
+						    $record[$row['FIELD_NAME']."_label"] = $label;
+							$appData = array_merge($record,$appData);
+							
+						}
+						else
 						{
-							foreach($aData As $key => $row)
+							if(count($row['FIELD_OPTION']))
 							{
-								$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
-								$dataSQL[] = $rowData;
+								$options = $row['FIELD_OPTION'];
+								$id = "";
+								$label = "";
+								foreach($options As $row2)
+								{
+									if($row2['id'] == $i)
+									{
+										$id = $row2['id'];
+										$label = $row2['descrip'];
+										break;
+									}
+								}
+								
+								if($id=="" && $label=="")
+								{
+									$id = $row['FIELD_OPTION'][0]['id'];
+									$label = $row['FIELD_OPTION'][0]['descrip'];
+								}
+								
+								$record[$row['FIELD_NAME']] = $id;
+                                $record[$row['FIELD_NAME']."_label"] = $label;
+								$appData = array_merge($record,$appData);
+								
 							}
 						}
-						
-						if(sizeof($field->option))
-						{
-							foreach($field->option As $key => $row)
-							{
-								$rowData = array ( 'id'=>$key,'descrip'=>$row);
-								$data[] = $rowData;
-							}
-						}
-						
-						$record = array (
-								"FIELD_NAME" => $field->name, 
-								"FIELD_LABEL" => $field->label,
-								"FIELD_TYPE" => $field->type,
-								"FIELD_DEFAULT_VALUE" => $field->defaultValue,
-								"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
-								"FIELD_OPTION" => $data,
-								"FIELD_READONLY" => $field->readonly,
-								"FIELD_SQL_CONNECTION" => $field->sqlConnection,
-								"FIELD_SQL" => $field->sql,
-								"FIELD_SQL_OPTION" => $dataSQL,
-								"FIELD_SELECTED_VALUE" => $field->selectedValue,
-								"FIELD_SAVE_LABEL" => $field->saveLabel
-						);
-						$_dataForms[] = $record;
 					}
 				}
-			}
-		 $this->genDataReport($tableName);
-		foreach ($dataCSV as $row) 
-		{
-		    $appData =  array();
-			foreach ($items as $field) { 
-			    if($firstLineHeader == 'on'){
-				
-				if(isset($row[$field['COLUMN_CSV']]))
-				{
-				    if($row[$field['COLUMN_CSV']])
-					    $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
-				    else
-					    $appData[$field['FIELD_NAME']] = ' ';
-				}
-				else
-				{
-				    if($field['COLUMN_CSV'])
-					    $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
-				    else
-					    $appData[$field['FIELD_NAME']] = ' ';
-				} 
-			    }
-			    else
-			    {
-				$aCol = explode(' ', trim($field['COLUMN_CSV']));
-				if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-				    $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
-				else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-				    $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
-				}        
-			    }
-			}  
-			$appData['FLAG_ACTION'] = 'multipleDerivation';
-		    
-			$appData['EXEC_AUTO_DERIVATE'] = 'NO';
-			$appData['eligible'] = 0; // only process beneficiary
-			$appData['FLAG_EDIT'] = 1;
-			$appData['CurrentUserAutoDerivate'] = $USR_UID;       
-		    
-			    $appData['SIRET'] = isset($appData['SIRET'])? $appData['SIRET']:'';
-			$query = "SELECT APP_UID FROM wf_".$this->workspace.".PMT_PRESTATAIRE WHERE STATUT = 1 AND SIRET ='".$appData['SIRET']."'";
-			$result= executeQuery($query);
-			
-			$caseUID = '0';
-		   
-			 // labels //
-			$whereUpdate = '';
-			foreach($appData As $key => $fields)
-			{
-				foreach ($_dataForms As $row)
-					{
-						if($row['FIELD_DEFAULT_VALUE'] == '')
-							$row['FIELD_DEFAULT_VALUE'] = 0;
-						
-						if($key == $row['FIELD_NAME'])
-						{
-							$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
-							
-							if(count($row['FIELD_SQL_OPTION']))
-							{
-								$options = $row['FIELD_SQL_OPTION'];
-								$id = "";
-								$label = "";
-								foreach($options As $row2)
-								{
-									if($row2['id'] == $i)
-									{
-										$id = $row2['id'];
-										$label = $row2['descrip'];
-										break;
-									}
-								}
-								
-								if($id=="" && $label=="")
-								{
-									$id = $row['FIELD_SQL_OPTION'][0]['id'];
-									$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-								}
-								
-								$record[$row['FIELD_NAME']] = $id;
-							//	$appData = array_merge($record,$appData);
-                            $record[$row['FIELD_NAME']."_label"] = $label;
-								$appData = array_merge($record,$appData);
-							}
-							else
-							{
-								if(count($row['FIELD_OPTION']))
-								{
-									$options = $row['FIELD_OPTION'];
-									$id = "";
-									$label = "";
-									foreach($options As $row2)
-									{
-										if($row2['id'] == $i)
-										{
-											$id = $row2['id'];
-											$label = $row2['descrip'];
-											break;
-										}
-									}
-									
-									$record = Array();
-									
-									$record[$row['FIELD_NAME']] = $id;
-									//$appData = array_merge($record,$appData);
-                                $record[$row['FIELD_NAME']."_label"] = $label;
-									$appData = array_merge($record,$appData);
-									
-								}
-							}
-						}
-					}	
-			}
-		       
-			foreach($appData As $key => $fields)
-			{
-				foreach ($_dataForms As $row)
-					{
-						if($row['FIELD_DEFAULT_VALUE'] == '')
-							$row['FIELD_DEFAULT_VALUE'] = 0;
-							
-						$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])? $appData[$row['FIELD_NAME']."_label"]:'';
-						
-						if($appData[$row['FIELD_NAME']."_label"] =="")
-						{
-							$i = $row['FIELD_DEFAULT_VALUE'];	
-							if(count($row['FIELD_SQL_OPTION']))
-							{
-								
-								$options = $row['FIELD_SQL_OPTION'];
-								$id = "";
-								$label = "";
-								foreach($options As $row2)
-								{
-									if($row2['id'] == $i)
-									{
-										$id = $row2['id'];
-										$label = $row2['descrip'];
-										break;
-									}
-								}
-								
-								if($id=="" && $label=="")
-								{
-									$id = $row['FIELD_SQL_OPTION'][0]['id'];
-									$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-								}
-								
-								$record[$row['FIELD_NAME']] = $id;
-							//	$appData = array_merge($record,$appData);
-                            $record[$row['FIELD_NAME']."_label"] = $label;
-								$appData = array_merge($record,$appData);
-								
-							}
-							else
-							{
-								if(count($row['FIELD_OPTION']))
-								{
-									$options = $row['FIELD_OPTION'];
-									$id = "";
-									$label = "";
-									foreach($options As $row2)
-									{
-										if($row2['id'] == $i)
-										{
-											$id = $row2['id'];
-											$label = $row2['descrip'];
-											break;
-										}
-									}
-									
-									if($id=="" && $label=="")
-									{
-										$id = $row['FIELD_OPTION'][0]['id'];
-										$label = $row['FIELD_OPTION'][0]['descrip'];
-									}
-									
-									$record[$row['FIELD_NAME']] = $id;
-							//		$appData = array_merge($record,$appData);
-                                $record[$row['FIELD_NAME']."_label"] = $label;
-									$appData = array_merge($record,$appData);
-									
-								}
-							}
-						}
-					}
-					foreach ($itemsDeleteEdit as $field ) 
+				foreach ($itemsDeleteEdit as $field ) 
 			    { 
 					$fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
 					if($fieldNameEditDelete == $key )
 					{
-					if($whereUpdate == '')
-							$whereUpdate = $key." = '".$fields."'";
-						else 
-							$whereUpdate = $whereUpdate." AND " .$key." = '".$fields."'";
-					}
-			    } 
-			}
-		  
-		    // end labels //
-		    
-		     // update cases 
-			
-		    $query = "SELECT APP_UID FROM wf_".$this->workspace.".$tableName WHERE $whereUpdate ";
-			$updateData = executeQuery($query);
-			if(sizeof($updateData))
-			{  
-				foreach($updateData as $index)
-				{	
-				    $oCase = new Cases ();
-					$FieldsCase = $oCase->loadCase ( $index['APP_UID'] );
-					$appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
-			    $appData['FLAG_ACTION'] = 'multipleDerivation';
-			    $appData['EXEC_AUTO_DERIVATE'] = 'NO';
-			    $appData['eligible'] = 0; // only process beneficiary
-			    $appData['FLAG_EDIT'] = 1;
-			    $appData['CurrentUserAutoDerivate'] = $USR_UID;
-			    $appData = array_merge($FieldsCase['APP_DATA'],$appData);
-			    $FieldsCase['APP_DATA'] = $appData;
-					$oCase->updateCase($index['APP_UID'],$FieldsCase);
-					executeTriggers($proUid, $index['APP_UID'] ,$USR_UID);
-					$oCase = new Cases ();
-					$FieldsCase = $oCase->loadCase ( $index['APP_UID'] );
-					$FieldsCase['APP_DATA']['STATUT'] = 1;
-				$oCase->updateCase($index['APP_UID'],$FieldsCase);
-				}
-			}
-			else 
-			{
-			    $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
-			$appData['FLAG_ACTION'] = 'multipleDerivation';
-			$appData['EXEC_AUTO_DERIVATE'] = 'NO';
-			$appData['eligible'] = 0; // only process beneficiary
-			$appData['FLAG_EDIT'] = 1;
-			$appData['CurrentUserAutoDerivate'] = $USR_UID;
-			$caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
-			if($caseUID >0) 
-			{
-				autoDerivate($proUid,$caseUID,$USR_UID);
-				$oCase = new Cases ();
-				$FieldsCase = $oCase->loadCase ( $caseUID );
-				$FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-				$FieldsCase['APP_DATA']['STATUT'] = 1;
-				$oCase->updateCase($caseUID,$FieldsCase);
-			}
-			}   
-		    
-		    $totalCases++;
-		}
-	       
-		
-		unset($informationCSV);
-		return $totalCases;
-	    }
-	    
-	    function importCreateCaseDeleteCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV, $dataDeleteEdit)
-	    {
-		
-		G::LoadClass('case');
-		$items   =$jsonMatchFields; 
-		$dataCSV = isset($informationCSV) ?$informationCSV: array();
-		$USR_UID = '00000000000000000000000000000001';
-		$_SESSION['USER_LOGGED_INI'] = $USR_UID;
-		$sSQL ="SELECT * FROM wf_".$this->workspace.".ADDITIONAL_TABLES WHERE ADD_TAB_NAME ='$tableName'";
-		$aResult= executeQuery($sSQL);
-		$proUid = '0';
-		$itemsDeleteEdit   = json_decode($dataDeleteEdit,true);
-		$idCasesGenerate = "''";	
-		if(is_array($aResult) && count($aResult)>0)
-		{
-		    $proUid =$aResult[1]['PRO_UID'];
-		} 
-		$totalCases = 0;
-	    
-		// load Dynaforms of process
-		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
-		$resultDynaform = executeQuery($select);
-			
-		$_dataForms =  array();
-			foreach($resultDynaform As $rowDynaform)
-			{
-				$dynaform = new Form($proUid . PATH_SEP . $rowDynaform['DYN_UID'], PATH_DYNAFORM , SYS_LANG , false);
-				
-				foreach ($dynaform->fields as $fieldName => $field) {
-					if( $field->type == 'dropdown')
-					{
-						$aData = array();
-						$dataSQL = array();
-						$data = array();
-						if(strlen($field->sql))
-						{
-							$query = $field->sql;
-							$valueData = explode(",",$query); 
-							$valueId = explode(" ",$valueData[0]);
-							$position = count($valueId)-1 ;
-							$valueId = $valueId[$position];
-							$valueDataCount = count($valueData);
-							$valueName = explode(" ",$valueData[$valueDataCount-1]);
-							for($i = 0; $i <count($valueName) ; $i++)
-							{
-								if($valueName[$i]=="from" || $valueName[$i]=="FROM")
-								{
-									$dataName = $valueName[$i-1];
-									break;		
-								}
-							}
-							
-							$aData = executeQuery($field->sql);
-							
-						}	
-						if(sizeof($aData))
-						{
-							foreach($aData As $key => $row)
-							{
-								$rowData = array ( 'id'=>$row[$valueId],'descrip'=>$row[$dataName]);
-								$dataSQL[] = $rowData;
-							}
-						}
-						
-						if(sizeof($field->option))
-						{
-							foreach($field->option As $key => $row)
-							{
-								$rowData = array ( 'id'=>$key,'descrip'=>$row);
-								$data[] = $rowData;
-							}
-						}
-						
-						$record = array (
-								"FIELD_NAME" => $field->name, 
-								"FIELD_LABEL" => $field->label,
-								"FIELD_TYPE" => $field->type,
-								"FIELD_DEFAULT_VALUE" => $field->defaultValue,
-								"FIELD_DEPENDENT_FIELD" => $field->dependentFields,
-								"FIELD_OPTION" => $data,
-								"FIELD_READONLY" => $field->readonly,
-								"FIELD_SQL_CONNECTION" => $field->sqlConnection,
-								"FIELD_SQL" => $field->sql,
-								"FIELD_SQL_OPTION" => $dataSQL,
-								"FIELD_SELECTED_VALUE" => $field->selectedValue,
-								"FIELD_SAVE_LABEL" => $field->saveLabel
-						);
-						$_dataForms[] = $record;
-					}
-				}
-			}
-		
-		foreach ($dataCSV as $row) 
-		{
-		    $appData =  array();
-			foreach ($items as $field) { 
-			    if($firstLineHeader == 'on'){
-				
-				if(isset($row[$field['COLUMN_CSV']]))
-				{
-				    if($row[$field['COLUMN_CSV']])
-					    $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
-				    else
-					    $appData[$field['FIELD_NAME']] = ' ';
-				}
-				else
-				{
-				    if($field['COLUMN_CSV'])
-					    $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
-				    else
-					    $appData[$field['FIELD_NAME']] = ' ';
-				} 
-			    }
-			    else
-			    {
-				$aCol = explode(' ', trim($field['COLUMN_CSV']));
-				if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-				    $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
-				else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-				    $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
-				}        
-			    }
-			}  
-			$appData['FLAG_ACTION'] = 'multipleDerivation';
-		    
-			$appData['EXEC_AUTO_DERIVATE'] = 'NO';
-			$appData['eligible'] = 0; // only process beneficiary
-			$appData['FLAG_EDIT'] = 1;
-			$appData['CurrentUserAutoDerivate'] = $USR_UID;       
-		    
-			    $appData['SIRET'] = isset($appData['SIRET'])? $appData['SIRET']:'';
-			$query = "SELECT APP_UID FROM wf_".$this->workspace.".PMT_PRESTATAIRE WHERE STATUT = 1 AND SIRET ='".$appData['SIRET']."'";
-			$result= executeQuery($query);
-			
-			$caseUID = '0';
-			
-			 // labels //
-			$whereDelete = '';
-			foreach($appData As $key => $fields)
-			{
-				foreach ($_dataForms As $row)
-					{
-						if($row['FIELD_DEFAULT_VALUE'] == '')
-							$row['FIELD_DEFAULT_VALUE'] = 0;
-						
-						if($key == $row['FIELD_NAME'])
-						{
-							$i = isset($fields)?$fields:$row['FIELD_DEFAULT_VALUE'];
-							
-							if(count($row['FIELD_SQL_OPTION']))
-							{
-								$options = $row['FIELD_SQL_OPTION'];
-								$id = "";
-								$label = "";
-								foreach($options As $row2)
-								{
-									if($row2['id'] == $i)
-									{
-										$id = $row2['id'];
-										$label = $row2['descrip'];
-										break;
-									}
-								}
-								
-								if($id=="" && $label=="")
-								{
-									$id = $row['FIELD_SQL_OPTION'][0]['id'];
-									$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-								}
-								
-								$record[$row['FIELD_NAME']] = $id;
-							//	$appData = array_merge($record,$appData);
-                            $record[$row['FIELD_NAME']."_label"] = $label;
-								$appData = array_merge($record,$appData);
-							}
-							else
-							{
-								if(count($row['FIELD_OPTION']))
-								{
-									$options = $row['FIELD_OPTION'];
-									$id = "";
-									$label = "";
-									foreach($options As $row2)
-									{
-										if($row2['id'] == $i)
-										{
-											$id = $row2['id'];
-											$label = $row2['descrip'];
-											break;
-										}
-									}
-									
-									$record = Array();
-									
-									$record[$row['FIELD_NAME']] = $id;
-							//		$appData = array_merge($record,$appData);
-                                $record[$row['FIELD_NAME']."_label"] = $label;
-									$appData = array_merge($record,$appData);
-									
-								}
-							}
-						}
-					}	
-			}
-		       
-			foreach($appData As $key => $fields)
-			{
-				foreach ($_dataForms As $row)
-					{
-						if($row['FIELD_DEFAULT_VALUE'] == '')
-							$row['FIELD_DEFAULT_VALUE'] = 0;
-							
-						$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])? $appData[$row['FIELD_NAME']."_label"]:'';
-						
-						if($appData[$row['FIELD_NAME']."_label"] =="")
-						{
-							$i = $row['FIELD_DEFAULT_VALUE'];	
-							if(count($row['FIELD_SQL_OPTION']))
-							{
-								
-								$options = $row['FIELD_SQL_OPTION'];
-								$id = "";
-								$label = "";
-								foreach($options As $row2)
-								{
-									if($row2['id'] == $i)
-									{
-										$id = $row2['id'];
-										$label = $row2['descrip'];
-										break;
-									}
-								}
-								
-								if($id=="" && $label=="")
-								{
-									$id = $row['FIELD_SQL_OPTION'][0]['id'];
-									$label = $row['FIELD_SQL_OPTION'][0]['descrip'];
-								}
-								
-								$record[$row['FIELD_NAME']] = $id;
-							//	$appData = array_merge($record,$appData);
-                            $record[$row['FIELD_NAME']."_label"] = $label;
-								$appData = array_merge($record,$appData);
-								
-							}
-							else
-							{
-								if(count($row['FIELD_OPTION']))
-								{
-									$options = $row['FIELD_OPTION'];
-									$id = "";
-									$label = "";
-									foreach($options As $row2)
-									{
-										if($row2['id'] == $i)
-										{
-											$id = $row2['id'];
-											$label = $row2['descrip'];
-											break;
-										}
-									}
-									
-									if($id=="" && $label=="")
-									{
-										$id = $row['FIELD_OPTION'][0]['id'];
-										$label = $row['FIELD_OPTION'][0]['descrip'];
-									}
-									
-									$record[$row['FIELD_NAME']] = $id;
-							//		$appData = array_merge($record,$appData);
-                                $record[$row['FIELD_NAME']."_label"] = $label;
-									$appData = array_merge($record,$appData);
-									
-								}
-							}
-						}
-					}
-					foreach ($itemsDeleteEdit as $field ) 
-			    { 
-					    $fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
-					    if($fieldNameEditDelete == $key )
-					    {
 					    if($whereDelete == '')
-							    $whereDelete = $key." = '".$fields."'";
-						    else 
-							    $whereDelete = $whereDelete." AND " .$key." = '".$fields."'";
-					    }
+						    $whereDelete = $key." = '".$fields."'";
+					    else 
+						    $whereDelete = $whereDelete." AND " .$key." = '".$fields."'";
+					}
 			    } 
 					
 			}
@@ -1092,30 +946,34 @@ class archivedCasesClassCron
 		    $appData['eligible'] = 0; // only process beneficiary
 		    $appData['FLAG_EDIT'] = 1;
 		    $appData['CurrentUserAutoDerivate'] = $USR_UID;
+		    $appData['LOOP'] = 1;
 		    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
 		    if($totalCases == 0)
-			$idCasesGenerate = "'".$caseUID."'";
+			    $idCasesGenerate = "'".$caseUID."'";
 		    else
-			$idCasesGenerate = $idCasesGenerate.", '".$caseUID."'";
+			    $idCasesGenerate = $idCasesGenerate.", '".$caseUID."'";
 		    if($caseUID >0) 
 		    {
-			autoDerivate($proUid,$caseUID,$USR_UID);
-			$oCase = new Cases ();
-			$FieldsCase = $oCase->loadCase ( $caseUID );
-			$FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-			$FieldsCase['APP_DATA']['STATUT'] = 1;
-			$oCase->updateCase($caseUID,$FieldsCase);
+			    autoDerivate($proUid,$caseUID,$USR_UID);
+			    $oCase = new Cases ();
+			    $FieldsCase = $oCase->loadCase ( $caseUID );
+			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
+			    $FieldsCase['APP_DATA']['STATUT'] = 1;
+			    $FieldsCase['APP_DATA']['LOOP'] = 1;
+			    $oCase->updateCase($caseUID,$FieldsCase);
 		    }
 		    
 		    $totalCases++;
+		    $update = "UPDATE wf_".$this->workspace.".PMT_IMPORT_CSV_DATA SET IMPCSV_TOTCASES = '$totalCases' WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ";
+		    executeQuery($update);
 		}
 	       
 		
 		unset($informationCSV);
 		return $totalCases;
-	    }
+	 }
 	    
-	    function genDataReport ($tableName){
+	 function genDataReport ($tableName){
 		G::loadClass( 'pmTable' );
 		G::loadClass ( 'pmFunctions' );
 		require_once 'classes/model/AdditionalTables.php';
@@ -1131,9 +989,9 @@ class archivedCasesClassCron
 		    $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
 		   
 		}
-	    }
+	 }
 	    
-	    function deletePMCases($caseId) {
+	 function deletePMCases($caseId) {
 		
 		$query1="DELETE FROM wf_".SYS_SYS.".APPLICATION WHERE APP_UID='".$caseId."' ";
 		$apps1=executeQuery($query1);
@@ -1159,5 +1017,5 @@ class archivedCasesClassCron
 		$apps11=executeQuery($query11);
 		$query12="DELETE FROM wf_".SYS_SYS.".APP_HISTORY WHERE APP_UID='".$caseId."'";
 		$apps12=executeQuery($query12);
-	    }
-	}
+	 }
+}

@@ -31,8 +31,9 @@ Ext.onReady(function() {
         parent.location.href = href;
       }
       
-      parent.swFrame = '1';        
-      var dynaformStore = new Ext.data.JsonStore({
+      parent.swFrame = '1';    
+      // list dynaforms grid    
+      /*var dynaformStore = new Ext.data.JsonStore({
         url : 'listDynaforms.php?APP_UID=' + APP_UID,
         root : 'data',
         totalProperty : 'total', // <--- total de registros a paginar
@@ -101,9 +102,9 @@ Ext.onReady(function() {
               emptyText: '<div align="center"><b>** No Cases to show **</b></div>'
         }
       });            
+*/
 
-
-      // / ----------- End Receive Account Report Report -------------------///      
+      // / ----------- end list dynaforms grid   -------------------///      
 
       var tabpanel = {
         id : 'tabpanel1',
@@ -111,21 +112,53 @@ Ext.onReady(function() {
         activeTab : 0,
         flex: 3,
         //width:1150,
-        items : [ dynaformListgrid ]
+        items : [ subtabs ]
      }
        
-
+        //subtabs
+	var subtabs = new Ext.TabPanel({
+        autoWidth:true,
+        id:'subtabsDynaforms',                     
+        deferredRender:false,                   
+        defaults:{autoScroll: true},
+        defaultType:"iframepanel",
+        activeTab: 0,
+        enableTabScroll: true,
+        listeners: {
+        tabchange: function(panel){
+          panel.ownerCt.doLayout();
+        }
+      }
+       
+    });
+    
+    for(var i=0;i<DYNAFORMSLIST.length;i++){
+        var tabTitle = DYNAFORMSLIST[i]['DYN_TITLE'];
+        var DYN_UID=DYNAFORMSLIST[i]['DYN_UID'];  
+        var ACTIONTYPE = DYNAFORMSLIST[i]['TYPEFORM']; 
+        var PRO_UID  = DYNAFORMSLIST[i]['PRO_UID'];
+    	var CURRENTDATETIME = DYNAFORMSLIST[i]['CURRENTDATETIME'];
+        var url = 'casesHistoryDynaformPage_Ajax.php?ACTIONTYPE='+ACTIONTYPE+'&actionAjax=historyDynaformGridPreview'+'&DYN_UID='+DYN_UID+'&APP_UID='+APP_UID+'&PRO_UID='+PRO_UID+'&CURRENTDATETIME=' + CURRENTDATETIME +'&ACTIONSAVE=0';
+        
+        fn_add_tab(tabTitle,url,subtabs);          
+      }   
+     	setTimeout(function(){
+      	
+      		subtabs.setActiveTab(0);
+  		}, 500);
+      
       var viewport = new Ext.Viewport({
         layout: {
     	  type: 'fit',  
     	  autoScroll: true,        
           align: 'center'
         },
-        items : [ tabpanel ]
+        items : [ subtabs ]
       });
-      dynaformStore.reload();
       
-      var __addTabFrame = function() {
+     // dynaformStore.reload();
+      
+    /*  var __addTabFrame = function() {
     	  rowSelected = Ext.getCmp('dynaformListgrid').getSelectionModel().getSelected();  
     	  var tabTitle = rowSelected.data.DYN_TITLE;
     	  var ACTIONTYPE = rowSelected.data.TYPEFORM;
@@ -138,10 +171,8 @@ Ext.onReady(function() {
     	  
     	  fn_add_tab(tabTitle,url,'');
     	  
-    	} 
-      
-
-
+    	} */
+    
       function fn_open_frames()
       {
         var aIframes = document.getElementsByTagName('iframe');  
@@ -157,19 +188,16 @@ Ext.onReady(function() {
       var screenWidth = (PMExt.getBrowser().screen.width-140).toString() + 'px';
       function fn_add_tab(sName,sUrl,TabPanel)
       {   
-      	var TabPanel = parent.Ext.getCmp('tabPanelForms');      
+      	var TabPanel = Ext.getCmp('subtabsDynaforms');      
       	TabPanel.add({
       		id: 'iframe-' + sName,      
       		title: sName,
       		frameConfig:{name: sName + 'Frame', id: sName + 'Frame'},
-      		defaultSrc : '../convergenceList/' + sUrl,        
-      		//iconCls: sIcon,
+      		defaultSrc : '../convergenceList/' + sUrl,    
       		loadMask:{msg:'Chargement ...'},
-      		//autoWidth: true,
       		autoHeigth: true,
-      		closable:true,
+      		closable:false,
       		autoScroll: true,       
-      		//bodyStyle:{height: (PMExt.getBrowser().screen.height-60) + 'px', overflow:'auto'},
       		bodyStyle:{height: ADAPTIVEHEIGHT+'px'},
       		width:screenWidth
         }).show();

@@ -131,7 +131,7 @@ if(sizeof($inbox)){
         
         ##### Check if the Table is Report or PM Table
         $tableType = "Report";
-        $sqlAddTable = "SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME = '$table' ";
+        $sqlAddTable = "SELECT PRO_UID FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME = '$table' ";
         $resAddTable=executeQuery($sqlAddTable);
         if(sizeof($resAddTable)){
 	        if($resAddTable[1]['PRO_UID'] == ''){
