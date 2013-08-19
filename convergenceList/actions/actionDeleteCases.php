@@ -75,10 +75,18 @@ function FRegenerateRPT(){
     }
 }
 
-function checkEtablissementCanBeDeleted()
+function checkEtablissementCanBeDeleted($appUid)
 {
     $result = true;
-    // TODO implement method
+    $sqlGetEtabFromAppUid = "SELECT FP_CODE FROM PMT_ETABLISSEMENT WHERE APP_UID = '".$appUid."'";
+    $resultGetEtab = executeQuery($sqlGetEtabFromAppUid);
+    if(sizeof($resultGetEtab))
+    {
+        $codeEtab = $resultGetEtab[1]['FP_CODE'];
+        $sqlCheckEtab = "SELECT 1 FROM PMT_DEMANDES WHERE FC_ID_LIV = '".$codeEtab."' OR FC_CODE_CLUB = '".$codeEtab."' OR FC_CODE_LIGUE = '".$codeEtab."'";
+        $resultCheckEtab = executeQuery($sqlCheckEtab);
+        $result = !sizeof($resultCheckEtab);
+    }
     return $result;
 }
 #####################################################End Functions####################################################
@@ -91,10 +99,7 @@ $canBeDeletedFunc = $_REQUEST['canBeDeletedFunc'];
 $tableType = "Report";
 $tableName = '';
 
-if(empty($canBeDeletedFunc) || call_user_func($canBeDeletedFunc))
-{
     // Check if the Table is Report or PM Table
-
     $sqlAddTable = "SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_UID = '$pmTableId' ";
     $resAddTable=executeQuery($sqlAddTable);
     if(sizeof($resAddTable)){
@@ -112,16 +117,14 @@ if(empty($canBeDeletedFunc) || call_user_func($canBeDeletedFunc))
 
     // Check if the Table is Report or PM Table
 
-
-
     if(count($items)>0){
         $oCase = new Cases ();
         foreach($items as $item){
             $vals = array_keys($item);
-            $APPUID = strstr_array($vals,'APP_UID');    
-            if(isset($item[$APPUID]) && $item[$APPUID] != ''){
-            
-                        
+            $APPUID = strstr_array($vals,'APP_UID');
+            if(empty($canBeDeletedFunc) || call_user_func($canBeDeletedFunc, $APPUID))
+            {
+                if(isset($item[$APPUID]) && $item[$APPUID] != ''){
                         //don't delete in database, just change statut
                         convergence_changeStatut($item[$APPUID], '999', 'Suppression');
                         /*FDeletePMCases($item[$APPUID]);
@@ -132,25 +135,22 @@ if(empty($canBeDeletedFunc) || call_user_func($canBeDeletedFunc))
                         }   
                          
                         */
-            }   
-        }
+                }   
+                $messageInfo = "Le dossier a été correctement supprimé.";
+            }
+            else
+            {
+                $messageInfo = "Le dossier n'a pas été supprimé.";
+            }
         
         /*if($tableType == "Report"){
             FRegenerateRPT(); // regenerate all RP tables
         }*/
-
-        $messageInfo = "Le dossier a été correctement supprimé.";
+        }        
     }
     else{
         $messageInfo = "Le dossier n'a pas été supprimé.";
     }
-}
-else
-{
-    $messageInfo = "Suppression impossible, au moins une commande est liée à cet élément"; 
-}
-
-    
 $paging = array ('success' => true, 'messageinfo' => $messageInfo);
 echo G::json_encode ( $paging );
 ?>

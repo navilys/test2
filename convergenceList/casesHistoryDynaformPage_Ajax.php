@@ -232,6 +232,7 @@ if($actionAjax== 'historyDynaformGridPreview')
     
         
 ?>
+      <link href="/plugin/convergenceList/convergenceList.css" rel="stylesheet" type="text/css" media="screen" /> 
       <script language="Javascript">
       
         //!Code that simulated reload library javascript maborak
@@ -363,10 +364,18 @@ if($actionAjax== 'historyDynaformGridPreview')
         if(sizeof($dataUsrCase) > 0)
 	    {
 	        $totalUsers = sizeof($dataUsrCase);
-	        G::SendTemporalMessage ("Une autre personne est en train d&#39;&eacute;diter cet enregistrement. Voulez-vous quand m&#233;me l&#39;&eacute;diter ?", "warning");
+	        $messageCases = "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'><div id='window-floating'>
+                             <a class='close' href='javascript:void(0);' onclick='document.getElementById(&apos;window-floating&apos;).className = &apos;hiddenMessage&apos;'>x</a>
+                             <div id='container'>
+                             <div class='contentMessage'>
+                                 Une autre personne est en train d&#39;&eacute;diter cet enregistrement. Voulez-vous quand m&#233;me l&#39;&eacute;diter ?
+                            </div>
+                            </div>
+                            </div>";
+            echo $messageCases;
 	        $swCase = 1;
 	    }
-	  
+	
       }
       
       $_SESSION['APPLICATION'] = $APP_UID;
