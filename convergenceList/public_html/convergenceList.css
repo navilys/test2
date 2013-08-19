@@ -1,0 +1,116 @@
+    #window-floating {
+        width: 250px;  /* width of window */
+        height: 90px;  /* height of window */
+        background: #ceffad;  /* Color background */
+        position:fixed;
+        _position:absolute;
+        _top: expression(450+((e=document.documentElement.scrollTop)?e:document.body.scrollTop)+'px');
+        _left: expression(900+((e=document.documentElement.scrollLeft)?e:document.body.scrollLeft)+'px');
+        top: 75%;
+        left: 80%;
+        border-radius: 6px 6px 6px 6px;
+        margin-left: -120px;
+        border: 1px solid #adffad;  /* Edge of the window */
+        box-shadow: 0 5px 20px rgba(0,0,0,.1);  /* shadow */
+        z-index:999;
+    }
+    #window-floating #container {
+        padding: 18px 8px 8px 8px;
+        }
+        #window-floating .close {
+        float: right;
+        border-bottom: 1px solid #bbb;
+        border-left: 1px solid #bbb;
+        color: #999;
+        background: white;
+        line-height: 17px;
+        text-decoration: none;
+        padding: 0px 14px;
+        font-family: Arial;
+        border-radius: 0 0 0 5px;
+        box-shadow: -1px 1px white;
+        font-size: 18px;
+        -webkit-transition: .3s;
+        -moz-transition: .3s;
+        -o-transition: .3s;
+        -ms-transition: .3s;
+    }
+    #window-floating .close:hover {
+        background: #ff6868;
+        color: white;
+        text-decoration: none;
+        text-shadow: -1px -1px red;
+        border-bottom: 1px solid red;
+        border-left: 1px solid red;
+    }
+    #window-floating #container .contentMessage {
+        padding: 15px;
+        box-shadow: inset 1px 1px white;
+        background: #deffc4;  /* Message background */
+        border: 1px solid #9eff9e;  /* Edge of the message */
+        font-size: 12px;  /* Message text size */
+        color: #555;  /* Color text */
+        text-shadow: 1px 1px white;
+        margin: 0 auto;
+        border-radius: 4px;
+    }
+    .hiddenMessage {-webkit-transition:1s;-moz-transition:1s;-o-transition:1s;-ms-transition:1s;opacity:0;-ms-opacity:0;-moz-opacity:0;visibility:hidden;}
+
+    .hiddenMessage {display:none}
+
+    #window-messagge {
+        width: 350px;  /* width of window */
+        height: 120px;  /* height of window */
+        background: #ceffad;  /* Color background */
+        position:absolute;
+        top: 20%;
+        left: 30%;
+        border-radius: 6px 6px 6px 6px;
+        margin-left: -120px;
+        border: 1px solid #adffad;  /* Edge of the window */
+        box-shadow: 0 5px 20px rgba(0,0,0,.1);  /* shadow */
+        z-index:999;
+    }
+    #window-messagge #container {
+        padding: 10px 10px 25px 10px;
+    }
+    #window-messagge .close {
+        float: right;
+        border-bottom: 1px solid #bbb;
+        border-left: 1px solid #bbb;
+        color: #999;
+        background: white;
+        line-height: 20px;
+        text-decoration: none;
+        padding: 0px 14px;
+        font-family: Arial;
+        border-radius: 0 0 0 5px;
+        box-shadow: -1px 1px white;
+        font-size: 18px;
+        -webkit-transition: .3s;
+        -moz-transition: .3s;
+        -o-transition: .3s;
+        -ms-transition: .3s;
+    }
+    #window-messagge .close:hover {
+        background: #ff6868;
+        color: white;
+        text-decoration: none;
+        text-shadow: -1px -1px red;
+        border-bottom: 1px solid red;
+        border-left: 1px solid red;
+    }
+    #window-messagge #container .contentMessage {
+        padding: 15px;
+        box-shadow: inset 1px 1px white;
+        background: #deffc4;  /* Message background */
+        border: 1px solid #9eff9e;  /* Edge of the message */
+        font-size: 15px;  /* Message text size */
+        color: #555;  /* Color text */
+        text-shadow: 1px 1px white;
+        margin: 0 auto;
+        border-radius: 4px;
+    }
+    .closeMessagge {-webkit-transition:1s;-moz-transition:1s;-o-transition:1s;-ms-transition:1s;opacity:0;-ms-opacity:0;-moz-opacity:0;visibility:hidden;}
+
+    .closeMessagge {display:none}
