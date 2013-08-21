@@ -336,7 +336,7 @@ function userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8081/') {
             'cHash' => md5($data['__USR_USERNAME__'] . '*' . $data['__USR_LASTNAME__'] . '*' . $data['__USR_FIRSTNAME__'] . '*' . $key)));
 
         // Get the group name
-        $query = "SELECT CON_VALUE FROM CONTENT WHERE CON_ID = '$groupId' AND CON_CATEGORY='GRP_TITLE' ";
+        $query = "SELECT CON_VALUE FROM CONTENT WHERE CON_ID = '$groupId' AND CON_LANG='fr' AND CON_CATEGORY='GRP_TITLE' ";
         $result = executeQuery($query);
         $roleName = '';
         if (isset($result))
