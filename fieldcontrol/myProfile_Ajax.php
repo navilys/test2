@@ -138,7 +138,7 @@ switch($_POST['action'])
         $groupId = $resultUser[1]['GRP_UID'];
     // End Get the group name
 	
-    $urlTypo3 = 'http://'.$_SERVER['HTTP_HOST'].':8083/';
+    $urlTypo3 = 'http://'.$_SERVER['HTTP_HOST'].':8084/';
     ini_set("soap.wsdl_cache_enabled", "0");
     $hostTypo3 = $urlTypo3.'typo3conf/ext/pm_webservices/serveur.php?wsdl';    
     $pfServer = new SoapClient($hostTypo3);
@@ -154,11 +154,11 @@ switch($_POST['action'])
     'pmid' => $_POST['USR_UID'],
     'usergroup' => $groupId,
     'cHash' => md5($_POST['USR_USERNAME'].'*'.$_POST['USR_LASTNAME'].'*'.$_POST['USR_FIRSTNAME'].'*'.$key)));
-     
+    
     // End Typo3
     
       $result->success = true;
-      $result->msg = 'User has been saved successfully';
+      $result->msg = 'Votre compte a correctement &eacute;t&eacute; mis &agrave; jour.';
       print(G::json_encode($result));
     }catch (Exception $e) {
       $result->success = false;
@@ -313,7 +313,7 @@ function userTypo3Update(){
         $groupId = $result[1]['GRP_UID'];
     // End Get the group name
 
-    $urlTypo3 = 'http://'.$_SERVER['HTTP_HOST'].':8083/';
+    $urlTypo3 = 'http://'.$_SERVER['HTTP_HOST'].':8084/';
     ini_set("soap.wsdl_cache_enabled", "0");
     $hostTypo3 = $urlTypo3.'typo3conf/ext/pm_webservices/serveur.php?wsdl';    
     $pfServer = new SoapClient($hostTypo3);
@@ -329,4 +329,7 @@ function userTypo3Update(){
     'usergroup' => $groupId,
     'cHash' => md5($_POST['USR_USERNAME'].'*'.$_POST['USR_LASTNAME'].'*'.$_POST['USR_FIRSTNAME'].'*'.$key)));
 
+    
+    
+    
 }
