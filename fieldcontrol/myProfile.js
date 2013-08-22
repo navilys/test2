@@ -11,6 +11,7 @@ var previousUsername = '';
 var canEdit = true;
 var flagPoliciesPassword = false;
 var flagValidateUsername = false;
+var onlyPassword = false;
 //var rendeToPage='document.body';
 
 global.IC_UID        = '';
@@ -21,6 +22,10 @@ global.aux           = '';
 Ext.onReady(function () {
   Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
   Ext.QuickTips.init();
+
+  if (TYPE == "onlyPassword") {
+      onlyPassword = true;
+  }
 
   if (MODE == "edit" || MODE == "") {
       flagPoliciesPassword = true;
@@ -246,6 +251,9 @@ Ext.onReady(function () {
       }
     ]
   });
+
+ if (onlyPassword == true)
+    frmDetails.remove(informationFields);
 
   informationFields2 = new Ext.form.FieldSet({
     title : _('ID_PERSONAL_INFORMATION'),

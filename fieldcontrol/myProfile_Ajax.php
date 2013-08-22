@@ -23,9 +23,12 @@ switch($_POST['action'])
         $form['USR_PASSWORD'] = md5($form['USR_NEW_PASS']);
       }
       
+        $oUser                    = new Users();
+        $defaultDatas                  = $oUser->loadDetailed($form['USR_UID']);
+      
         $sUserUID=$aData['USR_UID'] = $form['USR_UID'];
-        $aData['USR_USERNAME']      = $form['USR_USERNAME'];
-		
+        $aData['USR_USERNAME']      = ($form['USR_USERNAME']) ? $form['USR_USERNAME'] : $defaultDatas['USR_USERNAME'];
+	
         if (isset($form['USR_PASSWORD'])) {
 
           if ($form['USR_PASSWORD'] != '') {
@@ -116,9 +119,9 @@ switch($_POST['action'])
             $oUserProperty->update($aUserProperty);
           }
         }
-        $aData['USR_FIRSTNAME']   = $form['USR_FIRSTNAME'];
-        $aData['USR_LASTNAME']    = $form['USR_LASTNAME'];
-        $aData['USR_EMAIL']       = $form['USR_EMAIL'];
+        $aData['USR_FIRSTNAME']   = ($form['USR_FIRSTNAME']) ? $form['USR_FIRSTNAME'] : $defaultDatas['USR_FIRSTNAME'];
+        $aData['USR_LASTNAME']    = ($form['USR_LASTNAME']) ? $form['USR_LASTNAME'] : $defaultDatas['USR_LASTNAME'];
+        $aData['USR_EMAIL']       = ($form['USR_EMAIL']) ? $form['USR_EMAIL'] : $defaultDatas['USR_EMAIL'];
         $aData['USR_UPDATE_DATE'] = date('Y-m-d H:i:s');
           $RBAC->updateUser($aData);
           
@@ -145,15 +148,15 @@ switch($_POST['action'])
     $key = rand();
     
     $ret = $pfServer->createAccount(array(
-    'username' => $_POST['USR_USERNAME'],
+    'username' => $aData['USR_USERNAME'],
     'password' => md5($_POST['USR_NEW_PASS']),
-    'email' => $_POST['USR_EMAIL'],
-    'lastname' => $_POST['USR_LASTNAME'],
-    'firstname' => $_POST['USR_FIRSTNAME'],
+    'email' => $aData['USR_EMAIL'],
+    'lastname' => $aData['USR_LASTNAME'],
+    'firstname' => $aData['USR_FIRSTNAME'],
     'key' => $key,
-    'pmid' => $_POST['USR_UID'],
+    'pmid' => $form['USR_UID'],
     'usergroup' => $groupId,
-    'cHash' => md5($_POST['USR_USERNAME'].'*'.$_POST['USR_LASTNAME'].'*'.$_POST['USR_FIRSTNAME'].'*'.$key)));
+    'cHash' => md5($aData['USR_USERNAME'].'*'.$aData['USR_LASTNAME'].'*'.$aData['USR_FIRSTNAME'].'*'.$key)));
     
     // End Typo3
     

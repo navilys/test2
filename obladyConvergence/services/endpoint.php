@@ -79,6 +79,10 @@ try {
             G::header('Location: ../../fieldcontrol/my_profile'); 
             die();
             break;
+        case 'editPassword':
+            G::header('Location: ../../fieldcontrol/my_profile.php?type=onlyPassword'); 
+            die();
+            break;
         case 'start':
             // Validating request data
             if (!isset($_REQUEST['task'])) {

@@ -23,8 +23,10 @@
 	    
 
     $MODE = 'edit';
+    $TYPE = (isset($_GET['type'])) ? $_GET['type'] : '';
     $oHeadPublisher->assign('USR_UID', $USR_UID); 
     $oHeadPublisher->assign('MODE', $MODE);
+    $oHeadPublisher->assign('TYPE', $TYPE);
     $oHeadPublisher->assign('MAX_FILES_SIZE', ' (' . $UPLOAD_MAX_SIZE . ') ');
     $oHeadPublisher->addExtJsScript(PATH_PLUGINS.SYS_COLLECTION.'/myProfile', false, true); 
 
