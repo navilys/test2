@@ -75,7 +75,7 @@ class API extends REST {
 				else{
 					
 						$uname = urldecode($this->_request['username']);
-						$currentpasswd = md5(urldecode($this->_request['currentpasswd']));
+						$currentpasswd = urldecode($this->_request['currentpasswd']);
 						$newpasswd = md5(urldecode($this->_request['newpasswd']));
 						$checkuser = executeQuery("SELECT USR_USERNAME, CONCAT(USR_FIRSTNAME, ' ', USR_LASTNAME) FROM USERS WHERE USR_USERNAME = '".$uname."' AND USR_PASSWORD = '".$currentpasswd."' ","rbac");						
 						if(sizeof($checkuser) == 0){
