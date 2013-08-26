@@ -710,7 +710,6 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
 
         $query = 'SELECT * FROM ' . $config['TABLENAME'] . ' ' . $config['JOIN_CONFIG'] . ' WHERE 1 ' . $config['CONFIG_WHERE'] . $whereCodeOper;
         $result = executeQuery($query);
-
         $mode = 'w'; // enregistrer le fichier sous un format _date et le sauvegarder dans une table historique
 
         $data = array();
@@ -723,8 +722,11 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                 $error = false;
                 foreach ($select as $field)
                 {
-                    if (!empty($field['CONSTANT'])) // contient 0 par defaut
+                    if (!empty($field['CONSTANT']))
+                    {// contient 0 par defaut
+                        $oldFieldName = $row[$field['FIELD_NAME']];
                         $row[$field['FIELD_NAME']] = $field['CONSTANT'];
+                    }
                     if ($field['REQUIRED'] == 'no' || ($field['REQUIRED'] == 'yes' && isset($row[$field['FIELD_NAME']]) && $row[$field['FIELD_NAME']] != ''))
                     {
 
@@ -788,6 +790,10 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                     else
                     {
                         $error = true;
+                    }
+                    if (!empty($field['CONSTANT'])) // dans le cas ou on utilise un champs pour sa valeur ET une constante
+                    {// contient 0 par defaut
+                        $row[$field['FIELD_NAME']] = $oldFieldName;
                     }
                 }
                 if (!$error)
@@ -1374,23 +1380,28 @@ function convergence_getPathDispositif() {
 }
 
 function convergence_setVnForRmh() {
-    $sql = 'select SUM(VN_TITRE) as total, CODE_PRESTA as code FROM PMT_CHEQUES where ETAT_TITRE < 300 and STATUT = "15" group by CODE_PRESTA';
+    $ret = 0;
+    $sql = 'DELETE FROM PMT_VN_FOR_RMH';
+    $res = executeQuery($sql);
+    $sql = 'select SUM(VN_TITRE) as total, CODE_PRESTA as code, CONCAT(NOM_CONTACT," ", PRENOM_CONTACT) as nom, count(CODE_PRESTA) as nbTitre FROM PMT_CHEQUES, PMT_PRESTATAIRE where ETAT_TITRE < 300 and PMT_CHEQUES.STATUT = "15" and CODE_PRESTA = CONVENTION group by CODE_PRESTA';
     $res = executeQuery($sql);
     if (!empty($res))
     {
         $insert = array();
         foreach ($res as $row)
         {
-           $insert[] = '("' . $row['code'] . '","' . $row['total'] . '")';
+           $insert[] = '("' . $row['code'] . '","' . $row['total'] . '","' . $row['nom'] . '")';
+            $ret += $row['nbTitre'];
         }
         $value = implode(',', $insert);
-        $qInsert = 'INSERT INTO PMT_VN_FOR_RMH (CONV_PRESTA,VN_TOTAL) VALUES ' . $value;
-        $result = executeQuery($query);
+        $qInsert = 'INSERT INTO PMT_VN_FOR_RMH (CONV_PRESTA,VN_TOTAL,NOM) VALUES ' . $value;
+        $result = executeQuery($qInsert);
     }
+    return $ret;
 }
 
 function convergence_unsetVnForRmh() {
-    $sql = 'TRUNCATE PMT_VN_FOR_RMH';
+    $sql = 'DELETE FROM PMT_VN_FOR_RMH';
     $res = executeQuery($sql);
     $sqlUpdate = 'update PMT_CHEQUES set STATUT="10" where ETAT_TITRE < 300 and STATUT = "15"';
     $resU = executeQuery($sqlUpdate);

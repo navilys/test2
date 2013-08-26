@@ -631,6 +631,274 @@ function listeTitreDemande(num_dossier)
         
        
 }
+function listeTitreRmb(idRmb)
+{
+    var adaptiveHeight = getDocHeight() - 50;
+
+    var _dblColumns = new Array();
+    var _dblFields = new Array();
+    var storeRmb;
+    var _CLOSE = 'Fermer';
+    var _WINTITLE_DOUBLON = "Liste des titres pour ce fichier de remboursement";
+
+    column = {id: 'PRESTAID', header: 'Presta ID', width: 20, dataIndex: 'PRESTAID', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'PRESTAID'});
+
+    column = {id: 'DMDAPPUID', header: 'demande ID', width: 20, dataIndex: 'DMDAPPUID', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'DMDAPPUID'});
+
+
+    column = {id: 'UID', header: '#', width: 20, dataIndex: 'UID', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'APP_UID'});
+
+    column = {id: 'THEMATIQUE_LABEL', header: '#', width: 20, dataIndex: 'THEMATIQUE_LABEL', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'THEMATIQUE_LABEL'});
+
+    column = {
+        id: 'NUM_DOSSIER',
+        header: 'N&deg; Dossier',
+        width: 80,
+        dataIndex: 'NUM_DOSSIER',
+        renderer: function(value, meta, record) {
+            var dmdID = record.data.DMDAPPUID;
+            if (value != null)
+                return '<a href="#" onclick="viewForms(\'' + dmdID + '\',1)">' + value + '</a>';
+            else
+                return '';
+        },
+        hidden: false
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'NUM_DOSSIER'});
+
+    column = {
+        id: 'COMPLEMENT_CHQ',
+        header: 'Type',
+        width: 250,
+        dataIndex: 'COMPLEMENT_CHQ',
+        renderer: function(value, meta, record) {
+            var thema = record.data.THEMATIQUE_LABEL;
+            if (value == '1')
+                return 'Ch&eacute;quier compl&eacute;mentaire';
+            else
+                return thema;
+        },
+        hidden: false
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'COMPLEMENT_CHQ'});
+
+    column = {
+        id: 'BCONSTANTE',
+        header: 'Num&eacute;ro ch&eacute;quier',
+        width: 120, //30,req
+        dataIndex: 'BCONSTANTE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'BCONSTANTE'});
+
+
+    column = {
+        id: 'NUM_TITRE',
+        header: 'Num&eacute;ro du titre',
+        width: 120, //30,req
+        dataIndex: 'NUM_TITRE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'NUM_TITRE'});
+
+    column = {
+        id: 'VN_TITRE',
+        header: 'Valeur',
+        width: 100,
+        renderer: function(value) {
+
+            return value + ' &euro;';
+        },
+        dataIndex: 'VN_TITRE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'VN_TITRE'});
+
+    column = {
+        id: 'TITLE',
+        header: 'Etat du remboursement',
+        width: 150, //30,req
+        dataIndex: 'TITLE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'TITLE'});
+
+    column = {
+        id: 'DEBUT_VALIDITE',
+        header: 'D&eacute;but de validit&eacute;',
+        width: 120, //30,req
+        dataIndex: 'DEBUT_VALIDITE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'DEBUT_VALIDITE'});
+
+    column = {
+        id: 'FIN_VALIDITE',
+        header: 'Fin de validit&eacute;',
+        width: 120, //30,req
+        dataIndex: 'FIN_VALIDITE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'FIN_VALIDITE'});
+
+    column = {
+        id: 'ANNULE',
+        header: 'Annul&eacute; ?',
+        width: 100,
+        renderer: function(value) {
+
+            if (value == 1)
+                value = 'Oui';
+            else
+                value = 'Non'
+
+            return value;
+        },
+        dataIndex: 'ANNULE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'ANNULE'});
+
+    column = {
+        id: 'REPRODUCTION',
+        header: 'NB de reproduction',
+        width: 120, //30,req
+        dataIndex: 'REPRODUCTION'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'REPRODUCTION'});
+
+    column = {
+        id: 'PRESTATAIRE',
+        header: 'Prestataire',
+        width: 120,
+        renderer: function(value, meta, record) {
+            var prestaID = record.data.PRESTAID;
+            if (value != null)
+                return '<a href="#" onclick="viewForms(\'' + prestaID + '\',1)">' + value + '</a>';
+            else
+                return '';
+        },
+        dataIndex: 'RAISONSOCIALE'
+
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'RAISONSOCIALE'});
+
+    column = {
+        id: 'VILLEPRESTA',
+        header: 'Ville prestataire',
+        width: 120,
+        dataIndex: 'VILLE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'VILLE'});
+
+    column = {
+        id: 'DATE_RMB',
+        header: 'Date Remboursement',
+        width: 120,
+        dataIndex: 'DATE_RMB'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'DATE_RMB'});
+
+    storeRmb = new Ext.data.JsonStore({
+        url: '../convergenceList/actions/listeTitreRmb.php?idRmb=' + idRmb,
+        root: 'data',
+        totalProperty: 'total',
+        autoWidth: true,
+        fields: _dblFields
+    });
+    storeRmb.load();
+
+    var cmRmb = new Ext.grid.ColumnModel({
+        defaults: {
+            width: 20,
+            sortable: true
+        },
+        columns: _dblColumns
+    });
+    cmRmb.defaultSortable = true;
+
+    var gridTitreRmb = new Ext.grid.GridPanel({
+        store: storeRmb,
+        cm: cmRmb,
+        stripeRows: true,
+        columnLines: true,
+        autoScroll: true,
+        autoWidth: true,
+        stateful: true,
+        id: 'gridTitreRmb',
+        layout: 'fit',
+        viewConfig: {
+            forceFit: false,
+            emptyText: (_('ID_NO_RECORDS_FOUND'))
+        },
+        listeners: {
+            render: function(grid) {
+
+            },
+            afterrender: function() {
+
+            },
+            cellcontextmenu: function(grid, rowIndex, cellIndex, event) {
+
+
+            }
+        },
+        tbar: [{
+                text: _CLOSE,
+                iconCls: 'button_menu_ext ss_sprite ss_accept',
+                handler: function() {
+                winTitreRmb.close();
+                }
+            }]
+    });
+    ///////////// end grid
+    winTitreRmb = new Ext.Window({
+        closeAction: 'hide',
+        autoDestroy: true,
+        maximizable: true,
+        id: 'winDoublon',
+        title: _WINTITLE_DOUBLON,
+        width: 900,
+        height: 400,
+        modal: true,
+        closable: true,
+        constrain: true,
+        autoScroll: true,
+        layout: 'fit',
+        items: gridTitreRmb
+    });
+
+    winTitreRmb.show();
+    //winTitre.maximize();
+    winTitreRmb.toFront();
+
+
+}
 
 function Forcerlademande(){
 
@@ -758,6 +1026,12 @@ function exporterCSVFileF(type) {
     idField = myApp.addTab_inside();                    
     urlData = "../convergenceList/actions/exportData.php?type=" + type;
     location.href = urlData;
+}
+function exporterRMHFileF() {
+
+    idField = myApp.addTab_inside();
+    urlData = "../convergenceList/actions/exportRMHFile.php";
+    post(urlData, {items: idField});
 }
 
 function exportDossierListeProd(){
@@ -1045,7 +1319,7 @@ function VoirLesDemandesProd(app_uid){
             text: _CLOSE,
             iconCls: 'button_menu_ext ss_sprite ss_accept',
             handler: function() {
-                winTitre.close();
+                winDmdProd.close();
             }   
         }]
         });     

@@ -949,8 +949,8 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
-    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
-    //mail('nicolas@oblady.fr', '$data debug mail ', var_export($dataCSV, true));
+    $dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
+    mail('nicolas@oblady.fr', '$data debug mail ', var_export($dataCSVdebug, true));
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);

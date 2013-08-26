@@ -24,21 +24,7 @@ $sFieldValue = $_REQUEST['sFieldValue'];
 $sFieldName = $_REQUEST['sFieldName'];
 /* * *** End get filter value ** */
 /* * * Get inbox  ** */
-$param = 'idInbox=';
-$str = $_SERVER['HTTP_REFERER'];
-$ini = strpos($str, $param);
-$ini += strlen($param);
-$len = strpos($str, '&', $ini);
-if ($len != false)
-{
-    $len = $len - $ini;
-    $idInbox = substr($str, $ini, $len);
-}
-else
-{
-    $referer = explode($param, $str);
-    $idInbox = $referer[1];    // nom de l'inbox dans la base
-}
+$idInbox = $_REQUEST['IdInbox'];
 $path = 'exportData_' . $idInbox . date("YmdHis");
 /* * *** End get inbox *** */
 
