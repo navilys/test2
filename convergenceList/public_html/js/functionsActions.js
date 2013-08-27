@@ -1019,6 +1019,14 @@ function Voirlecourrier(){
     });*/
 }
 
+function ExportDocument(docid){
+
+    idField = myApp.addTab_inside();                    
+    urlData = "../convergenceList/actions/exportDocument.php";    
+    post(urlData, {idFile : idField, iddoc : docid});
+
+}
+
 function exporterCSVFileF(type) {
 
     if (!type) type = 'npai';
