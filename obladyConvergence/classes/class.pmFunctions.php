@@ -1163,7 +1163,7 @@ function convergence_checkFieldLog($value, $params, $type) {
         $value = $params['CONSTANT'];
     $length = $params['LENGTH'];
     $lengthValue = strlen($value);
-    if (isset($value) && $value != '')
+    if (isset($value) && $value != '' && $value != ' ')
     {
         switch ($params['AS400_TYPE'])
         {
@@ -1189,7 +1189,7 @@ function convergence_checkFieldLog($value, $params, $type) {
                 }
                 break;
             case 'mail': //^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$
-                if (preg_match('#^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,}$#', $value) != 1)
+                if (preg_match('#^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]{2,}\.[a-zA-Z]{2,}$#', $value) != 1)
                 {
                     $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format 'E-mail' attendu";
                 }

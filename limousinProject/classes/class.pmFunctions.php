@@ -103,3 +103,23 @@ function convergence_getMsgErreur($app_id){
     }
     return $refus;
 }
+
+function limousinProject_generatePorteurID($num_dossier) {
+    
+    /*Les 4 premiers caractères seront : 3028
+    Les 6 autres seront le numéro unique créé par convergence
+    Concernant le dernier la formule exacte est : 9 - somme(des 10 premiers chiffres) modulo 9.
+    Ce qui fait que l'exemple du document est faux : 23 mod 9 = 5, et 9-5=4 donc le dernier chiffre doit être 4.
+    */
+    
+    $prefix = '3028'; 
+    $temp_num_dossier = str_pad($num_dossier, 6, "0", STR_PAD_LEFT);     
+    $somme = array_sum(str_split($prefix.$temp_num_dossier));
+    $cle_modulo = 9 - $somme%9;
+
+     
+    $porteurID = $prefix.$temp_num_dossier.$cle_modulo;
+
+    return $porteurID;
+    
+}

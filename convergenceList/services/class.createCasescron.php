@@ -32,10 +32,7 @@ class archivedCasesClassCron
 		      FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA GROUP BY IMPCSV_IDENTIFY ";
 		$data = executeQuery($query);
 		if(sizeof($data))
-		{
-            //mail('nicolas@oblady.fr', 'debug cron query mail ', var_export($query, true));
-            //mail('nicolas@oblady.fr', 'debug cron ws mail ', var_export($this->workspace, true));
-            //mail('nicolas@oblady.fr', 'debug cron data mail ', var_export($data, true));
+		{            
             foreach($data as $row)
 		    {
 		        $query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
@@ -59,10 +56,11 @@ class archivedCasesClassCron
 		        $csvIdentify   = isset($row["IMPCSV_IDENTIFY"])? $row["IMPCSV_IDENTIFY"]:'';
 		        $firstLineHeader   = isset($row["IMPCSV_FIRSTLINEHEADER"])? $row["IMPCSV_FIRSTLINEHEADER"]:'on';
 		        $fileCSV     = $tableName.'_'.$row['IMPCSV_IDENTIFY'];
-		        $queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
-		        $totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
-		        $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV, $totCasesCSV);
-		        $dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
+		        //$queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
+                $queryTot = executeQuery("SELECT * FROM wf_" . $this->workspace . ".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ORDER BY IMPCSV_ID");
+                $totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
+                $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV, $queryTot);
+                $dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
 		        	
 		        switch ($actionType) 
 		    	{
@@ -96,7 +94,16 @@ class archivedCasesClassCron
 	
 	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $queryTot)
 	{
-	    set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
+        $totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
+        /** get COLUMN_CSV value for $firstLineCsvAs on * */
+        $column_csv = array();
+        foreach ($queryTot as $row)
+        {
+            $column_csv[] = $row['IMPCSV_VALUE'];
+        }
+        unset($row);
+        /** end * */
+        set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
 		if (!$handle = fopen(PATH_DOCUMENT . "csvTmp/".$fileCSV.".csv", "r")) {  
 		    echo "Cannot open file";  
 		    exit;  
@@ -106,19 +113,26 @@ class archivedCasesClassCron
 		$i = 0;
 		while ($data = fgetcsv($handle, 4096, ";")) 
 		{
-		    $num = count ($data);
+            $num = count ($data);
 		    foreach($data as $row) 
 		    {
-	            if($queryTot <= $i)
-		            $csvDataIni[]= $row;
-	        }
-	        if($queryTot <= $i)
-		        $csvData[] = $csvDataIni;
+                if ($firstLineCsvAs == 'on')
+                {
+                    if ($totCasesCSV <= $i)
+                        $csvDataIni[$column_csv[$i]] = $row;
+                }
+                else
+                {
+                    if ($totCasesCSV <= $i)
+                        $csvDataIni[] = $row;
+                }
+            }
+	        if ($totCasesCSV <= $i)
+                $csvData[] = $csvDataIni;
 		    $csvDataIni = '';
 		    $i++;
 		}
-		
-		return $csvData;
+        return $csvData;
 	}
 		
 	function deleteFileCSV($fileCSV)
@@ -226,8 +240,9 @@ class archivedCasesClassCron
 		$resultDynaform = executeQuery($select);
 		$_dataForms =  $this->dataDynaforms($resultDynaform,$proUid);
 		// end load Dynaforms of process
-			
-		foreach ($dataCSV as $row) 
+		//	mail('nicolas@oblady.fr', 'debug datacsv mail ', var_export($dataCSV, true));
+        //mail('nicolas@oblady.fr', 'debug  items mail ', var_export($items, true));
+        foreach ($dataCSV as $row)
 		{   
 		    $appData =  array();
 			foreach ($items as $field) 
@@ -262,8 +277,8 @@ class archivedCasesClassCron
                     }       
 			    }
 			}  		
-		    
-			foreach($appData As $key => $fields)
+		//    mail('nicolas@oblady.fr', 'debug appdata mail ', var_export($appData, true));
+            foreach($appData As $key => $fields)
 			{
 				foreach ($_dataForms As $row)
 				{

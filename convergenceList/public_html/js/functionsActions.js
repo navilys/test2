@@ -2311,7 +2311,7 @@ function importCSV (_uidTask){
                                 totalProperty : 'total', 
                                 remoteSort    : true,
                                 autoWidth     : true,
-                                            fields: ['FIELD_NAME', 'FIELD_DESC', 'COLUMN_CSV', 'COLUMN_TYPE', 'DELETE_EDIT_FIELD']
+                                            fields: ['FIELD_NAME', 'FIELD_DESC', 'COLUMN_CSV', 'COLUMN_TYPE', 'DELETE_EDIT_FIELD', 'REQ_COLUMN']
                             });
 
                             Ext.Ajax.request({
@@ -2476,6 +2476,7 @@ function importCSV (_uidTask){
                                         var item = {
                                             "FIELD_NAME"   : record.get('FIELD_NAME'),
                                             "COLUMN_CSV": record.get('COLUMN_CSV'),
+                                                                "REQUIRED_COLUMN": record.get('REQ_COLUMN'),
                                             "COLUMN_TYPE": record.get('COLUMN_TYPE')
                                         };
                                         _dblFieldsCustom.push(item);

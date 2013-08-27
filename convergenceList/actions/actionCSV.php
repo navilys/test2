@@ -173,10 +173,18 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
         $whereUpdate = array();
         $nbcurrentLine++;
         foreach ($items as $field)
-        {
+        {            
             $param = array();
             $param['LENGTH'] = 0;
-            $param['REQUIRED'] = 'no'; // à implémenter
+            //$param['REQUIRED'] = 'no'; // à implémenter
+            if (!empty($field['REQUIRED_COLUMN']))
+            {
+                $param['REQUIRED'] = 'yes';
+            }
+            else
+            {
+                $param['REQUIRED'] = 'no';
+            }
             if (!empty($field['COLUMN_TYPE']))
             {
                 $param['AS400_TYPE'] = $field['COLUMN_TYPE'];
@@ -272,6 +280,7 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
     $handle = fopen($path, 'x+');
     fwrite($handle, $Log);
     fclose($handle);
+    $dataCSV = array_merge((array) $dataCSV); // on ré-indexe le tableau
     return $dataCSV;
 }
 
@@ -364,6 +373,17 @@ function createFileTmpCSV($csv,$csv_file)
            exit;  
         }  
         fclose($handle);  
+        if (!$handle = fopen("/var/tmp/csvMore.csv", "w"))
+        {
+            echo "Cannot open file";
+            exit;
+        }
+        if (fwrite($handle, utf8_decode($csv)) === FALSE)
+        {
+            echo "Cannot write to file";
+            exit;
+        }
+        fclose($handle);
     }
 }
 
@@ -376,9 +396,8 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $_SESSION['USER_LOGGED_INI'] = $USR_UID;
     $proUid  = getProUid($tableName);
     $totalCases = 0;
-   
-    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader);
-    
+    //$dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader);
+    //$dataCSV = $dataCSVdebug;
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
@@ -399,8 +418,12 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         $totRow = sizeof($row);
         $totIni = 1;
        
-        if($totalCases >= 100)
+        if ($totalCases >= 3)
         {
+           /* if ($firstLineHeader == 'on' && $swInsert == 0)
+              {
+              $csv .= getCSVHeader($items, $csv_sep) . $csv_end;
+              } */
             foreach($row as $value)
             {
                 if($totIni == $totRow)
@@ -650,7 +673,8 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
-    //$dataCSV = createLog($dataCSV, $items, $tableName, $firstLineHeader); // corriger pour la suppression
+    $dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
+    $dataCSV = $dataCSVdebug;
     // load Dynaforms of process
 	$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
@@ -672,8 +696,12 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         $totRow = sizeof($row);
         $totIni = 1;
       
-        if($totalCases >= 100) 
+        if ($totalCases >= 3)
         {
+            if ($firstLineHeader == 'on' && $swInsert == 0)
+            {
+                $csv .= getCSVHeader($items, $csv_sep) . $csv_end;
+            }
             foreach($row as $value)
             {
                 if($totIni == $totRow)
@@ -943,14 +971,14 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
 {
 	G::LoadClass('case');
     $items   = json_decode($jsonMatchFields,true);
-    $dataCSV = isset($_SESSION['REQ_DATA_CSV']) ?$_SESSION['REQ_DATA_CSV']: array();
+    $dataCSV = isset($_SESSION['REQ_DATA_CSV']) ? $_SESSION['REQ_DATA_CSV'] : array();
     $USR_UID = $_SESSION['USER_LOGGED'];
     $_SESSION['USER_LOGGED_INI'] = $USR_UID;
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     $itemsDeleteEdit = json_decode($dataDeleteEdit, true);
     $dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader, $itemsDeleteEdit);
-    mail('nicolas@oblady.fr', '$data debug mail ', var_export($dataCSVdebug, true));
+    $dataCSV = $dataCSVdebug;
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
@@ -970,8 +998,12 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
         $totRow = sizeof($row);
         $totIni = 1;
         //  G::pr($items);
-        if ($totalCases >= 100)
+        if ($totalCases >= 3)
         {
+            if ($firstLineHeader == 'on' && $swInsert == 0)
+            {
+                $csv .= getCSVHeader($items, $csv_sep) . $csv_end;
+            }
             foreach ($row as $value)
             {
                 if ($totIni == $totRow)
@@ -1233,7 +1265,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     # create file tmp
     createFileTmpCSV($csv,$csv_file);   
     # end create file tmp
-    
+    mail('nicolas@oblady.fr', 'debug csv mail ', var_export($csv, true));
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
 }
@@ -1316,6 +1348,16 @@ function resetFieldsCSV($idInbox) {
     
 }
 
+function getCSVHeader($items, $csv_sep) {
+    $array = array();
+    foreach ($items as $fields)
+    {
+        $array[] = utf8_encode($fields['COLUMN_CSV']);
+    }
+    $header = implode($csv_sep, $array);
+    return $header;
+}
+
 try {
   $sOption = $_REQUEST["option"];
     switch ($sOption) {
@@ -1378,7 +1420,7 @@ try {
                 $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
                 $dataEdit  = isset($_REQUEST["dataEditDelete"])?$_REQUEST["dataEditDelete"]:'';
                 $firstLineHeader   = isset($_REQUEST["firstLineHeader"])?$_REQUEST["firstLineHeader"]:'on';
-                $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataEdit);
+                $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataEdit);                    
                 echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
                 break;
           case "truncateAdd": 
