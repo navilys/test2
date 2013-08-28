@@ -56,10 +56,9 @@ class archivedCasesClassCron
 		        $csvIdentify   = isset($row["IMPCSV_IDENTIFY"])? $row["IMPCSV_IDENTIFY"]:'';
 		        $firstLineHeader   = isset($row["IMPCSV_FIRSTLINEHEADER"])? $row["IMPCSV_FIRSTLINEHEADER"]:'on';
 		        $fileCSV     = $tableName.'_'.$row['IMPCSV_IDENTIFY'];
-		        //$queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
-                $queryTot = executeQuery("SELECT * FROM wf_" . $this->workspace . ".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ORDER BY IMPCSV_ID");
+		        $queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
                 $totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
-                $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV, $queryTot);
+                $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV, $totCasesCSV);
                 $dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
 		        	
 		        switch ($actionType) 
@@ -92,17 +91,7 @@ class archivedCasesClassCron
 		}
 	}
 	
-	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $queryTot)
-	{
-        $totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
-        /** get COLUMN_CSV value for $firstLineCsvAs on * */
-        $column_csv = array();
-        foreach ($queryTot as $row)
-        {
-            $column_csv[] = $row['IMPCSV_VALUE'];
-        }
-        unset($row);
-        /** end * */
+	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $totCasesCSV) {
         set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
 		if (!$handle = fopen(PATH_DOCUMENT . "csvTmp/".$fileCSV.".csv", "r")) {  
 		    echo "Cannot open file";  
@@ -111,29 +100,50 @@ class archivedCasesClassCron
 		$csvData = array(); 
 		$csvDataIni = array();
 		$i = 0;
-		while ($data = fgetcsv($handle, 4096, ";")) 
+        while ($data = fgetcsv($handle, 4096, ";"))
 		{
-            $num = count ($data);
-		    foreach($data as $row) 
-		    {
-                if ($firstLineCsvAs == 'on')
+            /*             By Nico 28/08/2013 fix Bug on the import Background by CRON with header csv files.
+             * 
+             * Add this part because when we import by cron a csv with header, all import are the header for value
+             * So, after put the original header in the csv temp file in actionCSV.php,
+             * we do this to work perfectly 
+             * 
+             */
+            $col = 0;
+            if ($firstLineCsvAs == 'on' && $i == 0)
+            {
+                foreach ($data as $row)
                 {
-                    if ($totCasesCSV <= $i)
-                        $csvDataIni[$column_csv[$i]] = $row;
-                }
-                else
-                {
-                    if ($totCasesCSV <= $i)
-                        $csvDataIni[] = $row;
+                    $column_csv[] = $row;
                 }
             }
-	        if ($totCasesCSV <= $i)
-                $csvData[] = $csvDataIni;
-		    $csvDataIni = '';
-		    $i++;
+            else
+            {
+                $num = count($data);
+                foreach ($data as $row)
+                {
+                    /* $csvData key is the header for good import after */
+                    if ($firstLineCsvAs == 'on')
+                    {
+                        if ($totCasesCSV <= $i)
+                            $csvDataIni[$column_csv[$col]] = $row;
+
+                        $col++;
+                    }
+                    else /* No header on csv files */
+                    {
+                        if ($totCasesCSV <= $i)
+                            $csvDataIni[] = $row;
+                    }
+                }
+                if ($totCasesCSV <= $i)
+                    $csvData[] = $csvDataIni;
+                $csvDataIni = '';
+            }
+            $i++;
 		}
-        return $csvData;
-	}
+        return $csvData;        
+    }
 		
 	function deleteFileCSV($fileCSV)
 	{
@@ -239,9 +249,7 @@ class archivedCasesClassCron
 		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 		$resultDynaform = executeQuery($select);
 		$_dataForms =  $this->dataDynaforms($resultDynaform,$proUid);
-		// end load Dynaforms of process
-		//	mail('nicolas@oblady.fr', 'debug datacsv mail ', var_export($dataCSV, true));
-        //mail('nicolas@oblady.fr', 'debug  items mail ', var_export($items, true));
+		// end load Dynaforms of process		
         foreach ($dataCSV as $row)
 		{   
 		    $appData =  array();
@@ -277,7 +285,6 @@ class archivedCasesClassCron
                     }       
 			    }
 			}  		
-		//    mail('nicolas@oblady.fr', 'debug appdata mail ', var_export($appData, true));
             foreach($appData As $key => $fields)
 			{
 				foreach ($_dataForms As $row)

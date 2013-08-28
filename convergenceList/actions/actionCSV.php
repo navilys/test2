@@ -372,18 +372,12 @@ function createFileTmpCSV($csv,$csv_file)
            echo "Cannot write to file";  
            exit;  
         }  
-        fclose($handle);  
-        if (!$handle = fopen("/var/tmp/csvMore.csv", "w"))
-        {
-            echo "Cannot open file";
-            exit;
-        }
-        if (fwrite($handle, utf8_decode($csv)) === FALSE)
-        {
-            echo "Cannot write to file";
-            exit;
-        }
         fclose($handle);
+
+        // Use it for debug csvTemp files
+        //
+        //$handle = fopen("/var/tmp/csvMore.csv", "w");
+        //fclose($handle);
     }
 }
 
@@ -396,14 +390,14 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $_SESSION['USER_LOGGED_INI'] = $USR_UID;
     $proUid  = getProUid($tableName);
     $totalCases = 0;
-    //$dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader);
-    //$dataCSV = $dataCSVdebug;
+    // check all fields and remove wrong data
+    $dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader);
+    $dataCSV = $dataCSVdebug;
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);
     $_dataForms =  dataDynaforms($resultDynaform,$proUid);
- 	// end load dynaforms process 
- 	
+ 	// end load dynaforms process  	
     $select = executeQuery("SELECT MAX(IMPCSV_IDENTIFY) AS IDENTIFY FROM PMT_IMPORT_CSV_DATA WHERE IMPCSV_TABLE_NAME = '$tableName' ");
     $identify = isset($select[1]['IDENTIFY'])? $select[1]['IDENTIFY']:0;
     $identify = $identify + 1;
@@ -412,18 +406,18 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $csv="";  
     $csv_end = "\n";
     $swInsert = 0;
-    
     foreach ($dataCSV as $row) 
     {
         $totRow = sizeof($row);
         $totIni = 1;
        
-        if ($totalCases >= 3)
+        if ($totalCases >= 100)
         {
-           /* if ($firstLineHeader == 'on' && $swInsert == 0)
+            /* add header on csv temp files for import background */
+            if ($firstLineHeader == 'on' && $swInsert == 0)
               {
-              $csv .= getCSVHeader($items, $csv_sep) . $csv_end;
-              } */
+              $csv .= getCSVHeader($dataCSV, $csv_sep) . $csv_end;
+            } 
             foreach($row as $value)
             {
                 if($totIni == $totRow)
@@ -696,11 +690,12 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         $totRow = sizeof($row);
         $totIni = 1;
       
-        if ($totalCases >= 3)
+        if ($totalCases >= 100)
         {
+            /* add header on csv temp files for import background */
             if ($firstLineHeader == 'on' && $swInsert == 0)
             {
-                $csv .= getCSVHeader($items, $csv_sep) . $csv_end;
+                $csv .= getCSVHeader($dataCSV, $csv_sep) . $csv_end;
             }
             foreach($row as $value)
             {
@@ -997,12 +992,12 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     {
         $totRow = sizeof($row);
         $totIni = 1;
-        //  G::pr($items);
-        if ($totalCases >= 3)
+        if ($totalCases >= 100)
         {
+            /* add header on csv temp files for import background */
             if ($firstLineHeader == 'on' && $swInsert == 0)
             {
-                $csv .= getCSVHeader($items, $csv_sep) . $csv_end;
+                $csv .= getCSVHeader($dataCSV, $csv_sep) . $csv_end;
             }
             foreach ($row as $value)
             {
@@ -1306,7 +1301,7 @@ function importCreateCaseTruncate($jsonMatchFields,$uidTask, $tableName,$firstLi
 	}
 	genDataReport($tableName);
 	// end delete cases 
-	$typeAction = 'ADD_TRUNCATE';
+	$typeAction = 'ADD';
 	$totalCases = importCreateCase($jsonMatchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
     
     return $totalCases;
@@ -1347,14 +1342,17 @@ function resetFieldsCSV($idInbox) {
    return $bRes;
     
 }
+/*             By Nico 28/08/2013 fix Bug on the import Background by CRON with header csv files.
+ *
+ * Simple function to get and put the header on the csv temp file
+ *
+ */
 
-function getCSVHeader($items, $csv_sep) {
-    $array = array();
-    foreach ($items as $fields)
-    {
-        $array[] = utf8_encode($fields['COLUMN_CSV']);
-    }
-    $header = implode($csv_sep, $array);
+function getCSVHeader($dataCSV, $csv_sep) {
+    $key = array();
+    $key = array_keys($dataCSV[0]);
+    $key = array_map(utf8_encode, $key);
+    $header = implode($csv_sep, $key);
     return $header;
 }
 
