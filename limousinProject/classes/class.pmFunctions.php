@@ -6,6 +6,8 @@
  * Copyright (C) 2004 - 2008 Colosa Inc.
  * *
  */
+require_once("plugins/limousinProject/classes/Webservices/Webservice.php");
+require_once("plugins/limousinProject/classes/Webservices/Versement.php");
 
 ////////////////////////////////////////////////////
 // limousinProject PM Functions
@@ -122,4 +124,22 @@ function limousinProject_generatePorteurID($num_dossier) {
 
     return $porteurID;
     
+}
+
+function limousinProject_nouveauVersement() {
+    
+	// INIT Ws
+    $v = new Versement();
+	
+	// SET Params
+	$v->partenaire = "_partenaire";
+	$v->porteurId = "_porteurId";
+	$v->sens = "_sens";
+	$v->montant = "_montant";
+	$v->addSousMontant("_reseau1","_montatnReseau1");
+	$v->addSousMontant("_reseau2","_montatnReseau2");
+	
+	// CALL Ws
+	$retour = $v->save();
+	die();    
 }

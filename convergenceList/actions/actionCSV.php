@@ -631,8 +631,8 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
             $appData['FLAG_EDIT'] = 1;
             $appData['STATUT'] = 1;
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
-            $appData['LOOP'] = 1;
-           
+           // $appData['LOOP'] = 1;
+
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
             if($caseUID >0) 
             {   
@@ -640,9 +640,14 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
                 $oCase = new Cases ();
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
 			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
-			    $FieldsCase['APP_DATA']['STATUT'] = 1;
-			    $FieldsCase['APP_DATA']['LOOP'] = '';
-			    $oCase->updateCase($caseUID,$FieldsCase);
+			    /* Comment by Nico 28/08/2013
+                 * Please, don't remove the comment because make some bug on process
+                 * or explain to me why you want to put this value
+                 *
+                 */
+                //$FieldsCase['APP_DATA']['STATUT'] = 1;
+                //$FieldsCase['APP_DATA']['LOOP'] = '';
+                $oCase->updateCase($caseUID,$FieldsCase);
             }
             
         }
@@ -932,7 +937,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
             $appData['FLAG_EDIT'] = 1;
             $appData['STATUT'] = 1;
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
-            $appData['LOOP'] = 1;
+          // $appData['LOOP'] = 1;
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
             if($totalCases == 0)
             	$idCasesGenerate = "'".$caseUID."'";
@@ -945,8 +950,13 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
                 $FieldsCase = $oCase->loadCase ( $caseUID );
                 $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
                
-                $FieldsCase['APP_DATA']['STATUT'] = 1;     
-                $FieldsCase['APP_DATA']['LOOP'] = '';  
+               /* Comment by Nico 28/08/2013
+                 * Please, don't remove the comment because make some bug on process
+                 * or explain to me why you want to put this value
+                 *
+                 */
+                //$FieldsCase['APP_DATA']['STATUT'] = 1;
+                //$FieldsCase['APP_DATA']['LOOP'] = '';   
                 $oCase->updateCase($caseUID,$FieldsCase);
             }
         }
@@ -1237,7 +1247,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 $appData['STATUT'] = 1;
                 $appData['FLAG_EDIT'] = 1;
                 $appData['CurrentUserAutoDerivate'] = $USR_UID;
-                $appData['LOOP'] = 1;
+                //$appData['LOOP'] = 1;
                 $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);
                 if ($caseUID > 0)
                 {
@@ -1245,8 +1255,14 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     $oCase = new Cases ();
                     $FieldsCase = $oCase->loadCase($caseUID);
                     $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                   
-                    $FieldsCase['APP_DATA']['STATUT'] = 1;    
-                    $FieldsCase['APP_DATA']['LOOP'] = '';     
+                    
+                    /* Comment by Nico 28/08/2013
+                     * Please, don't remove the comment because make some bug on process
+                     * or explain to me why you want to put this value 
+                     * 
+                     */
+                    //$FieldsCase['APP_DATA']['STATUT'] = 1;
+                    //$FieldsCase['APP_DATA']['LOOP'] = '';
                     $oCase->updateCase($caseUID, $FieldsCase);
                     autoDerivate($proUid, $caseUID, $USR_UID);
                 }
@@ -1260,7 +1276,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
     # create file tmp
     createFileTmpCSV($csv,$csv_file);   
     # end create file tmp
-    mail('nicolas@oblady.fr', 'debug csv mail ', var_export($csv, true));
     unset($_SESSION['REQ_DATA_CSV']);
     return $totalCases;
 }

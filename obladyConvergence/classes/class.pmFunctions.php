@@ -1182,8 +1182,8 @@ function convergence_checkFieldLog($value, $params, $type) {
                 if ($value != $val)
                     $log[] = "la valeur '$value' du champs '$field' n'est pas de type 'Décimal'";
                 break;
-            case 'Telephone': //  ^0[0-9]([-. ]?[0-9]{2}){4}$
-                if (preg_match('#^0[0-9]([-. ]?[0-9]{2}){4}$#', $value) != 1)
+            case 'Telephone': //  ^0[0-9]([-. ]?[0-9]{2}){4}$ ou ^[0-9]([-. ]?[0-9]{2}){4}$
+                if (preg_match('#^0?[0-9]([-. ]?[0-9]{2}){4}$#', $value) != 1 && $value != '0')
                 {
                     $log[] = "la valeur '$value' du champs '$field' ne correspond pas au format 'Téléphone' attendu";
                 }
