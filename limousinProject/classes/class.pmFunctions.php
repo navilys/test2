@@ -7,7 +7,11 @@
  * *
  */
 require_once("plugins/limousinProject/classes/Webservices/Webservice.php");
-require_once("plugins/limousinProject/classes/Webservices/Versement.php");
+require_once("plugins/limousinProject/classes/Webservices/Transaction.php");
+require_once("plugins/limousinProject/classes/Webservices/ActionCRM.php");
+require_once("plugins/limousinProject/classes/Webservices/Operation.php");
+require_once("plugins/limousinProject/classes/Webservices/Solde.php");
+require_once("plugins/limousinProject/classes/Webservices/Identification.php");
 
 ////////////////////////////////////////////////////
 // limousinProject PM Functions
@@ -126,20 +130,120 @@ function limousinProject_generatePorteurID($num_dossier) {
     
 }
 
-function limousinProject_nouveauVersement() {
+
+function limousinProject_nouvelleTransaction() {
     
 	// INIT Ws
-    $v = new Versement();
-	
+    $t = new Transaction();
+
 	// SET Params
-	$v->partenaire = "_partenaire";
-	$v->porteurId = "_porteurId";
-	$v->sens = "_sens";
-	$v->montant = "_montant";
-	$v->addSousMontant("_reseau1","_montatnReseau1");
-	$v->addSousMontant("_reseau2","_montatnReseau2");
+	$t->operation = "_operation";
+	$t->partenaire = "_partenaire";
+	$t->porteurId = "_porteurId";
+	$t->sens = "_sens";
+	$t->montant = "_montant";
+	$t->addSousMontant("_reseau1","_montatnReseau1");
+	$t->addSousMontant("_reseau2","_montatnReseau2");
 	
 	// CALL Ws
-	$retour = $v->save();
-	die();    
+	try{
+		$retour = $t->call();
+	} catch (Exception $e) {
+		// TODO	
+		var_dump($e);
+		die();
+	}
+	
+	
+}
+
+function limousinProject_nouvelleActionCRM() {
+    
+	// INIT Ws
+    $a = new ActionCRM();
+	$action ="_action";
+	$motif = "_motif";
+	
+	// SET Params
+	$a->partenaire = "_partenaire";
+	$a->porteurId = "_porteurId";
+	$a->action = $action;
+	if(!empty($motif))
+		$a->motif = $motif;
+	
+	// CALL Ws
+	try{
+		$retour = $a->call();
+	} catch (Exception $e) {
+		// TODO	
+		var_dump($e);
+		die();		
+	}
+	
+}
+
+function limousinProject_getOperations() {
+    
+	// INIT Ws
+    $o = new Operation();
+	
+	// SET Params
+	$o->operation = "_operation";
+	$o->partenaire = "_partenaire";
+	$o->porteurId = "_porteurId";
+	$o->dateDepart = "_dateDepart";
+	$o->jours = "_jours";	
+	
+	// CALL Ws
+	try{
+		$retour = $o->call();
+	} catch (Exception $e) {
+		// TODO	
+		var_dump($e);
+		die();		
+	}
+	
+}
+
+function limousinProject_getSolde() {
+    
+	// INIT Ws
+    $s = new Solde();
+	
+	// SET Params
+	$s->partenaire = "_partenaire";
+	$s->porteurId = "_porteurId";	
+	
+	// CALL Ws
+	try{
+		$retour = $s->call();
+	} catch (Exception $e) {
+		// TODO	
+		var_dump($e);
+		die();		
+	}
+	
+}
+
+function limousinProject_identification() {
+    
+	// INIT Ws
+    $i = new Identification();
+	
+	// SET Params
+	$i->porteurId = "_porteurId";
+	$i->telephone = "_telephone";
+	$i->portable = "_portable";
+	$i->email = "_email";
+	$i->numcarte = "_numCarte";
+	
+	// CALL Ws
+	try{
+		$retour = $i->call();
+	} catch (Exception $e) {
+		// TODO	
+		var_dump($e);
+		die();		
+	}
+	
 }

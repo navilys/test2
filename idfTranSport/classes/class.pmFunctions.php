@@ -39,3 +39,13 @@ function idfTranSport_getCodeOperDemande($codeEnvoi) {
     return $info;
 }
 
+function getQueryForListDemandeProd($liste) {
+
+    $query = 'SELECT D.APP_UID, D.NUM_DOSSIER, D.NUM_DOSSIER_COMPLEMENT, D.FC_NOM_CLUB as ENTITE, D.REPRODUCTION_CHQ, D.NPAI, TC.LABEL, C.BCONSTANTE
+        FROM PMT_DEMANDES AS D INNER JOIN PMT_TYPE_CHEQUIER AS TC ON (TC.CODE_CD = D.CODE_CHEQUIER) INNER JOIN PMT_CHEQUES AS C ON (C.NUM_DOSSIER = D.NUM_DOSSIER)
+        WHERE D.NUM_DOSSIER IN (
+            ' . implode(',', $liste) . '
+        ) AND D.STATUT=6 GROUP BY C.BCONSTANTE ORDER BY D.NUM_DOSSIER';
+
+    return $query;
+}

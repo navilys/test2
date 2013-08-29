@@ -93,7 +93,8 @@ if(sizeof($select))
 #Update the flag typo3
 $oCase = new Cases ();
 $olfFields = $oCase->loadCase($APP_UID);
-unset($olfFields['APP_DATA']['FLAG_ACTION']);		
+unset($olfFields['APP_DATA']['FLAG_ACTION']);
+//$olfFields['APP_DATA']['FLAG_USER_ROLE'] = convergence_getUserRole($_SESSION['USER_LOGGED']);
 PMFSendVariables($APP_UID, $olfFields);
 $oCase->updateCase($APP_UID, $olfFields);
 # End Update the flag typo3      

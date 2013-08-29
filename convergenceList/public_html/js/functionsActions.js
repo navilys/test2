@@ -1354,6 +1354,188 @@ function VoirLesDemandesProd(app_uid){
 }
 
 
+function VoirLesDemandesProdEntite(app_uid, entity_label, callback) {
+
+    var adaptiveHeight = getDocHeight() - 50;
+
+    var _dmdProdColumns = new Array();
+    var _dmdProdFields = new Array();
+    var storeDmdProd;
+    var _CLOSE = 'Fermer';
+    var _WINTITLE_DMDPROD = "Liste des dossiers de cette production";
+    var _ENTITY_NAME = entity_label;
+    
+    column = {id: 'APP_UID', header: 'ID Demande', width: 20, dataIndex: 'APP_UID', hidden: true};
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'APP_UID'});
+
+    column = {id: 'NUM_DOSSIER', header: 'N&deg; Dossier AS400', width: 100, dataIndex: 'NUM_DOSSIER', hidden: true};
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'NUM_DOSSIER'});
+
+    column = {
+        id: 'NUM_DOSSIER_COMPLEMENT',
+        header: 'N&deg; Dossier',
+        width: 100,
+        renderer: function(value, meta, record) {
+            var demandID = record.data.APP_UID;
+            if (value != null)
+                return '<a href="#" onclick="viewForms(\'' + demandID + '\',1)">' + value + '</a>';
+            else
+                return '<a href="#" onclick="viewForms(\'' + demandID + '\',1)">' + record.data.NUM_DOSSIER + '</a>';
+
+        },
+        dataIndex: 'NUM_DOSSIER_COMPLEMENT',
+        hidden: false
+    };
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'NUM_DOSSIER_COMPLEMENT'});
+
+
+    column = {
+        id: 'ENTITE',
+        header: _ENTITY_NAME,
+        width: 255, //30,req
+        dataIndex: 'ENTITE'
+
+    };
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'ENTITE'});
+
+    column = {
+        id: 'REPRODUCTION_CHQ',
+        header: 'A reproduire ?',
+        width: 80,
+        renderer: function(value) {
+            if (value != 'O')
+                return 'Non';
+            else
+                return 'Oui';
+        },
+        dataIndex: 'REPRODUCTION_CHQ'
+
+    };
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'REPRODUCTION_CHQ'});
+
+    column = {
+        id: 'NPAI',
+        header: 'PND ?',
+        width: 80, //30,req
+        renderer: function(value) {
+            if (value != 'O')
+                return 'Non';
+            else
+                return 'Oui';
+        },
+        dataIndex: 'NPAI'
+
+    };
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'NPAI'});
+
+    column = {
+        id: 'LABEL',
+        header: 'Type',
+        width: 220, //30,req
+        dataIndex: 'LABEL'
+
+    };
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'LABEL'});
+
+    column = {
+        id: 'BCONSTANTE',
+        header: 'Ch&eacute;quier',
+        width: 100,
+        dataIndex: 'BCONSTANTE'
+
+    };
+    _dmdProdColumns.push(column);
+    _dmdProdFields.push({name: 'BCONSTANTE'});
+
+
+    storeDmdProd = new Ext.data.JsonStore({
+        url: '../convergenceList/actions/ListDemandeProd.php?app_uid=' + app_uid + '&callback=' + callback,
+        root: 'data',
+        totalProperty: 'total',
+        autoWidth: true,
+        fields: _dmdProdFields
+    });
+    storeDmdProd.load();
+
+    var cmDmdProd = new Ext.grid.ColumnModel({
+        defaults: {
+            width: 20,
+            sortable: true
+        },
+        columns: _dmdProdColumns
+    });
+    cmDmdProd.defaultSortable = true;
+
+    var gridDmdProd = new Ext.grid.GridPanel({
+        store: storeDmdProd,
+        cm: cmDmdProd,
+        stripeRows: true,
+        columnLines: true,
+        autoScroll: true,
+        autoWidth: true,
+        stateful: true,
+        id: 'gridDmdProd',
+        layout: 'fit',
+        viewConfig: {
+            forceFit: false,
+            emptyText: (_('ID_NO_RECORDS_FOUND'))
+        },
+        /*bbar: new Ext.PagingToolbar({
+         pageSize: 300,
+         store: storeTitre,
+         displayInfo: true,
+         displayMsg: _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
+         emptyMsg: _('ID_DISPLAY_EMPTY')
+         }),*/
+        listeners: {
+            render: function(grid) {
+
+            },
+            afterrender: function() {
+
+            },
+            cellcontextmenu: function(grid, rowIndex, cellIndex, event) {
+
+
+            }
+        },
+        tbar: [{
+                text: _CLOSE,
+                iconCls: 'button_menu_ext ss_sprite ss_accept',
+                handler: function() {
+                    winDmdProd.close();
+                }
+            }]
+    });
+    ///////////// end grid
+    winDmdProd = new Ext.Window({
+        closeAction: 'hide',
+        autoDestroy: true,
+        maximizable: true,
+        id: 'winDmdProd',
+        title: _WINTITLE_DMDPROD,
+        width: 900,
+        height: 400,
+        modal: true,
+        closable: true,
+        constrain: true,
+        autoScroll: true,
+        layout: 'fit',
+        items: gridDmdProd
+    });
+
+    winDmdProd.show();
+    //winTitre.maximize();
+    winDmdProd.toFront();
+}
+
 function ActioncreateNewComplementCH(uidForm,app_uid)
 {               
         urlData = "../convergenceList/actions/ActioncreateNewComplementCH?task="+uidForm+"&uid="+app_uid;

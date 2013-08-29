@@ -19,6 +19,7 @@ $dataAppNumber = executeQuery($selectAppNumber);
 $numDossier = $dataAppNumber[1]['APP_NUMBER'];
 $newFields['APP_DATA']['FLAG_ACTION'] = 'actionCreateCase';
 $newFields['APP_DATA']['FLAGTYPO3'] = 'Off';
+//$newFields['APP_DATA']['FLAG_USER_ROLE'] = convergence_getUserRole($_SESSION['USER_LOGGED']);
 $newFields['APP_DATA']['NUM_DOSSIER'] = $numDossier;
 PMFSendVariables($data['APPLICATION'], $newFields['APP_DATA']);		    
 $caseInstance->updateCase($data['APPLICATION'], $newFields);
