@@ -49,3 +49,95 @@ function getQueryForListDemandeProd($liste) {
 
     return $query;
 }
+// for action exportInboxNpai.php with adr modify
+function idf_exportInboxNpai_callback($res) {
+    //$listeApp_uid = array();
+    foreach ($res as $k => $npai)
+    {
+        $query = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION LIKE "Retour de production%"';
+        $resultDate = executeQuery($query);
+        $qSetPnd = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION="Classer en PND"';
+        $rSetPnd = executeQuery($qSetPnd);
+        if (isset($resultDate[1]['HLOG_DATECREATED']) && $resultDate[1]['HLOG_DATECREATED'] != '' && isset($rSetPnd[1]['HLOG_DATECREATED']) && $rSetPnd[1]['HLOG_DATECREATED'] != '')
+        {
+            /* up */
+            $qPointLivraison = 'SELECT PMT_ETABLISSEMENT.APP_UID AS LIV FROM PMT_ETABLISSEMENT, PMT_DEMANDES WHERE PMT_ETABLISSEMENT.ID = PMT_DEMANDES.FC_PT_LIV AND PMT_DEMANDES.APP_UID ="' . $npai['APP_UID'] . '" AND PMT_ETABLISSEMENT.STATUT = 1';
+            $rPtLiv = executeQuery($qPointLivraison);
+            if (isset($rPtLiv['LIV']) && !empty($rPtLiv['LIV']))
+            {
+                $idLiv = $rPtLiv['LIV'];
+            }
+            else
+                $idLiv = '0';
+            $query2 = 'SELECT count(*) as NB, HLOG_APP_UID FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID IN("' . $npai['APP_UID'] . '","' . $idLiv . '") AND HLOG_DATECREATED > "' . $resultDate[1]['HLOG_DATECREATED'] . '" AND HLOG_DATECREATED < "' . $rSetPnd[1]['HLOG_DATECREATED'] . '" AND HLOG_ACTION="Modification de l\'adresse"';
+            /* end up */
+            $result2 = executeQuery($query2);
+            if ($result2[1]['NB'] > 0)
+            {
+                //$listeApp_uid[] = $npai['APP_UID'];
+                unset($res[$k]['APP_UID']);
+            }
+            else
+            {
+                unset($res[$k]);
+            }
+        }
+        else
+        {
+            unset($res[$k]);
+        }
+    }
+
+    return $res;
+}
+
+// for the pm function
+// Permet de modifier l'adresse d'un point de livraison d'une demande
+// retourne le nouvel app_uid, l'action et le statut pour l'historyLog
+function idf_modifyAdresseofDemande_callback($case_uid_demande) {
+    $ret = array();
+    $ret['action'] = "Modification de l'adresse";
+    $ret['status'] = 200;
+    $query = 'select FC_ID_LIV as point_liv from PMT_DEMANDES where APP_UID = "' . $case_uid_demande . '"';
+    $res = executeQuery($query);
+    if (isset($res['point_liv']) && !empty($res['point_liv']))
+    {
+        $q = 'select APP_UID from PMT_ETABLISSEMENT where ID = ' . $res['point_liv'];
+        $r = executeQuery($q);
+        if (isset($r['APP_UID']) && !empty($r['APP_UID']))
+        {
+            $ret['uid'] = $r['APP_UID'];
+            return $ret;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+function idf_classerNPAI_callback($item) {
+    $newAdresse = 0;
+    $qPointLivraison = 'SELECT PMT_ETABLISSEMENT.APP_UID AS LIV FROM PMT_ETABLISSEMENT, PMT_DEMANDES WHERE PMT_ETABLISSEMENT.ID = PMT_DEMANDES.FC_PT_LIV AND PMT_DEMANDES.APP_UID ="' . $item['APP_UID'] . '" AND PMT_ETABLISSEMENT.STATUT = 1';
+    $rPtLiv = executeQuery($qPointLivraison);
+    if (isset($rPtLiv['LIV']) && !empty($rPtLiv['LIV']))
+    {
+        $idLiv = $rPtLiv['LIV'];
+    }
+    else
+        $idLiv = '0';
+
+    $query = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $item['APP_UID'] . '" AND HLOG_ACTION LIKE "Retour de production%"';
+    $result = executeQuery($query);
+    //si j'ai une date de retour de prod, je regarde si je n'ai pas de modif d'adresse apres
+    if (isset($result[1]['HLOG_DATECREATED']) && $result[1]['HLOG_DATECREATED'] != '')
+    {
+        $query2 = 'SELECT count(*) as NB FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID IN("' . $item['APP_UID'] . '","' . $idLiv . '") AND HLOG_DATECREATED > "' . $result[1]['HLOG_DATECREATED'] . '" AND HLOG_ACTION="Modification de l\'adresse"';
+        $result2 = executeQuery($query2);
+
+        if ($result2[1]['NB'] > 0)
+            $newAdresse = 1;        
+    }
+    return $newAdresse;
+}
+

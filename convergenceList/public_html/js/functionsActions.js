@@ -188,9 +188,12 @@ function editFormsWithTag(appUid,tag){
     windowTabs(appUid,urlData,appNumb);
 }
 
-function classerNPAI(annuleFlag){
+function classerNPAI(annuleFlag, callback) {
 
     if (!annuleFlag) { annuleFlag = 0; } 
+    if (!callback) {
+        callback = '';
+    }
 
     idField = myApp.addTab_inside();                    
     urlData = "../convergenceList/actions/npaiFlag.php";
@@ -207,8 +210,9 @@ function classerNPAI(annuleFlag){
     Ext.Ajax.request({
            url : urlData,
            params : {
-             array  : idField,
-                     todo : annuleFlag
+            array  : idField,
+            todo: annuleFlag,
+            callback: callback
            },
            success: function (result, request) {
              var response = Ext.util.JSON.decode(result.responseText);
@@ -253,13 +257,15 @@ function exportInbox(){
     post(urlData, {array: idField, sFieldValue: sFieldValue, sFieldName: sFieldName, IdInbox: IdInbox});
 }
 
-function exportInboxNpai(npaiOrAdr, fileType) {
+function exportInboxNpai(npaiOrAdr, fileType, callback) {
 
     IdInbox = myApp.getIdInbox();   
     if (!npaiOrAdr)
         npaiOrAdr = 'npai';
     if (!fileType)
         fileType = 'csv';
+    if (!callback)
+        callback = '';
     idField = myApp.addTab_inside();
     sFieldName = Ext.getCmp('_fieldName').getValue();
     if (sFieldName == 'ALL') {
@@ -268,7 +274,7 @@ function exportInboxNpai(npaiOrAdr, fileType) {
         sFieldValue = Ext.getCmp('_fieldInputSpecific').getValue();
     }
     urlData = "../convergenceList/actions/exportInboxNpai.php";
-    post(urlData, {array: idField, sFieldValue: sFieldValue, sFieldName: sFieldName, type: npaiOrAdr, ext: fileType, IdInbox: IdInbox});
+    post(urlData, {array: idField, sFieldValue: sFieldValue, sFieldName: sFieldName, type: npaiOrAdr, ext: fileType, IdInbox: IdInbox, callback: callback});
 }
 
 function explicationStatut(appUid){
@@ -1658,9 +1664,9 @@ function ActioncreateNewCase(uidForm)
         });
 }
 
-function actionModifyAdresse(uidForm,app_uid)
+function actionModifyAdresse(uidForm, app_uid)
 {               
-        urlData = "../convergenceList/actions/actionModifyAdresse?task="+uidForm+"&uid="+app_uid;
+    urlData = "../convergenceList/actions/actionModifyAdresse?task=" + uidForm + "&uid=" + app_uid;
         var adaptiveHeight = getDocHeight() - 50;
         
         var win2 = new Ext.Window({

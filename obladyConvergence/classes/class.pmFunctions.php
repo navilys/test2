@@ -1522,11 +1522,24 @@ function convergence_changeStatutFromImport($data, $statut = 6) {
 }
 
 //GLOBAL
-function modifyAdresseofDemande($app_uid, $case_uid_demande) {
+function modifyAdresseofDemande($app_uid, $case_uid_demande, $callback = '') {
     //je recupere mes valeurs courantes
     $datas = convergence_getAllAppData($app_uid);
     $noMergeDatas = array('SYS_LANG', 'SYS_SKIN', 'SYS_SYS', 'APPLICATION', 'PROCESS', 'TASK', 'INDEX', 'USER_LOGGED', 'USER_USERNAME', 'PIN', 'FLAG_ACTION', 'APP_NUMBER');
     //on modifie le case de la demande
+    if (!empty($callback))
+    {
+        $new_params = call_user_func($callback, $case_uid_demande);
+        if (!$new_params)
+        {
+            unset($callback);
+        }
+        else
+        {
+            unset($case_uid_demande);
+            $case_uid_demande = $new_params['uid'];
+        }
+    }
     $oCase = new Cases ();
     $Fields = $oCase->loadCase($case_uid_demande);
     foreach ($datas as $key => $value)
@@ -1535,8 +1548,10 @@ function modifyAdresseofDemande($app_uid, $case_uid_demande) {
             $Fields['APP_DATA'][$key] = $value;
     }
     $oCase->updateCase($case_uid_demande, $Fields);
-
-    insertHistoryLogPlugin($case_uid_demande, $_SESSION['USER_LOGGED'], date('Y-m-d H:i:s'), '0', '', "Modification de l'adresse", 6);
+    if (empty($callback))
+        insertHistoryLogPlugin($case_uid_demande, $_SESSION['USER_LOGGED'], date('Y-m-d H:i:s'), '0', '', "Modification de l'adresse", 6);
+    else
+        insertHistoryLogPlugin($case_uid_demande, $_SESSION['USER_LOGGED'], date('Y-m-d H:i:s'), '0', '', $new_params['action'], $new_params['status']);
 }
 
 //GLOBAL

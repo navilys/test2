@@ -134,7 +134,11 @@ else
 }
 $rSQL = executeQuery($sSQL);
 
-if ($type != 'npai')
+if ($type != 'npai' && !empty($_REQUEST['callback']))
+{
+    $rCallback = call_user_func($_REQUEST['callback'], $rSQL); // call an user_func in the class.pmFunction.php of the current dispositif for
+}
+else if ($type != 'npai')
 {
     $listeApp_uid = array();
     foreach ($rSQL as $k => $npai)

@@ -15,21 +15,26 @@ foreach($items as $item){
 		//on regarde si on a pas modifier l'adresse entre temps
 		//si statut produit et si date modif adresse > date de la production
 		$newAdresse = 0;
-		$query = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $item['APP_UID'] . '" AND HLOG_ACTION LIKE "Retour de production%"';        
-        $result = executeQuery($query);
+        if (!empty($_REQUEST['callback']))
+        {
+            $newAdresse = call_user_func($_REQUEST['callback'], $item);
+        }
+        else
+        {
+            $query = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $item['APP_UID'] . '" AND HLOG_ACTION LIKE "Retour de production%"';
+            $result = executeQuery($query);
+            //si j'ai une date de retour de prod, je regarde si je n'ai pas de modif d'adresse apres
+            if (isset($result[1]['HLOG_DATECREATED']) && $result[1]['HLOG_DATECREATED'] != '')
+            {
+                $query2 = 'SELECT count(*) as NB FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $item['APP_UID'] . '" AND HLOG_DATECREATED > "' . $result[1]['HLOG_DATECREATED'] . '" AND HLOG_ACTION="Modification de l\'adresse"';
+                $result2 = executeQuery($query2);
 
-        //si j'ai une date de retour de prod, je regarde si je n'ai pas de modif d'adresse apres
-		if (isset($result[1]['HLOG_DATECREATED']) && $result[1]['HLOG_DATECREATED'] != '' ) {
-		
-			$query2 = 'SELECT count(*) as NB FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="'.$item['APP_UID'].'" AND HLOG_DATECREATED > "'.$result[1]['HLOG_DATECREATED'].'" AND HLOG_ACTION="Modification de l\'adresse"'; 
-			$result2 = executeQuery($query2);
-
-			if ($result2[1]['NB'] > 0)
-				$newAdresse = 1;
-			else
-				$newAdresse = 0;
-			
-                }
+                if ($result2[1]['NB'] > 0)
+                    $newAdresse = 1;
+                else
+                    $newAdresse = 0;
+            }
+        }
         // Ajout du $todoAnnule == 1 pour pouvoir enlever le flag si l'adress à été modifiée
         //if ($newAdresse == 0 || $todoAnnule == 1)
         //{
