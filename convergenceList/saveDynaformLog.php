@@ -86,8 +86,8 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 			$newAPP_UID = $_SESSION['APPLICATION_EDIT']; 
 		}
 		else
-		{
-			$newAPP_UID = PMFNewCase($PRO_UID, $USR_UID, $TAS_UID, $Fields2['APP_DATA']); 			
+		{ //G::pr($Fields2['APP_DATA']); print($PRO_UID.'  '.$USR_UID.'  '.$TAS_UID);
+			$newAPP_UID = PMFNewCase($PRO_UID, $USR_UID, $TAS_UID, $Fields2['APP_DATA']); 	
 		}   
 		$newFields = $oCase->loadCase ($newAPP_UID);
 		$newFields["APP_DATA"] = array_merge( $newFields["APP_DATA"], G::getSystemConstants() );
@@ -155,10 +155,18 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
   		else	
   		{  			
   			$end_date =  Date("m-d-Y H:i:s");
-       		$update = executeQuery("UPDATE PMT_USER_CONTROL_CASES SET USR_CTR_CAS_END_DATE = '$end_date' 
-       							    WHERE APP_UID = '$APP_UID' AND USR_UID = '$auxUsrUID' "); 
-       		$delete = executeQuery("DELETE FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID = '".$auxUsrUID."' ");
        		
+       		$delete = executeQuery("DELETE FROM PMT_USER_CONTROL_CASES WHERE APP_UID = '$APP_UID' AND USR_UID = '".$auxUsrUID."' ");
+       		$date_start = Date("m-d-Y H:i:s");
+       		$queryId = "SELECT max(USR_CTR_CAS_ID) AS MAX_ID FROM  PMT_USER_CONTROL_CASES  "; 
+			$maxId = executeQuery ( $queryId );
+			$sgtIdIn = $maxId[1]['MAX_ID'] + 1;
+       		$insert = "INSERT INTO PMT_USER_CONTROL_CASES (
+		       			USR_CTR_CAS_ID, APP_UID, USR_UID, USR_CTR_CAS_START_DATE, USR_CTR_CAS_END_DATE )
+		       		   VALUES(
+		       			'$sgtIdIn', '$newAPP_UID', '".$_SESSION['USER_LOGGED']."','$date_start' ,'' ) ";
+			executeQuery($insert);
+			
 			$_SESSION['APPLICATION'] = $newAPP_UID;
      		$_SESSION['APPLICATION_EDIT'] = $newAPP_UID;
   			$_SESSION['USER_LOGGED_INI'] = $auxUsrUID ;

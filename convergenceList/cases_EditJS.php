@@ -41,6 +41,34 @@ $Roles=$Us->load($users);
 $rolesAdmin=$Roles['USR_ROLE'];
 #End rol user
 
+ # execute Triggers task Ini
+$oCase = new Cases();
+$Fields = $oCase->loadCase($APP_UID);
+$userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
+$Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+$oCase->updateCase($APP_UID, $Fields);
+           
+$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+$startTasks = executeQuery($query);
+foreach($startTasks as $rowTask){
+	$taskId = $rowTask['TAS_UID'];
+	$stepsByTask = getStepsByTask($taskId);
+	foreach ($stepsByTask as $caseStep){
+		$caseStepRes[] = $caseStep->getStepUidObj();
+	}
+	break;
+}
+	        
+$totStep = 0;
+foreach($caseStepRes as $index)
+{
+	$stepUid = $index;
+	executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+	executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+	$totStep++;
+} 
+# end execute Triggers task Ini   
+
 # Get Dynaforms
    
 if($rolesAdmin == 'PROCESSMAKER_ADMIN')
@@ -88,7 +116,7 @@ foreach ($select as $row)
     }
     if($bAccessStep)
     	$newSelect[]= $row;
-    }
+}
      unset($aFields);
      $select = $newSelect;
      
