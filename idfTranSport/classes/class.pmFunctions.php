@@ -61,11 +61,11 @@ function idf_exportInboxNpai_callback($res) {
         if (isset($resultDate[1]['HLOG_DATECREATED']) && $resultDate[1]['HLOG_DATECREATED'] != '' && isset($rSetPnd[1]['HLOG_DATECREATED']) && $rSetPnd[1]['HLOG_DATECREATED'] != '')
         {
             /* up */
-            $qPointLivraison = 'SELECT PMT_ETABLISSEMENT.APP_UID AS LIV FROM PMT_ETABLISSEMENT, PMT_DEMANDES WHERE PMT_ETABLISSEMENT.ID = PMT_DEMANDES.FC_PT_LIV AND PMT_DEMANDES.APP_UID ="' . $npai['APP_UID'] . '" AND PMT_ETABLISSEMENT.STATUT = 1';
+            $qPointLivraison = 'SELECT PMT_ETABLISSEMENT.APP_UID AS LIV FROM PMT_ETABLISSEMENT, PMT_DEMANDES WHERE PMT_ETABLISSEMENT.FP_CODE = PMT_DEMANDES.FC_ID_LIV AND PMT_DEMANDES.APP_UID ="' . $npai['APP_UID'] . '" AND PMT_ETABLISSEMENT.STATUT = 1';
             $rPtLiv = executeQuery($qPointLivraison);
-            if (isset($rPtLiv['LIV']) && !empty($rPtLiv['LIV']))
+            if (isset($rPtLiv[1]['LIV']) && !empty($rPtLiv[1]['LIV']))
             {
-                $idLiv = $rPtLiv['LIV'];
+                $idLiv = $rPtLiv[1]['LIV'];
             }
             else
                 $idLiv = '0';
@@ -100,13 +100,13 @@ function idf_modifyAdresseofDemande_callback($case_uid_demande) {
     $ret['status'] = 200;
     $query = 'select FC_ID_LIV as point_liv from PMT_DEMANDES where APP_UID = "' . $case_uid_demande . '"';
     $res = executeQuery($query);
-    if (isset($res['point_liv']) && !empty($res['point_liv']))
+    if (isset($res[1]['point_liv']) && !empty($res[1]['point_liv']))
     {
-        $q = 'select APP_UID from PMT_ETABLISSEMENT where ID = ' . $res['point_liv'];
+        $q = 'select APP_UID from PMT_ETABLISSEMENT where FP_CODE = ' . $res[1]['point_liv'];
         $r = executeQuery($q);
-        if (isset($r['APP_UID']) && !empty($r['APP_UID']))
+        if (isset($r[1]['APP_UID']) && !empty($r[1]['APP_UID']))
         {
-            $ret['uid'] = $r['APP_UID'];
+            $ret['uid'] = $r[1]['APP_UID'];
             return $ret;
         }
         else
@@ -118,11 +118,11 @@ function idf_modifyAdresseofDemande_callback($case_uid_demande) {
 
 function idf_classerNPAI_callback($item) {
     $newAdresse = 0;
-    $qPointLivraison = 'SELECT PMT_ETABLISSEMENT.APP_UID AS LIV FROM PMT_ETABLISSEMENT, PMT_DEMANDES WHERE PMT_ETABLISSEMENT.ID = PMT_DEMANDES.FC_PT_LIV AND PMT_DEMANDES.APP_UID ="' . $item['APP_UID'] . '" AND PMT_ETABLISSEMENT.STATUT = 1';
+    $qPointLivraison = 'SELECT PMT_ETABLISSEMENT.APP_UID AS LIV FROM PMT_ETABLISSEMENT, PMT_DEMANDES WHERE PMT_ETABLISSEMENT.FP_CODE = PMT_DEMANDES.FC_ID_LIV AND PMT_DEMANDES.APP_UID ="' . $item['APP_UID'] . '" AND PMT_ETABLISSEMENT.STATUT = 1';
     $rPtLiv = executeQuery($qPointLivraison);
-    if (isset($rPtLiv['LIV']) && !empty($rPtLiv['LIV']))
+    if (isset($rPtLiv[1]['LIV']) && !empty($rPtLiv[1]['LIV']))
     {
-        $idLiv = $rPtLiv['LIV'];
+        $idLiv = $rPtLiv[1]['LIV'];
     }
     else
         $idLiv = '0';

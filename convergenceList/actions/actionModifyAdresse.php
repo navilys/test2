@@ -21,13 +21,13 @@ $actuelDatas = convergence_getAllAppData($_REQUEST['uid']);
 $newFields['APP_DATA']['FLAG_ACTION'] = 'actionCreateCase';
 
 $newFields['APP_DATA']['uidDemande'] = $_REQUEST['uid'];
-$newFields['APP_DATA']['numVoie'] = $actuelDatas['numVoie'];
-$newFields['APP_DATA']['typeVoie'] = $actuelDatas['typeVoie'];
-$newFields['APP_DATA']['nomVoie'] = $actuelDatas['nomVoie'];
-$newFields['APP_DATA']['autreVoie'] = $actuelDatas['autreVoie'];
-$newFields['APP_DATA']['codePostal'] = $actuelDatas['codePostal'];
-$newFields['APP_DATA']['codePostal_label'] = $actuelDatas['codePostal_label'];
-$newFields['APP_DATA']['ville'] = $actuelDatas['ville'];
+$newFields['APP_DATA']['STATUT'] = $actuelDatas['STATUT'];
+/* $newFields['APP_DATA']['typeVoie'] = $actuelDatas['typeVoie'];
+  $newFields['APP_DATA']['nomVoie'] = $actuelDatas['nomVoie'];
+  $newFields['APP_DATA']['autreVoie'] = $actuelDatas['autreVoie'];
+  $newFields['APP_DATA']['codePostal'] = $actuelDatas['codePostal'];
+  $newFields['APP_DATA']['codePostal_label'] = $actuelDatas['codePostal_label'];
+  $newFields['APP_DATA']['ville'] = $actuelDatas['ville']; */
 
 
 PMFSendVariables($data['APPLICATION'], $newFields['APP_DATA']);		    

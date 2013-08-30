@@ -133,10 +133,10 @@ else
         $sSQL = "SELECT $dataSelected FROM  $idTable $sJoins $sWhere $sOrderBy";
 }
 $rSQL = executeQuery($sSQL);
-
 if ($type != 'npai' && !empty($_REQUEST['callback']))
 {
-    $rCallback = call_user_func($_REQUEST['callback'], $rSQL); // call an user_func in the class.pmFunction.php of the current dispositif for
+    $rCallback = call_user_func($_REQUEST['callback'], $rSQL); // call an user_func in the class.pmFunction.php of the current dispositif
+    $rSQL = $rCallback;
 }
 else if ($type != 'npai')
 {

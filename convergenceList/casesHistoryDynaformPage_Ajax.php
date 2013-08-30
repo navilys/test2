@@ -274,10 +274,14 @@ if($actionAjax== 'historyDynaformGridPreview')
   	  else 
   	  	 	$_SESSION['PROCESS'] = $PRO_UID;
      
-      $Fields = $oCase->loadCase($APP_UID);
-      $userLoggedIni = '';
-      if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
-      {     
+      
+       if($ACTIONTYPE == 'edit')
+      {
+        $Fields = $oCase->loadCase($APP_UID);
+        $userLoggedIni = '';
+      
+        if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
+        {     
             $Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
             if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
             {
@@ -306,9 +310,9 @@ if($actionAjax== 'historyDynaformGridPreview')
 				$totStep++;
 			} 
 			# end execute Triggers task Ini
-	  }
-	  else if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
-	  {
+	    }
+	    else if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
+	    {
 	        $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
 	        $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
             $oCase->updateCase($APP_UID, $Fields);
@@ -333,13 +337,15 @@ if($actionAjax== 'historyDynaformGridPreview')
 				$totStep++;
 			} 
 			# end execute Triggers task Ini 
-	  }
-      if($userLoggedIni != '')
-      {
+	    }
+	  
+        if($userLoggedIni != '')
+        {
             $Fields = $oCase->loadCase($APP_UID);
             $Fields['APP_DATA']['USER_LOGGED'] = $userLoggedIni;
             $oCase->updateCase($APP_UID, $Fields);
-      }
+        }
+     }
       $Fields = $oCase->loadCase($APP_UID);
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['PREVIOUS_STEP_LABEL'] = '';
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['NEXT_STEP_LABEL'] = ''; 
