@@ -141,3 +141,27 @@ function idf_classerNPAI_callback($item) {
     return $newAdresse;
 }
 
+function idf_actionDeleteCases_callback($item) {
+    $appUid = $item['APP_UID'];
+    $result = array();
+    $result['check'] = true;
+    $sqlGetEtabFromAppUid = "SELECT FP_CODE FROM PMT_ETABLISSEMENT WHERE APP_UID = '" . $appUid . "'";
+    $resultGetEtab = executeQuery($sqlGetEtabFromAppUid);
+    if (isset($resultGetEtab[1]['FP_CODE']) && $resultGetEtab[1]['FP_CODE'] != '')
+    {
+        $codeEtab = $resultGetEtab[1]['FP_CODE'];
+        $sqlCheckEtab = "SELECT NUM_DOSSIER FROM PMT_DEMANDES WHERE (FC_ID_LIV = '" . $codeEtab . "' OR FC_CODE_CLUB = '" . $codeEtab . "' OR FC_CODE_LIGUE = '" . $codeEtab . "') AND STATUT != '0' AND STATUT != '999'";
+        $resultCheckEtab = executeQuery($sqlCheckEtab);
+        if (isset($resultCheckEtab[1]['NUM_DOSSIER']) && $resultCheckEtab[1]['NUM_DOSSIER'] != '')
+        {
+            $result['check'] = false;
+            $result['messageInfo'] = "Le dossier " . $item['NUM_DOSSIER'] . " n'a pas été supprimé.";
+        }
+        else
+        {
+            $result['messageInfo'] = "Le dossier " . $item['NUM_DOSSIER'] . " a été correctement supprimé.";
+        }
+    }
+    return $result;
+}
+

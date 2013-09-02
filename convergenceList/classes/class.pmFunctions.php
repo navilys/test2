@@ -61,11 +61,12 @@ function autoDerivate($processId,$caseUID,$userId){
 	$userLoggedIni = $_SESSION['USER_LOGGED'];
 	if(isset($_SESSION['USER_LOGGED_INI']) && $_SESSION['USER_LOGGED_INI'] != '')
 		$userLoggedIni = $_SESSION['USER_LOGGED_INI'];
-        
-	foreach($startTasks as $rowTask){
-		updateDateAPPDATA($caseUID);
-		$taskId = $rowTask['TAS_UID'];
-		$currentTask = $taskId;
+
+    foreach ($startTasks as $rowTask)
+    {
+        updateDateAPPDATA($caseUID);
+        $taskId = $rowTask['TAS_UID'];
+        $currentTask = $taskId;
 		$process = $processId;
 		$appUid = $caseUID;    
 		$task = $taskId;	

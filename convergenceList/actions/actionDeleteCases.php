@@ -75,27 +75,13 @@ function FRegenerateRPT(){
     }
 }
 
-function checkEtablissementCanBeDeleted($appUid)
-{
-    $result = true;
-    $sqlGetEtabFromAppUid = "SELECT FP_CODE FROM PMT_ETABLISSEMENT WHERE APP_UID = '".$appUid."'";
-    $resultGetEtab = executeQuery($sqlGetEtabFromAppUid);
-    if(sizeof($resultGetEtab))
-    {
-        $codeEtab = $resultGetEtab[1]['FP_CODE'];
-        $sqlCheckEtab = "SELECT 1 FROM PMT_DEMANDES WHERE FC_ID_LIV = '".$codeEtab."' OR FC_CODE_CLUB = '".$codeEtab."' OR FC_CODE_LIGUE = '".$codeEtab."'";
-        $resultCheckEtab = executeQuery($sqlCheckEtab);
-        $result = !sizeof($resultCheckEtab);
-    }
-    return $result;
-}
 #####################################################End Functions####################################################
 
 $array=array();
 $array = $_REQUEST['array'];
 $items = json_decode($array,true);
 $pmTableId = $_REQUEST['pmTableId'];
-$canBeDeletedFunc = $_REQUEST['canBeDeletedFunc'];
+$callback = $_REQUEST['canBeDeletedFunc'];
 $tableType = "Report";
 $tableName = '';
 
@@ -119,29 +105,34 @@ $tableName = '';
 
     if(count($items)>0){
         $oCase = new Cases ();
-        foreach($items as $item){
-            $vals = array_keys($item);
-            $APPUID = strstr_array($vals,'APP_UID');
-            if(empty($canBeDeletedFunc) || call_user_func($canBeDeletedFunc, $APPUID))
-            {
-                if(isset($item[$APPUID]) && $item[$APPUID] != ''){
-                        //don't delete in database, just change statut
-                        convergence_changeStatut($item[$APPUID], '999', 'Suppression');
-                        /*FDeletePMCases($item[$APPUID]);
-                
-                        if($tableType == "pmTable" && $tableName != ''){
-                            $sqlDelTable = "DELETE FROM ".$tableName." WHERE ".$pmTableFieldAPPUID." = '".$item[$APPUID]."' ";              
-                            $resDelTable=executeQuery($sqlDelTable);
-                        }   
-                         
-                        */
-                }   
-                $messageInfo = "Le dossier a été correctement supprimé.";
+    $messageInfo = "";
+    foreach($items as $item){
+        $vals = array_keys($item);
+        $APPUID = strstr_array($vals, 'APP_UID');
+        if (empty($callback))// || call_user_func($canBeDeletedFunc, $APPUID))
+        {
+            if(isset($item[$APPUID]) && $item[$APPUID] != ''){
+                    //don't delete in database, just change statut
+                    convergence_changeStatut($item[$APPUID], '999', 'Suppression');
+                    /*FDeletePMCases($item[$APPUID]);
+
+                    if($tableType == "pmTable" && $tableName != ''){
+                        $sqlDelTable = "DELETE FROM ".$tableName." WHERE ".$pmTableFieldAPPUID." = '".$item[$APPUID]."' ";              
+                        $resDelTable=executeQuery($sqlDelTable);
+                    }   
+
+                    */
             }
-            else
-            {
-                $messageInfo = "Le dossier n'a pas été supprimé.";
-            }
+            $messageInfo .= "Le dossier <strong>" . $item['NUM_DOSSIER'] . "</strong> a été correctement supprimé.<br/>";
+        }
+        else
+        {
+            $callAnswer = array();
+            $callAnswer = call_user_func($callback, $item);
+            if ($callAnswer['check'] == true && isset($item[$APPUID]) && $item[$APPUID] != '')
+                convergence_changeStatut($item[$APPUID], '999', 'Suppression');
+            $messageInfo .= $callAnswer['messageInfo'] . "\n";
+        }
         
         /*if($tableType == "Report"){
             FRegenerateRPT(); // regenerate all RP tables
