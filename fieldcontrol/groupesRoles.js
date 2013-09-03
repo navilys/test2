@@ -255,6 +255,7 @@ Ext.onReady(function(){
       totalProperty: 'total_groups',
       fields : [
                 {name : 'GRP_UID'},
+                {name : 'ROL_ID'},
                 {name : 'GRP_STATUS'},
                 {name : 'CON_VALUE'},
                 {name : 'ROL_DELETE'},
@@ -504,7 +505,7 @@ DeleteRoleAction = function(){
 //Delete New Role
 UpdateRoleAction = function(){
   rowSelected = infoGrid.getSelectionModel().getSelected();
-  gName = rowSelected.data.CON_VALUE;
+  gName = rowSelected.data.ROL_ID;
     Ext.Ajax.request({
       url: 'groupsRoles_Ajax.php',
       method: 'POST',

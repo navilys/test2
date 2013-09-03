@@ -1,4 +1,32 @@
 <?
+/*$pfServer = new SoapClient('http://192.168.1.94:8084/typo3conf/ext/pm_webservices/serveur.php?wsdl', array("trace" => 1, "exception" => 0));
+try {
+  $ret = $pfServer->disableAccount(array('username' => 'gary@colosa.com'));
+} catch (Exception $error) {
+    header('Content-Type: text/plain;');var_dump($pfServer, $error);
+}
+echo '<pre>';
+var_dump($ret);
+echo '</pre>';
+die;*/
+
+$client = new SoapClient('http://192.168.1.94/sysCheqLivreApp/en/frclassic/obladyConvergence/services/wsdl2',array("trace" => 1, "exception" => 0));
+$params = array('username' => 'gary');
+$result = $client->__soapCall("login", array(
+array("userid" => "admin",
+"password" => "admin"
+)));
+$sessionId = $result->message;
+try {
+  $ret = $result = $client->__SoapCall('getParams', $params);
+} catch (Exception $error) {
+    header('Content-Type: text/plain;');
+    var_dump($client, $error); 
+    $ret = $error;
+}
+//G::pr($ret);
+die;
+
 //print_r(PATH_PLUGINS . 'externalRegistration' . PATH_SEPARATOR . get_include_path());
 /*require_once PATH_PLUGINS.'externalRegistration/classes/model/ErConfiguration.php';
 require_once PATH_PLUGINS.'externalRegistration/classes/model/ErRequests.php';

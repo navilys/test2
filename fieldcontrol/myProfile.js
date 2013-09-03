@@ -252,9 +252,9 @@ Ext.onReady(function () {
     ]
   });
 
- if (onlyPassword == true)
+  if (onlyPassword == true)
     frmDetails.remove(informationFields);
-
+  
   informationFields2 = new Ext.form.FieldSet({
     title : _('ID_PERSONAL_INFORMATION'),
     items : [

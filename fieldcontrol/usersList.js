@@ -57,7 +57,7 @@ var comboAuthSources;
 var storeAuthSources;
 var configUsers;
 var configListUsers;
-
+var rpta 
 Ext.onReady(function(){
   Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
   Ext.QuickTips.init();
@@ -584,11 +584,14 @@ changeStatus = function(userUid, newUsrStatus) {
 //Check change user status
 changeStatusCheck = function() {
   var row = infoGrid.getSelectionModel().getSelected();
+  window.dataServices; 
   if (row) {
     if (row.data.USR_UID == user_admin){
       Ext.Msg.alert(_('ID_USERS'), _('ID_CANNOT_CHANGE_STATUS_ADMIN_USER'));
     }
     else {
+      var response = DisableUserWebServices();
+      console.log(response);
       viewport.getEl().mask(_('ID_PROCESSING'));
       Ext.Ajax.request({
         url: 'users_Ajax',
@@ -771,4 +774,32 @@ UpdatePageConfig = function(pageSize){
 UpdateAuthSource = function(index){
   searchText.reset();
   infoGrid.store.load({params: {auths: index}});
+};
+
+//Delete New Role
+DisableUserWebServices = function(){
+  rowSelected = infoGrid.getSelectionModel().getSelected();
+  var userDisable;
+  userName = rowSelected.data.USR_USERNAME;
+ //console.log(rowSelected.data);
+  
+  var disableUser = Ext.Ajax.request({
+      url: 'users_Ajax.php',
+      method: 'POST',
+      params: {
+	  	  'function': 'disableUser',
+          userName:userName,
+          userUid: rowSelected.data.USR_UID
+      },
+      success: function(userDisable) {
+    	 var data = Ext.decode(userDisable.responseText);
+         var response  = data.success;
+         parent.dataServices = data.data;
+       
+      },
+      failfure: function(xhr,params) {
+          alert('Failure!\n'+xhr.responseText);  
+      }
+  });
+  return parent.dataServices;
 };

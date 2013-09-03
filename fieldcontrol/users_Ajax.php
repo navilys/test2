@@ -1,4 +1,6 @@
 <?php
+ini_set ( 'error_reporting', E_ALL );
+ini_set ( 'display_errors', True );
 /**
  * users_Ajax.php
  *
@@ -550,6 +552,14 @@ try {
       $misc['REPLACED_NAME'] = $replaced_by;
         echo '{success: true, userdata: '.G::json_encode($data).', cases: '.G::json_encode($aCount).', misc: '.G::json_encode($misc).'}';
        break;
+       
+    case 'disableUser':
+		
+    	$rpta = pmDisableUser($_POST['userName']);
+     	$userDisable = array ('success' => true, 'data' => $rpta);
+		echo json_encode ($userDisable);
+       break;
+       
    }
 }
 catch (Exception $oException) {

@@ -25,10 +25,10 @@ switch($_POST['action'])
       
         $oUser                    = new Users();
         $defaultDatas                  = $oUser->loadDetailed($form['USR_UID']);
-      
+        
         $sUserUID=$aData['USR_UID'] = $form['USR_UID'];
         $aData['USR_USERNAME']      = ($form['USR_USERNAME']) ? $form['USR_USERNAME'] : $defaultDatas['USR_USERNAME'];
-	
+		
         if (isset($form['USR_PASSWORD'])) {
 
           if ($form['USR_PASSWORD'] != '') {
@@ -157,7 +157,7 @@ switch($_POST['action'])
     'pmid' => $form['USR_UID'],
     'usergroup' => $groupId,
     'cHash' => md5($aData['USR_USERNAME'].'*'.$aData['USR_LASTNAME'].'*'.$aData['USR_FIRSTNAME'].'*'.$key)));
-    
+     
     // End Typo3
     
       $result->success = true;
@@ -332,7 +332,4 @@ function userTypo3Update(){
     'usergroup' => $groupId,
     'cHash' => md5($_POST['USR_USERNAME'].'*'.$_POST['USR_LASTNAME'].'*'.$_POST['USR_FIRSTNAME'].'*'.$key)));
 
-    
-    
-    
 }

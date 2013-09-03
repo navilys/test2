@@ -1,4 +1,5 @@
 <?php
+define('LimousinPort','8084');
 G::LoadClass("plugin");
 
 class limousinProjectPlugin extends PMPlugin

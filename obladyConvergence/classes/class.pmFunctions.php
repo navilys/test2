@@ -1700,3 +1700,15 @@ function convergence_justeOneDemande($user) {
     return 1;
 }
 
+## disable user conection web services
+function pmDisableUser($userName)
+{ 
+	$ret = 1;
+	$pfServer = new SoapClient('http://192.168.1.94:8084/typo3conf/ext/pm_webservices/serveur.php?wsdl');
+
+	$ret = $pfServer->disableAccount(array('username' => $userName));
+	
+	return $ret;
+}
+## end disable user conection web services
+
