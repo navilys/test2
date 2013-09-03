@@ -1,0 +1,1 @@
+<response><head><wsId>307</wsId></head><body><operation>IDENTIFICATIONS</operation><arguments><porteurId>…</porteurId><telephone>…</telephone><portable>…</portable><email>…</email><numcarte>…</numcarte></arguments></body><status><success><partenaire>…</partenaire><porteurId>…</porteurId></success></status></response>

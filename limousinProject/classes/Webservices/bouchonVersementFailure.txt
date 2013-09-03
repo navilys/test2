@@ -1,0 +1,1 @@
+<response><head><wsId>201</wsId></head><body><operation>TYPE OPERATION</operation><arguments><partenaire>…</partenaire><porteurId>…</porteurId><montant>…</montant></arguments></body><status><failure><code>5</code><errors><field name="A">Description A</field><field name="B">Description B</field></errors></failure></status></response>

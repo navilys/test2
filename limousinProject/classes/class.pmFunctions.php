@@ -247,3 +247,28 @@ function limousinProject_identification() {
 	}
 	
 }
+
+function limousinProject_createUser($app_id, $role) {
+    $fields = convergence_getAllAppData($app_id);
+    
+    //PMFCreateUser(string userId, string password, string firstname, string lastname, string email, string role)
+    $isCreate = PMFCreateUser($fields['MAIL'], $fields['PASSWORD'], $fields['NOM_CONTACT'], $fields['PRENOM_CONTACT'], $fields['MAIL'], $role);
+    if ($isCreate == 0)
+        return false;
+
+    $uQuery = 'SELECT APP_UID FROM USERS WHERE USR_USERNAME ="' . $fields['MAIL'] . '"';
+    $res = executeQuery($uQuery);
+
+    if (!empty($res))
+    {
+        $usr_uid = $res[1]['APP_UID'];
+        // creation du fe_user dans typo3
+        //$res = userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8081/');
+    }
+    else
+    {
+        return false;
+    }
+    return $usr_uid;
+}
+

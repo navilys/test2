@@ -1,0 +1,1 @@
+<response><head><wsId>304</wsId></head><body><arguments><partenaire>…</partenaire><porteurId>…</porteurId></arguments></body><status><success><solde>…</solde><soldeBrut>…</soldeBrut><soldeComptable>…</soldeComptable><sousSoldes><sousSolde reseau="89">…</sousSolde><sousSolde reseau="90">…</sousSolde></sousSoldes></success></status></response>
