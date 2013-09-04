@@ -1704,9 +1704,10 @@ function convergence_justeOneDemande($user) {
 function pmDisableUser($userName)
 { 
 	$ret = 1;
-	$pfServer = new SoapClient('http://192.168.1.94:8084/typo3conf/ext/pm_webservices/serveur.php?wsdl');
-
+ $IP = $_SERVER['HTTP_HOST'];
+$pfServer = new SoapClient('http://'.$IP.':8084/typo3conf/ext/pm_webservices/serveur.php?wsdl');
 	$ret = $pfServer->disableAccount(array('username' => $userName));
+
 	
 	return $ret;
 }

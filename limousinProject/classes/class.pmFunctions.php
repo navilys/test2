@@ -250,25 +250,54 @@ function limousinProject_identification() {
 
 function limousinProject_createUser($app_id, $role) {
     $fields = convergence_getAllAppData($app_id);
-    
     //PMFCreateUser(string userId, string password, string firstname, string lastname, string email, string role)
     $isCreate = PMFCreateUser($fields['MAIL'], $fields['PASSWORD'], $fields['NOM_CONTACT'], $fields['PRENOM_CONTACT'], $fields['MAIL'], $role);
     if ($isCreate == 0)
         return false;
 
-    $uQuery = 'SELECT APP_UID FROM USERS WHERE USR_USERNAME ="' . $fields['MAIL'] . '"';
-    $res = executeQuery($uQuery);
-
-    if (!empty($res))
+    $uQuery = 'SELECT USR_UID FROM USERS WHERE USR_USERNAME ="' . $fields['MAIL'] . '"';    
+    $rQuery = executeQuery($uQuery);
+    if (!empty($rQuery))
     {
-        $usr_uid = $res[1]['APP_UID'];
+        $usr_uid = $rQuery[1]['USR_UID'];
+        $IP = $_SERVER['HTTP_HOST'];
+        $port = '8084'; // voir pour les constante workflow
+        $groupId = '1'; // voir pour les constante workflow
         // creation du fe_user dans typo3
-        //$res = userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8081/');
+        //$res = userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8084/');
+        /*       ini_set("soap.wsdl_cache_enabled", "0");
+          $hostTypo3 = 'http://'.$IP.':'.$port. '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
+          $pfServer = new SoapClient($hostTypo3);
+          $key = rand();
+          $ret = $pfServer->createAccount(array(
+          'username' => $fields['MAIL'],
+          'password' => md5($fields['PASSWORD']),
+          'email' => $fields['MAIL'],
+          'lastname' => $fields['PRENOM_CONTACT'],
+          'firstname' => $fields['NOM_CONTACT'],
+          'key' => $key,
+          'pmid' => $usr_uid,
+          'usergroup' => $groupId,
+          'cHash' => md5($fields['MAIL'] . '*' . $fields['PRENOM_CONTACT'] . '*' . $fields['NOM_CONTACT'] . '*' . $key)));
+         */
     }
     else
     {
         return false;
     }
-    return $usr_uid;
+    return true;
 }
 
+function limousinProject_getEtablissementFromRNE($rneCode) {
+    $sql = 'SELECT RNE, NOM FROM PMT_ETABLISSEMENT WHERE RNE = "' . $rneCode . '" AND STATUT = 1';
+    $res = executeQuery($sql);
+    if (isset($res) && count($res) > 0)
+    {
+        $ret = $res[1]['RNE'] . ' - ' . $res[1]['NOM'];
+    }
+    else
+    {
+        $ret = '0';
+    }
+    return $ret;
+}
