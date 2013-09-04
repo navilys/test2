@@ -32,7 +32,7 @@ class archivedCasesClassCron
 		      FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA GROUP BY IMPCSV_IDENTIFY ";
 		$data = executeQuery($query);
 		if(sizeof($data))
-		{            
+		{
             foreach($data as $row)
 		    {
 		        $query = "SELECT IMPCSV_FIELD_NAME, IMPCSV_VALUE FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '".$row['IMPCSV_IDENTIFY']."' ";
@@ -60,7 +60,7 @@ class archivedCasesClassCron
                 $totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
                 $informationCSV = $this->getDataCronCSV($firstLineHeader, $fileCSV, $totCasesCSV);
                 $dataDeleteEdit   = isset($row["IMPCSV_CONDITION_ACTION"])? $row["IMPCSV_CONDITION_ACTION"]:'';
-		        	
+		       
 		        switch ($actionType) 
 		    	{
 		    		case "ADD": 
@@ -92,7 +92,7 @@ class archivedCasesClassCron
 	}
 	
 	function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $totCasesCSV) {
-        set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
+	    set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
 		if (!$handle = fopen(PATH_DOCUMENT . "csvTmp/".$fileCSV.".csv", "r")) {  
 		    echo "Cannot open file";  
 		    exit;  
@@ -143,7 +143,7 @@ class archivedCasesClassCron
             $i++;
 		}
         return $csvData;        
-    }
+	}
 		
 	function deleteFileCSV($fileCSV)
 	{
@@ -156,6 +156,7 @@ class archivedCasesClassCron
 		else 
 		    print "The file is not present. "; 
 	}
+	
 	function dataDynaforms($resultDynaform,$proUid)
     {
         $_dataForms =  array();
@@ -230,7 +231,7 @@ class archivedCasesClassCron
     }
 		
 	function importCreateCaseCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV,$csvIdentify,$totCasesCSV)
-	{
+	{ 	
 	    G::LoadClass('case');
 		$items   =$jsonMatchFields; 
 		$dataCSV = isset($informationCSV) ? $informationCSV: array();
@@ -248,8 +249,8 @@ class archivedCasesClassCron
 		// load Dynaforms of process
 		$select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM wf_".$this->workspace.".DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 		$resultDynaform = executeQuery($select);
-		$_dataForms =  $this->dataDynaforms($resultDynaform,$proUid);
-		// end load Dynaforms of process		
+		$_dataForms =  $this->dataDynaforms($resultDynaform,$proUid); 
+		// end load Dynaforms of process 
         foreach ($dataCSV as $row)
 		{   
 		    $appData =  array();
@@ -260,14 +261,14 @@ class archivedCasesClassCron
 				    if(isset($row[$field['COLUMN_CSV']]))
 				    {
 				        if($row[$field['COLUMN_CSV']])
-					        $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+					        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
 				        else
 					        $appData[$field['FIELD_NAME']] = ' ';
 				    }
 				    else
 				    {
 				        if($field['COLUMN_CSV'])
-					        $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+					        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
 				        else
 					        $appData[$field['FIELD_NAME']] = ' ';
 				    } 
@@ -278,10 +279,10 @@ class archivedCasesClassCron
                   
                     if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
                     {   
-                        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+                        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
                     }
                     else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-                        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+                        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
                     }       
 			    }
 			}  		
@@ -350,7 +351,6 @@ class archivedCasesClassCron
 				}	
 			}
 		       
-		 
 			foreach($appData As $key => $fields)
 			{
 				foreach ($_dataForms As $row)
@@ -432,23 +432,23 @@ class archivedCasesClassCron
                     $appData[$key] = $value;
             } 
             
-		    $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
-		    $appData['FLAG_ACTION'] = 'multipleDerivation';
-		    $appData['EXEC_AUTO_DERIVATE'] = 'NO';
-		    $appData['eligible'] = 0; // only process beneficiary
-		    $appData['FLAG_EDIT'] = 1;
-		    $appData['CurrentUserAutoDerivate'] = $USR_UID;
-		    $appData['LOOP'] = 1;
-		    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
-		    if($caseUID >0) {
-			    autoDerivate($proUid,$caseUID,$USR_UID);
-			    $oCase = new Cases ();
+			$appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
+            $appData['FLAG_ACTION'] = 'multipleDerivation';
+            $appData['EXEC_AUTO_DERIVATE'] = 'NO';
+            $appData['eligible'] = 0; // only process beneficiary
+            $appData['FLAG_EDIT'] = 1;
+            $appData['STATUT'] = 1;
+            $appData['CurrentUserAutoDerivate'] = $USR_UID;
+           
+            $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
+            if($caseUID >0) 
+            {   $controlCron = false;
+                autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
+                $oCase = new Cases ();
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
-			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-			    $FieldsCase['APP_DATA']['STATUT'] = 1;
-			    $FieldsCase['APP_DATA']['LOOP'] = ''; 
-			    $oCase->updateCase($caseUID,$FieldsCase);			    
-		    }
+			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
+			    $oCase->updateCase($caseUID,$FieldsCase);
+            }
 		    $totalCases++;
 		    $update = "UPDATE wf_".$this->workspace.".PMT_IMPORT_CSV_DATA SET IMPCSV_TOTCASES = '$totalCases' WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ";
 		    executeQuery($update);
@@ -493,14 +493,14 @@ class archivedCasesClassCron
 				    if(isset($row[$field['COLUMN_CSV']]))
 				    {
 				        if($row[$field['COLUMN_CSV']])
-				    	    $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+				    	    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
 				        else
 				    	    $appData[$field['FIELD_NAME']] = ' ';
 				    }
 				    else
 				    {
 				        if($field['COLUMN_CSV'])
-				    	    $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+				    	    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
 				        else
 				    	    $appData[$field['FIELD_NAME']] = ' ';
 				    } 
@@ -509,9 +509,9 @@ class archivedCasesClassCron
 			    {
 				    $aCol = explode(' ', trim($field['COLUMN_CSV']));
 				    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-				        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+				        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
 				    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  )
-				        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+				        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
 				            
 			    }
 			}  
@@ -656,7 +656,7 @@ class archivedCasesClassCron
 				}
 				foreach ($itemsDeleteEdit as $field ) 
 			    { 
-				    $fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
+				    $fieldNameEditDelete = htmlspecialchars_decode($field['CSV_FIELD_NAME']);
 				    if($fieldNameEditDelete == $key )
 				    {
 				        if($whereUpdate == '')
@@ -706,16 +706,15 @@ class archivedCasesClassCron
 			    $appData['eligible'] = 0; // only process beneficiary
 			    $appData['FLAG_EDIT'] = 1;
 			    $appData['CurrentUserAutoDerivate'] = $USR_UID;
-			    $appData['LOOP'] = 1;
+			    
 			    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
 			    if($caseUID >0) 
 			    {
-				    autoDerivate($proUid,$caseUID,$USR_UID);
+				    $controlCron = false;
+                	autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
 				    $oCase = new Cases ();
 				    $FieldsCase = $oCase->loadCase ( $caseUID );
 				    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-				    $FieldsCase['APP_DATA']['STATUT'] = 1;
-				    $FieldsCase['APP_DATA']['LOOP'] = '';
 				    $oCase->updateCase($caseUID,$FieldsCase);
 			    }
 			}   
@@ -764,14 +763,14 @@ class archivedCasesClassCron
 				if(isset($row[$field['COLUMN_CSV']]))
 				{
 				    if($row[$field['COLUMN_CSV']])
-					    $appData[$field['FIELD_NAME']] = utf8_encode($row[$field['COLUMN_CSV']]);
+					    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
 				    else
 					    $appData[$field['FIELD_NAME']] = ' ';
 				}
 				else
 				{
 				    if($field['COLUMN_CSV'])
-					    $appData[$field['FIELD_NAME']] = utf8_encode($field['COLUMN_CSV']);
+					    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
 				    else
 					    $appData[$field['FIELD_NAME']] = ' ';
 				} 
@@ -780,9 +779,9 @@ class archivedCasesClassCron
 			    {
 				    $aCol = explode(' ', trim($field['COLUMN_CSV']));
 				    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-				        $appData[$field['FIELD_NAME']] = utf8_encode($row[$aCol[1]]);
+				        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
 				    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-				        $appData[$field['FIELD_NAME']] =  utf8_encode($field['COLUMN_CSV']);
+				        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
 				    }        
 			    }
 			}  
@@ -928,7 +927,7 @@ class archivedCasesClassCron
 				}
 				foreach ($itemsDeleteEdit as $field ) 
 			    { 
-					$fieldNameEditDelete = utf8_encode($field['CSV_FIELD_NAME']);
+					$fieldNameEditDelete = htmlspecialchars_decode($field['CSV_FIELD_NAME']);
 					if($fieldNameEditDelete == $key )
 					{
 					    if($whereDelete == '')
@@ -968,7 +967,6 @@ class archivedCasesClassCron
 		    $appData['eligible'] = 0; // only process beneficiary
 		    $appData['FLAG_EDIT'] = 1;
 		    $appData['CurrentUserAutoDerivate'] = $USR_UID;
-		    $appData['LOOP'] = 1;
 		    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
 		    if($totalCases == 0)
 			    $idCasesGenerate = "'".$caseUID."'";
@@ -976,12 +974,11 @@ class archivedCasesClassCron
 			    $idCasesGenerate = $idCasesGenerate.", '".$caseUID."'";
 		    if($caseUID >0) 
 		    {
-			    autoDerivate($proUid,$caseUID,$USR_UID);
+			    $controlCron = false;
+                autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
 			    $oCase = new Cases ();
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
 			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
-			    $FieldsCase['APP_DATA']['STATUT'] = 1;
-			    $FieldsCase['APP_DATA']['LOOP'] = 1;
 			    $oCase->updateCase($caseUID,$FieldsCase);
 		    }
 		    
@@ -999,18 +996,29 @@ class archivedCasesClassCron
 		G::loadClass( 'pmTable' );
 		G::loadClass ( 'pmFunctions' );
 		require_once 'classes/model/AdditionalTables.php';
-		$cnn = Propel::getConnection('workflow');
-		$stmt = $cnn->createStatement();
-		$additionalTables = new AdditionalTables(); 
-		$oPmTable = $additionalTables->loadByName($tableName);
-		$table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
+		$tableType = "Report";
+    	$sqlAddTable = "SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME = '$tableName' ";
+    	$resAddTable=executeQuery($sqlAddTable);
+    	if(sizeof($resAddTable)){
+	    	if($resAddTable[1]['PRO_UID'] == ''){
+		    	$tableType = "pmTable";	    
+	    	}		
+    	}
+    	if($tableType == "Report" )
+    	{
+			$cnn = Propel::getConnection('workflow');
+			$stmt = $cnn->createStatement();
+			$additionalTables = new AdditionalTables(); 
+			$oPmTable = $additionalTables->loadByName($tableName);
+			$table 	  = $additionalTables->load($oPmTable['ADD_TAB_UID']);
 		
-		if ($table['PRO_UID'] != '') {
-			$truncateRPTable = " TRUNCATE TABLE  wf_".$this->workspace.".$tableName";
-		    $rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM); 	
-		    $additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
+			if ($table['PRO_UID'] != '') {
+				$truncateRPTable = " TRUNCATE TABLE  wf_".$this->workspace.".$tableName";
+		    	$rs = $stmt->executeQuery($truncateRPTable, ResultSet::FETCHMODE_NUM); 	
+		    	$additionalTables->populateReportTable( $table['ADD_TAB_NAME'], pmTable::resolveDbSource( $table['DBS_UID'] ), $table['ADD_TAB_TYPE'], $table['PRO_UID'], $table['ADD_TAB_GRID'], $table['ADD_TAB_UID'] ); 
 		   
-		}
+			}
+    	}
 	 }
 	    
 	 function deletePMCases($caseId) {

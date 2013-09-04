@@ -48,7 +48,7 @@ function DuplicateMySQLRecord ($table, $id_field, $oldid,$newId) {
   }    
 }
 
-function autoDerivate($processId,$caseUID,$userId){
+function autoDerivate($processId,$caseUID,$userId,$controlCron=true){
 
 	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$processId."'";	//query for select all start tasks
 	$startTasks = executeQuery($query);
@@ -61,12 +61,12 @@ function autoDerivate($processId,$caseUID,$userId){
 	$userLoggedIni = $_SESSION['USER_LOGGED'];
 	if(isset($_SESSION['USER_LOGGED_INI']) && $_SESSION['USER_LOGGED_INI'] != '')
 		$userLoggedIni = $_SESSION['USER_LOGGED_INI'];
-
-    foreach ($startTasks as $rowTask)
-    {
-        updateDateAPPDATA($caseUID);
-        $taskId = $rowTask['TAS_UID'];
-        $currentTask = $taskId;
+        
+	foreach ($startTasks as $rowTask)
+	{
+		updateDateAPPDATA($caseUID);
+		$taskId = $rowTask['TAS_UID'];
+		$currentTask = $taskId;
 		$process = $processId;
 		$appUid = $caseUID;    
 		$task = $taskId;	
@@ -74,7 +74,8 @@ function autoDerivate($processId,$caseUID,$userId){
 	}
 	if($userLoggedIni !='')
 		$_SESSION['USER_LOGGED'] = $userLoggedIni ; 
-    FredirectTypo3($caseUID);
+	if($controlCron == true)
+    	FredirectTypo3($caseUID);
         
 }
 

@@ -274,78 +274,12 @@ if($actionAjax== 'historyDynaformGridPreview')
   	  else 
   	  	 	$_SESSION['PROCESS'] = $PRO_UID;
      
-      
-       if($ACTIONTYPE == 'edit')
+      $Fields = $oCase->loadCase($APP_UID);
+      $userLoggedIni = '';
+      if($ACTIONTYPE == 'edit')
       {
-        $Fields = $oCase->loadCase($APP_UID);
-        $userLoggedIni = '';
-      
-        if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
-        {     
-            $Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
-            if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
-            {
-                $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
-                $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
-            }
-            $oCase->updateCase($APP_UID, $Fields);
-            # execute Triggers task Ini
-		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-	        $startTasks = executeQuery($query);
-	        foreach($startTasks as $rowTask){
-		        $taskId = $rowTask['TAS_UID'];
-		        $stepsByTask = getStepsByTask($taskId);
-	            foreach ($stepsByTask as $caseStep){
-				    $caseStepRes[] = 	 $caseStep->getStepUidObj();
-			    }
-			    break;
-	        }
-	        
-			$totStep = 0;
-			foreach($caseStepRes as $index)
-			{
-				$stepUid = $index;
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-				$totStep++;
-			} 
-			# end execute Triggers task Ini
-	    }
-	    else if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
-	    {
-	        $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
-	        $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
-            $oCase->updateCase($APP_UID, $Fields);
-            # execute Triggers task Ini
-		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-	        $startTasks = executeQuery($query);
-	        foreach($startTasks as $rowTask){
-		        $taskId = $rowTask['TAS_UID'];
-		        $stepsByTask = getStepsByTask($taskId);
-	            foreach ($stepsByTask as $caseStep){
-				    $caseStepRes[] = $caseStep->getStepUidObj();
-			    }
-			    break;
-	        }
-	        
-			$totStep = 0;
-			foreach($caseStepRes as $index)
-			{
-				$stepUid = $index;
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-				$totStep++;
-			} 
-			# end execute Triggers task Ini 
-	    }
-	  
-        if($userLoggedIni != '')
-        {
-            $Fields = $oCase->loadCase($APP_UID);
-            $Fields['APP_DATA']['USER_LOGGED'] = $userLoggedIni;
-            $oCase->updateCase($APP_UID, $Fields);
-        }
-     }
+      	
+      }
       $Fields = $oCase->loadCase($APP_UID);
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['PREVIOUS_STEP_LABEL'] = '';
       $Fields['APP_DATA']['__DYNAFORM_OPTIONS']['NEXT_STEP_LABEL'] = ''; 
@@ -358,7 +292,6 @@ if($actionAjax== 'historyDynaformGridPreview')
       
       $_SESSION['DYN_UID_PRINT'] = $_POST['DYN_UID'];
       $postInfo = '';
-      //G::pr($Fields['APP_DATA']);
       $swaction = $ACTIONTYPE;
 	  $swCase = 0;
       if($ACTIONTYPE == 'edit')
@@ -417,7 +350,6 @@ if($actionAjax== 'historyDynaformGridPreview')
       $G_PUBLISH->AddContent('dynaform', 'xmlform', $PRO_UID . '/' . $_POST['DYN_UID'], '', $Fields['APP_DATA'], $postInfo,'', $ACTIONTYPE);
       G::RenderPage('publish', 'blank');
       
-      //G::pr($Fields['APP_DATA']);die;
 ?>      
         <script language="javascript">
         var flag = false;

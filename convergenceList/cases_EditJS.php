@@ -42,31 +42,74 @@ $rolesAdmin=$Roles['USR_ROLE'];
 #End rol user
 
  # execute Triggers task Ini
+$userLoggedIni = '';
 $oCase = new Cases();
 $Fields = $oCase->loadCase($APP_UID);
-$userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
-$Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
-$oCase->updateCase($APP_UID, $Fields);
-           
-$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-$startTasks = executeQuery($query);
-foreach($startTasks as $rowTask){
-	$taskId = $rowTask['TAS_UID'];
-	$stepsByTask = getStepsByTask($taskId);
-	foreach ($stepsByTask as $caseStep){
-		$caseStepRes[] = $caseStep->getStepUidObj();
-	}
-	break;
-}
+if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
+{     
+            $Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
+            if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
+            {
+                $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
+                $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+            }
+            $oCase->updateCase($APP_UID, $Fields);
+            # execute Triggers task Ini
+		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	        $startTasks = executeQuery($query);
+	        foreach($startTasks as $rowTask){
+		        $taskId = $rowTask['TAS_UID'];
+		        $stepsByTask = getStepsByTask($taskId);
+	            foreach ($stepsByTask as $caseStep){
+				    $caseStepRes[] = 	 $caseStep->getStepUidObj();
+			    }
+			    break;
+	        }
 	        
-$totStep = 0;
-foreach($caseStepRes as $index)
-{
-	$stepUid = $index;
-	executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-	executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-	$totStep++;
-} 
+			$totStep = 0;
+			foreach($caseStepRes as $index)
+			{
+				$stepUid = $index;
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+				$totStep++;
+			} 
+			# end execute Triggers task Ini
+	  	}
+	  	else if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
+	  	{
+	        $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
+	        $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+            $oCase->updateCase($APP_UID, $Fields);
+            # execute Triggers task Ini
+		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	        $startTasks = executeQuery($query);
+	        foreach($startTasks as $rowTask){
+		        $taskId = $rowTask['TAS_UID'];
+		        $stepsByTask = getStepsByTask($taskId);
+	            foreach ($stepsByTask as $caseStep){
+				    $caseStepRes[] = $caseStep->getStepUidObj();
+			    }
+			    break;
+	        }
+	        
+			$totStep = 0;
+			foreach($caseStepRes as $index)
+			{
+				$stepUid = $index;
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+				$totStep++;
+			} 
+			# end execute Triggers task Ini 
+	  	}
+      	/*if($userLoggedIni != '')
+      	{
+            $Fields = $oCase->loadCase($APP_UID);
+            $Fields['APP_DATA']['USER_LOGGED'] = $userLoggedIni;
+            $oCase->updateCase($APP_UID, $Fields);
+      	}*/
+
 # end execute Triggers task Ini   
 
 # Get Dynaforms
@@ -117,59 +160,59 @@ foreach ($select as $row)
     if($bAccessStep)
     	$newSelect[]= $row;
 }
-     unset($aFields);
-     $select = $newSelect;
+unset($aFields);
+$select = $newSelect;
      
-     $o = new Dynaform();
-     $DYNAFORMSLIST = array();
+$o = new Dynaform();
+$DYNAFORMSLIST = array();
        
-     foreach($select as $index)
-     {
-		$get = $index['DYN_UID'];
-		$process = $PRO_UID;
-		$oForm = new Form ( $process.'/'.$get , PATH_DYNAFORM );
-		$i=0;
-		foreach($oForm->fields as $key => $val){ //G::pr($val->type);
-			if($val->type == "dropdown" or $val->type == "radiogroup"  or $val->type == "checkgroup" or $val->type == "listbox" or $val->type == "text"  or $val->type == "date" or $val->type == "suggest" or $val->type == "yesno" or $val->type == "checkbox" ){
-				$i++;
-			}			
-		}
-		if($i != 0)
+foreach($select as $index)
+{
+	$get = $index['DYN_UID'];
+	$process = $PRO_UID;
+	$oForm = new Form ( $process.'/'.$get , PATH_DYNAFORM );
+	$i=0;
+	foreach($oForm->fields as $key => $val){ //G::pr($val->type);
+		if($val->type == "dropdown" or $val->type == "radiogroup"  or $val->type == "checkgroup" or $val->type == "listbox" or $val->type == "text"  or $val->type == "date" or $val->type == "suggest" or $val->type == "yesno" or $val->type == "checkbox" ){
+			$i++;
+		}			
+	}
+	if($i != 0)
+	{
+    	$o->setDynUid($index['DYN_UID']);
+        $aFields['DYN_TITLE'] = $o->getDynTitle();
+        $aFields['DYN_UID'] = $index['DYN_UID'];
+        $aFields['EDIT'] = G::LoadTranslation('ID_EDIT');
+        $aFields['PRO_UID'] = $PRO_UID;
+        $aFields['APP_UID'] = $APP_UID;
+        $aFields['TAS_UID'] = $TAS_UID;
+        $aFields['CURRENTDATETIME'] = $CURRENTDATETIME;
+        $selectUser = "SELECT GRP_UID  FROM GROUP_USER WHERE USR_UID = '$users' ";
+		$selectUser = executeQuery($selectUser);	
+		$userGroup = $selectUser[1]['GRP_UID'];
+		$queryStepMode = " SELECT STEP_UID_OBJ AS DYN_UID, STEP_MODE  FROM STEP S
+						   INNER JOIN  TASK_USER TU ON TU.TAS_UID = S.TAS_UID
+  						   WHERE S.PRO_UID = '$PRO_UID' AND STEP_UID_OBJ ='".$index['DYN_UID']."' AND
+  						   (TU.USR_UID = '$users' OR TU.USR_UID = '$userGroup')
+   						 ";
+		$selectStepMode = executeQuery($queryStepMode);
+		if(sizeof($selectStepMode))
 		{
-        	$o->setDynUid($index['DYN_UID']);
-        	$aFields['DYN_TITLE'] = $o->getDynTitle();
-        	$aFields['DYN_UID'] = $index['DYN_UID'];
-        	$aFields['EDIT'] = G::LoadTranslation('ID_EDIT');
-        	$aFields['PRO_UID'] = $PRO_UID;
-        	$aFields['APP_UID'] = $APP_UID;
-        	$aFields['TAS_UID'] = $TAS_UID;
-        	$aFields['CURRENTDATETIME'] = $CURRENTDATETIME;
-        	$selectUser = "SELECT GRP_UID  FROM GROUP_USER WHERE USR_UID = '$users' ";
-			$selectUser = executeQuery($selectUser);	
-			$userGroup = $selectUser[1]['GRP_UID'];
-			$queryStepMode = " SELECT STEP_UID_OBJ AS DYN_UID, STEP_MODE  FROM STEP S
-							   INNER JOIN  TASK_USER TU ON TU.TAS_UID = S.TAS_UID
-  						   	   WHERE S.PRO_UID = '$PRO_UID' AND STEP_UID_OBJ ='".$index['DYN_UID']."' AND
-  						   	   (TU.USR_UID = '$users' OR TU.USR_UID = '$userGroup')
-   							";
-			$selectStepMode = executeQuery($queryStepMode);
-			if(sizeof($selectStepMode))
+			$aFields['TYPEFORM'] = 'view';
+			foreach($selectStepMode as $index)
 			{
-				$aFields['TYPEFORM'] = 'view';
-				foreach($selectStepMode as $index)
+				if($index['STEP_MODE'] == 'EDIT')
 				{
-					if($index['STEP_MODE'] == 'EDIT')
-					{
-						$aFields['TYPEFORM'] = 'edit';
-					}
+					$aFields['TYPEFORM'] = 'edit';
 				}
-				
 			}
-			
-        	$DYNAFORMSLIST[] = $aFields;            
+				
 		}
+			
+        $DYNAFORMSLIST[] = $aFields;            
+	}
           
-	} 
+} 
 ## end new list forms tabs
 $oHeadPublisher->assign('APP_UID', $APP_UID);
 $oHeadPublisher->assign('ADAPTIVEHEIGHT', $ADAPTIVEHEIGHT);
