@@ -1,6 +1,4 @@
 <?php
-ini_set ( 'error_reporting', E_ALL );
-ini_set ( 'display_errors', True );
 
 if (($RBAC_Response=$RBAC->userCanAccess("PM_USERS"))!=1) return $RBAC_Response;
 G::LoadInclude('ajax');
@@ -62,7 +60,7 @@ switch ($_POST['action'])
   	$idRol = '';
   	if(isset($_POST['nameId']))
     	$idRol = $aData['ROL_UID'] = $_POST['nameId']; //obtainRoleInfo($_POST['nameId']);   	 
-    $aData['ROL_CODE'] = trim($_POST['name']);
+    //$aData['ROL_CODE'] = trim($_POST['name']);
     $aData['ROL_NAME'] = $_POST['name'];
     $aData['ROL_UPDATE_DATE'] = date("Y-M-d H:i:s");
     $rolstatus = 0;
@@ -138,7 +136,7 @@ switch ($_POST['action'])
     	{   
     		$sw = 0;
     		$group = $rowG['GRP_TITLE'];
- 			foreach ( $rolesData as $rowid => $row )  
+ 			foreach ( $rolesData as $rowid => $row )
     		{ 				
     			$rolCode =  $row['ROL_CODE'];
     			$rolName = $row['ROL_NAME'];
@@ -149,7 +147,7 @@ switch ($_POST['action'])
         	}
     		if($sw == 0)
     		{
-    			$code=G::generateUniqueID();
+    			/*$code=G::generateUniqueID();
     			$newid = md5($code.date("d-M-Y_H:i:s"));
     			$aData['ROL_UID'] = $newid;    
     			$aData['ROL_SYSTEM'] = '00000000000000000000000000000002';
@@ -158,7 +156,7 @@ switch ($_POST['action'])
     			$aData['ROL_CREATE_DATE'] = date("Y-M-d H:i:s");
     			$aData['ROL_UPDATE_DATE'] = date("Y-M-d H:i:s");
     			$aData['ROL_STATUS'] = '1';
-    			$oCriteria = $RBAC->createRole($aData);
+    			$oCriteria = $RBAC->createRole($aData);*/
     		}
     		$group = '';
     	}
@@ -227,6 +225,7 @@ switch ($_POST['action'])
         		$results['GRP_TASKS'] = isset($aTask[$results['GRP_UID']]) ? $aTask[$results['GRP_UID']] : 0;
         		$results['GRP_USERS'] = isset($aMembers[$results['GRP_UID']]) ? $aMembers[$results['GRP_UID']] : 0;
         		$results['ROL_ID'] = $row['ROL_UID'];
+        		$results['ROL_CODE'] = $row['ROL_CODE'];
         		$arrData[] = $results;
         		$sw = 1;
        		}

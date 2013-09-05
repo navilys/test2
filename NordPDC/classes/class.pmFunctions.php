@@ -140,3 +140,4 @@ function Nord_PDC_getEtablissementFromRNE($rneCode)
     }
     return $ret;
 }
+

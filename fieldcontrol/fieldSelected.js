@@ -600,7 +600,7 @@ Ext.onReady(function()
     northPanel = new Ext.Panel({
     	region: 'north',
     	xtype: 'panel',
-    	tbar: ['<b>'+_('ID_ROLE') + ' : ' + rolID +'</b>',{xtype: 'tbfill'},backButton]
+    	tbar: ['<b>'+_('ID_ROLE') + ' : ' + rolName +'</b>',{xtype: 'tbfill'},backButton]
     });
     
 	var fieldInboxPanel = new Ext.Panel({

@@ -1,12 +1,11 @@
 <?php   
 
-    ini_set ( 'error_reporting', E_ALL );
-    ini_set ( 'display_errors', True );
     G::LoadClass('case');
     G::LoadClass('configuration');
     G::loadClass('pmFunctions');    
     $oHeadPublisher   =& headPublisher::getSingleton();   
     $rolID = $_GET['rolID'];
+    $rolName = $_GET['rName'];
     $sQuery = " SELECT ID_TABLE  FROM PMT_INBOX_FIELDS WHERE ROL_CODE  = '" . $rolID . "'  ";
 	$aDatos = executeQuery ( $sQuery );
 	$idTable = '';
@@ -14,6 +13,7 @@
 		$idTable = $aDatos[1]['ID_TABLE'];
     $oHeadPublisher->assign('rolID', $rolID); 
     $oHeadPublisher->assign('idpmTable', $idTable); 
+    $oHeadPublisher->assign('rolName', $rolName);
     $oHeadPublisher->addExtJsScript(PATH_PLUGINS.SYS_COLLECTION.'/fieldSelected', false, true); 
     G::RenderPage('publish', 'extJs');
 ?> 

@@ -301,3 +301,37 @@ function limousinProject_getEtablissementFromRNE($rneCode) {
     }
     return $ret;
 }
+
+function limousinProject_getPathAQPORTR() {
+
+    $sql = 'select PATH_FILE from PMT_LISTE_OPER';
+    $res = executeQuery($sql);
+    if (!empty($res))
+    {
+        $path = $res[1]['PATH_FILE'] . '/OUT/AQ_PORT_R_001_00008.' . date('Ymd');
+    }
+    else
+        $path = '/var/tmp/AQPORT000008' . date('Ymd') . '_no_path_know.txt';
+
+    return $path;
+}
+
+function limousinProject_updateAQPORTR($file) {
+
+    $qIdFile = 'select max(ID) as num_fic from PMT_NUM_PROD_FOR_AQOBA where statut = 1';
+    $rIdFile = executeQuery($qIdFile);
+    if (!empty($rIdFile[1]['num_fic']))
+        $num_fic = str_pad($rIdFile[1]['num_fic'], 15, 0, STR_PAD_LEFT);
+    else
+        $num_fic = str_pad('1', 15, 0, STR_PAD_LEFT);
+    $filler = str_pad('', 32, ' ');
+    $new_line = '00101004' . date("YmdHis") . $num_fic . $filler . "\n";
+    $content = file($file);
+    array_unshift($content, $new_line);
+    array_push($content, $new_line);
+    $new_content = implode('', $content);
+    $fp = fopen($file, 'w');
+    $w = fwrite($fp, $new_content);
+    fclose($fp);
+}
+

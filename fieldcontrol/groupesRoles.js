@@ -256,6 +256,7 @@ Ext.onReady(function(){
       fields : [
                 {name : 'GRP_UID'},
                 {name : 'ROL_ID'},
+                {name : 'ROL_CODE'},
                 {name : 'GRP_STATUS'},
                 {name : 'CON_VALUE'},
                 {name : 'ROL_DELETE'},
@@ -669,12 +670,12 @@ MembersAction = function(){
 
 PermissionsAction = function(){
   rowSelected = infoGrid.getSelectionModel().getSelected();
-  location.href = 'rolesUsersPermission.php?rUID=' + rowSelected.data.CON_VALUE + '&tab=permissions';
+  location.href = 'rolesUsersPermission.php?rUID=' + rowSelected.data.ROL_ID + '&tab=permissions' +  '&rName=' + rowSelected.data.CON_VALUE;
 };
 
 inboxFieldsAction = function(){
 	  rowSelected = infoGrid.getSelectionModel().getSelected();
-	  location.href = 'fieldSelected.php?rolID=' + rowSelected.data.CON_VALUE + '&tab=field';
+	  location.href = 'fieldSelected.php?rolID=' + rowSelected.data.ROL_CODE + '&tab=field' + '&rName=' + rowSelected.data.CON_VALUE;
 };
 
 inboxRelationAction = function(){

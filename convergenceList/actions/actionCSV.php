@@ -391,8 +391,8 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     // check all fields and remove wrong data
-    //$dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader);
-    //$dataCSV = $dataCSVdebug;
+    $dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader);
+    $dataCSV = $dataCSVdebug;
     // load Dynaforms of process
     $select = "SELECT DYN_UID, PRO_UID, DYN_TYPE, DYN_FILENAME FROM DYNAFORM WHERE PRO_UID = '".$proUid ."'";
 	$resultDynaform = executeQuery($select);

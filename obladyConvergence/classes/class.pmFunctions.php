@@ -644,6 +644,8 @@ function convergence_concatFiles($files) {
 }
 
 //GLOBAL
+//TODO passer en param le nom de fichier complet et son chemin, à calculer en amont dans le trigger car trop de différence selon les dispositif
+// $useCodeOper à 0 si on ne veux pas tenir compte de $onlyThisCodeOper, des code opération en générale, du code oper dans le nom du fichier et un seul fichier pour tout le dispositif
 function convergence_exportToAS400($process_id, $file_base, $code, $liste = null, $makeRetourProdTxtForRecette = 0, $onlyThisCodeOper = 0, $useCodeOper = 1) {
     if (!isset($process_id))
     {
@@ -710,7 +712,7 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
 
         $query = 'SELECT * FROM ' . $config['TABLENAME'] . ' ' . $config['JOIN_CONFIG'] . ' WHERE 1 ' . $config['CONFIG_WHERE'] . $whereCodeOper;
         $result = executeQuery($query);
-        $mode = 'w'; // enregistrer le fichier sous un format _date et le sauvegarder dans une table historique
+        $mode = 'w+'; // enregistrer le fichier sous un format _date et le sauvegarder dans une table historique
 
         $data = array();
         if (!empty($result))
@@ -808,8 +810,8 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
             }
             fclose($ftic);
         }
-        if ($useCodeOper == 0)
-            break;
+        if ($useCodeOper == 0)        
+            break;        
     }
     /*     * *** autogenrate a sample file of return from as400 for test on debug mode***** */
     if ($makeRetourProdTxtForRecette == 1)

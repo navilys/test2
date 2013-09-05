@@ -67,8 +67,9 @@ function obtainRoleInfo($name){
 }
 
 $roles = Array();
-$roles['ROL_UID'] = obtainRoleInfo($_GET['rUID']);
-$roles['ROL_CODE'] = $RBAC->getRoleCode($roles['ROL_UID']);
+$roles['ROL_UID'] = $_GET['rUID'];
+//$roles['ROL_CODE'] = $RBAC->getRoleCode($roles['ROL_UID']);
+$roles['ROL_CODE'] = $_GET['rName'];
 $roles['CURRENT_TAB'] = ($_GET['tab']=='permissions') ? 1 : 0;
 
 
