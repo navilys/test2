@@ -616,7 +616,11 @@ function convergence_concatFiles($files) {
 
         foreach ($result as $f)
         {
-            $path = PATH_DOCUMENT . $f['APP_UID'] . PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
+            $app_uid = $f['APP_UID'];
+	    	if(method_exists('G','getPathFromUID')){
+				$app_uid = G::getPathFromUID($f['APP_UID']);
+	    	}
+			$path = PATH_DOCUMENT .$app_uid. PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
             $concatFile[$i++] = $path . '.pdf';
         }
     }
@@ -629,13 +633,18 @@ function convergence_concatFiles($files) {
 
         foreach ($result as $f)
         {
-            $path = PATH_DOCUMENT . $f['APP_UID'] . PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
+            $app_uid = $f['APP_UID'];
+	    	if(method_exists('G','getPathFromUID')){
+				$app_uid = G::getPathFromUID($f['APP_UID']);
+	    	}
+			$path = PATH_DOCUMENT .$app_uid. PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
             $concatFile[$i++] = $path . '.pdf';
         }
     }
 
     $resultFile = '/tmp/temp_concat_' . time() . '.pdf';
-    exec('gs -q -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite -sOutputFile=' . $resultFile . ' -dBATCH ' . implode(' ', $concatFile));
+    $a = exec('gs -q -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite -sOutputFile=' . $resultFile . ' -dBATCH ' . implode(' ', $concatFile));
+
 
     $return = file_get_contents($resultFile);
     unlink($resultFile);
@@ -1705,12 +1714,12 @@ function convergence_justeOneDemande($user) {
 ## disable user conection web services
 function pmDisableUser($userName)
 { 
-	$ret = 1;
-        $IP = $_SERVER['HTTP_HOST'];
-        $pfServer = new SoapClient('http://'.$IP.':8084/typo3conf/ext/pm_webservices/serveur.php?wsdl');
+    $ret = 1;
+    $IP = $_SERVER['HTTP_HOST'];
+    $pfServer = new SoapClient('http://'.$IP.':8084/typo3conf/ext/pm_webservices/serveur.php?wsdl');
 	$ret = $pfServer->disableAccount(array('username' => $userName));
-
 	
+
 	return $ret;
 }
 ## end disable user conection web services

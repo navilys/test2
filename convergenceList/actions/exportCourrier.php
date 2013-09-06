@@ -11,8 +11,13 @@ if (count($getVar) == 1) {
     $result = executeQuery($query);
     
     if( count($result) == 1 && isset($result[1]['APP_DOC_UID'])) {
+ 	
+	$app_uid = $getVar[0]['APP_UID'];
 
-        $path = PATH_DOCUMENT . $getVar[0]['APP_UID'] . PATH_SEP . 'outdocs' . PATH_SEP . $result[1]['APP_DOC_UID'] . '_' . $result[1]['DOC_VERSION'];
+	if(method_exists('G','getPathFromUID')){
+ 		$app_uid = G::getPathFromUID($getVar[0]['APP_UID']);
+	}        
+	$path = PATH_DOCUMENT.$app_uid.PATH_SEP . 'outdocs' . PATH_SEP . $result[1]['APP_DOC_UID'] . '_' . $result[1]['DOC_VERSION'];
         $file = file_get_contents($path.'.pdf');
 
         //OUPUT HEADERS

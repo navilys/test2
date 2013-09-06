@@ -1,8 +1,8 @@
 <?php
-
+ini_set ( 'error_reporting', E_ALL );
+ini_set ( 'display_errors', True );
 ## (c) req - last change May 23
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', True);
+header('Content-Type: text/html; charset=ISO-8859-1');
 G::loadClass ( 'pmFunctions' );
 G::LoadClass ( 'form' );
 //include ("doublonData.php");
@@ -143,6 +143,19 @@ function getConfigCSV($data,$idInbox){
 	return $data;
 	
 }
+function _convert($content) {
+    if(!mb_check_encoding($content, 'UTF-8') OR !($content === mb_convert_encoding(mb_convert_encoding($content, 'UTF-32', 'UTF-8' ), 'UTF-8', 'UTF-32'))) {
+
+        $content = mb_convert_encoding($content, 'UTF-8');
+
+        if (mb_check_encoding($content, 'UTF-8')) {
+            // log('Converted to UTF-8');
+        } else {
+            // log('Could not converted to UTF-8');
+        }
+    }
+    return $content;
+}
 /* * * add by Nico for log file
  * This function create a log file and remove wrong data import
  *
@@ -200,12 +213,12 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
                 {
                     $param['FIELD_DESCRIPTION'] = $field['COLUMN_CSV'];
                     //if ($row[$field['COLUMN_CSV']])
-                    $value = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
+                    $value = _convert($row[$field['COLUMN_CSV']]);
                 }
                 else // sinon c'est une constante
                 {
                     //if ($field['COLUMN_CSV'])
-                    $value = htmlspecialchars_decode($field['COLUMN_CSV']);
+                    $value = _convert($field['COLUMN_CSV']);
                 }
             }
             else
@@ -213,11 +226,11 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
                 $aCol = explode(' ', trim($field['COLUMN_CSV']));
                 if ((isset($aCol[0]) && trim($aCol[0]) == 'Column' ) && ( isset($aCol[1]) && isset($row[$aCol[1]]) ))
                 {// le num colonne exite dans row
-                    $value = htmlspecialchars_decode($row[$aCol[1]]);
+                    $value = _convert($row[$aCol[1]]);
                 }
                 elseif (( isset($aCol[0]) && trim($aCol[0]) != 'Column'))
                 { // c'est une constante
-                    $value = htmlspecialchars_decode($field['COLUMN_CSV']);
+                    $value = _convert($field['COLUMN_CSV']);
                 }
             }
             $checkLog = convergence_checkFieldLog($value, $param, 'csv');
@@ -232,7 +245,7 @@ function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '
                     $fieldNameEditDelete = htmlspecialchars_decode($array['CSV_FIELD_NAME']);
                     if ($fieldNameEditDelete == htmlspecialchars_decode($field['FIELD_NAME']))
                     {
-                            $whereUpdate[] = "$fieldNameEditDelete = '$value'";
+                            $whereUpdate[] = "$fieldNameEditDelete = '".mysql_escape_string($value)."' ";
                     }
                 }                                
             }
@@ -421,9 +434,9 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
             foreach($row as $value)
             {
                 if($totIni == $totRow)
-                $csv.=$value;
+                	$csv.= _convert($value);
                 else
-                    $csv.=$value.$csv_sep;
+                    $csv.= _convert($value).$csv_sep;
                 $totIni++;
             }
             $csv.=$csv_end;
@@ -453,16 +466,17 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
                     if(isset($row[$field['COLUMN_CSV']]))
                     {
                 	    if($row[$field['COLUMN_CSV']])
-                		    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
+                		    $appData[$field['FIELD_NAME']] = _convert($row[$field['COLUMN_CSV']]);
+                		   
                 	    else
-                		    $appData[$field['FIELD_NAME']] = ' ';
+                		    $appData[$field['FIELD_NAME']] = '';
                     }
                     else
                     {
                 	    if($field['COLUMN_CSV'])
-                    	    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
+                    	    $appData[$field['FIELD_NAME']] = _convert($field['COLUMN_CSV']);
                         else
-                    	    $appData[$field['FIELD_NAME']] = ' ';
+                    	    $appData[$field['FIELD_NAME']] = '';
                     } 
                 }
                 else
@@ -470,16 +484,16 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
                     $aCol = explode(' ', trim($field['COLUMN_CSV']));
                     if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
                     {   
-                        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
+                        $appData[$field['FIELD_NAME']] = _convert($row[$aCol[1]]);
                     }
                     else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-                        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
+                        $appData[$field['FIELD_NAME']] =  _convert($field['COLUMN_CSV']);
                     }        
                 }
             }       
 
         // labels //
-        //G::pr($appData); die;
+      
 	        foreach($appData As $key => $fields)
 	        {
 		        foreach ($_dataForms As $row)
@@ -551,7 +565,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 					if($row['FIELD_DEFAULT_VALUE'] == '')
 						$row['FIELD_DEFAULT_VALUE'] = 0;
 						
-					$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"])?$appData[$row['FIELD_NAME']."_label"]:'';
+					$appData[$row['FIELD_NAME']."_label"] = isset($appData[$row['FIELD_NAME']."_label"]) ? $appData[$row['FIELD_NAME']."_label"]:'';
 					if($appData[$row['FIELD_NAME']."_label"] =="")
 					{
 						$i = $row['FIELD_DEFAULT_VALUE'];	
@@ -613,17 +627,17 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 					}
 				}
 	        }
-	    
+	     
 	     // end labels 
 	    
             foreach ($appData as $key => $value)
             {   
                 if(!is_array($value))
-                    $appData[$key] = htmlspecialchars_decode($value);
+                    $appData[$key] = ($value);
                 else
-                    $appData[$key] = $value;
+                    $appData[$key] = ($value);
             } 
-            
+           
             $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
             $appData['FLAG_ACTION'] = 'multipleDerivation';
             $appData['EXEC_AUTO_DERIVATE'] = 'NO';
@@ -634,12 +648,14 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
             // $appData['LOOP'] = 1;           
 
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
-            if($caseUID >0) 
+            if($caseUID > 0) 
             {   
-                autoDerivate($proUid,$caseUID,$USR_UID);
-                $oCase = new Cases ();
+            	$oCase = new Cases ();
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
-			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
+			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER']; 
+			    $oCase->updateCase($caseUID,$FieldsCase);
+                autoDerivate($proUid,$caseUID,$USR_UID);
+                 die;
 			    /* Comment by Nico 28/08/2013
                  * Please, don't remove the comment because make some bug on process
                  * or explain to me why you want to put this value
@@ -647,7 +663,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
                  */
                 //$FieldsCase['APP_DATA']['STATUT'] = 1;
                 //$FieldsCase['APP_DATA']['LOOP'] = '';
-			    $oCase->updateCase($caseUID,$FieldsCase);
+			    
             }
             
         }
@@ -695,7 +711,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
         $totRow = sizeof($row);
         $totIni = 1;
       
-        if($totalCases >= 100) 
+        if($totalCases >= 50) 
         {
             /* add header on csv temp files for import background */
             if ($firstLineHeader == 'on' && $swInsert == 0)
@@ -705,9 +721,9 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
             foreach($row as $value)
             {
                 if($totIni == $totRow)
-                $csv.=$value;
+                	$csv.= _convert($value);
                 else
-                    $csv.=$value.$csv_sep;
+                    $csv.= _convert($value).$csv_sep;
                 $totIni++;
             }
             $csv.=$csv_end;
@@ -738,14 +754,14 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
                 	if(isset($row[$field['COLUMN_CSV']]))
                     {
                     	if($row[$field['COLUMN_CSV']])
-                    		$appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
+                    		$appData[$field['FIELD_NAME']] = _convert($row[$field['COLUMN_CSV']]);
                     	else
                     		$appData[$field['FIELD_NAME']] = ' ';
                     }
                     else
                     {
                     	if($field['COLUMN_CSV'])
-                        	$appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
+                        	$appData[$field['FIELD_NAME']] = _convert($field['COLUMN_CSV']);
                         else
                         	$appData[$field['FIELD_NAME']] = ' ';
                     } 
@@ -754,9 +770,9 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
                 {
                     $aCol = explode(' ', trim($field['COLUMN_CSV']));
                     if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-                        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
+                        $appData[$field['FIELD_NAME']] = _convert($row[$aCol[1]]);
                     else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-                        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
+                        $appData[$field['FIELD_NAME']] =  _convert($field['COLUMN_CSV']);
                     }        
                 }
             }       
@@ -895,9 +911,9 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
    		    		if($fieldNameEditDelete == $key )
    		    		{
     	    			if($whereDelete == '')
-		    				$whereDelete = $key." = '".$fields."'";
+		    				$whereDelete = $key." = '".mysql_escape_string($fields)."'";
 		    			else 
-		    				$whereDelete = $whereDelete." AND " .$key." = '".$fields."'";
+		    				$whereDelete = $whereDelete." AND " .$key." = '".mysql_escape_string($fields)."'";
    		    		}
     	    	} 
     	    	// end delete cases 
@@ -926,7 +942,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
 	        foreach ($appData as $key => $value)
             {
                 if(!is_array($value))
-                    $appData[$key] = htmlspecialchars_decode($value);
+                    $appData[$key] = ($value);
                 else
                     $appData[$key] = $value;
             } 
@@ -937,7 +953,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
             $appData['FLAG_EDIT'] = 1;
             $appData['STATUT'] = 1;
             $appData['CurrentUserAutoDerivate'] = $USR_UID;
-          // $appData['LOOP'] = 1;
+          
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);  
             if($totalCases == 0)
             	$idCasesGenerate = "'".$caseUID."'";
@@ -1012,9 +1028,9 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
             foreach ($row as $value)
             {
                 if ($totIni == $totRow)
-                    $csv.=$value;
+                    $csv.= _convert($value);
                 else
-                    $csv.=$value . $csv_sep;
+                    $csv.= _convert($value) . $csv_sep;
                 $totIni++;
             }
             $csv.=$csv_end;
@@ -1045,14 +1061,14 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     if (isset($row[$field['COLUMN_CSV']]))
                     {
                         if ($row[$field['COLUMN_CSV']])
-                            $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
+                            $appData[$field['FIELD_NAME']] = _convert($row[$field['COLUMN_CSV']]);
                         else
                             $appData[$field['FIELD_NAME']] = ' ';
                     }
                     else
                     {
                         if ($field['COLUMN_CSV'])
-                            $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
+                            $appData[$field['FIELD_NAME']] = _convert($field['COLUMN_CSV']);
                         else
                             $appData[$field['FIELD_NAME']] = ' ';
                     }
@@ -1061,10 +1077,10 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 {
                     $aCol = explode(' ', trim($field['COLUMN_CSV']));
                     if ((isset($aCol[0]) && trim($aCol[0]) == 'Column' ) && ( isset($aCol[1]) && isset($row[$aCol[1]]) ))
-                        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
+                        $appData[$field['FIELD_NAME']] = _convert($row[$aCol[1]]);
                     else if (( isset($aCol[0]) && trim($aCol[0]) != 'Column'))
                     {
-                        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
+                        $appData[$field['FIELD_NAME']] = _convert($field['COLUMN_CSV']);
                     }
                 }
             }
@@ -1201,9 +1217,9 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     if ($fieldNameEditDelete == $key)
                     {
                         if ($whereUpdate == '')
-                            $whereUpdate = $key . " = '" . $fields . "'";
+                            $whereUpdate = $key . " = '" . mysql_escape_string($fields) . "'";
                         else
-                            $whereUpdate = $whereUpdate . " AND " . $key . " = '" . $fields . "'";
+                            $whereUpdate = $whereUpdate . " AND " . $key . " = '" . mysql_escape_string($fields) . "'";
                     }
                 }
             }
@@ -1213,7 +1229,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
             foreach ($appData as $key => $value)
             {
                 if(!is_array($value))
-                    $appData[$key] = htmlspecialchars_decode($value);
+                    $appData[$key] = ($value);
                 else
                     $appData[$key] = $value;
             } 
@@ -1230,7 +1246,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     $appData['EXEC_AUTO_DERIVATE'] = 'NO';
                     $appData['eligible'] = 0; // only process beneficiary
                     $appData['FLAG_EDIT'] = 1;
-                    $appData['STATUT'] = 1;
                     $appData['CurrentUserAutoDerivate'] = $USR_UID;
                     $appData = array_merge($FieldsCase['APP_DATA'], $appData);
                     $FieldsCase['APP_DATA'] = $appData;
@@ -1247,7 +1262,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 $appData['STATUT'] = 1;
                 $appData['FLAG_EDIT'] = 1;
                 $appData['CurrentUserAutoDerivate'] = $USR_UID;
-                //$appData['LOOP'] = 1;
                 $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);
                 if ($caseUID > 0)
                 {
@@ -1264,7 +1278,6 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                     //$FieldsCase['APP_DATA']['STATUT'] = 1;
                     //$FieldsCase['APP_DATA']['LOOP'] = '';
                     $oCase->updateCase($caseUID, $FieldsCase);
-                    autoDerivate($proUid, $caseUID, $USR_UID);
                 }
             }
         }

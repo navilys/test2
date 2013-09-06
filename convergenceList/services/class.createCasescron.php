@@ -229,7 +229,21 @@ class archivedCasesClassCron
     	}
     	return $_dataForms;
     }
-		
+
+	function _convert($content) {
+    	if(!mb_check_encoding($content, 'UTF-8') OR !($content === mb_convert_encoding(mb_convert_encoding($content, 'UTF-32', 'UTF-8' ), 'UTF-8', 'UTF-32'))) {
+
+        	$content = mb_convert_encoding($content, 'UTF-8');
+
+        	if (mb_check_encoding($content, 'UTF-8')) {
+            // log('Converted to UTF-8');
+       	 	} else {
+            // log('Could not converted to UTF-8');
+        	}
+    	}
+    	return $content;
+	}
+	
 	function importCreateCaseCSV($jsonMatchFields,$uidTask, $tableName,$firstLineHeader,$informationCSV,$csvIdentify,$totCasesCSV)
 	{ 	
 	    G::LoadClass('case');
@@ -261,14 +275,14 @@ class archivedCasesClassCron
 				    if(isset($row[$field['COLUMN_CSV']]))
 				    {
 				        if($row[$field['COLUMN_CSV']])
-					        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
+					        $appData[$field['FIELD_NAME']] = $this->_convert($row[$field['COLUMN_CSV']]);
 				        else
 					        $appData[$field['FIELD_NAME']] = ' ';
 				    }
 				    else
 				    {
 				        if($field['COLUMN_CSV'])
-					        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
+					        $appData[$field['FIELD_NAME']] = $this->_convert($field['COLUMN_CSV']);
 				        else
 					        $appData[$field['FIELD_NAME']] = ' ';
 				    } 
@@ -279,10 +293,10 @@ class archivedCasesClassCron
                   
                     if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
                     {   
-                        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
+                        $appData[$field['FIELD_NAME']] = $this->_convert($row[$aCol[1]]);
                     }
                     else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-                        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
+                        $appData[$field['FIELD_NAME']] =  $this->_convert($field['COLUMN_CSV']);
                     }       
 			    }
 			}  		
@@ -427,7 +441,7 @@ class archivedCasesClassCron
 		    foreach ($appData as $key => $value)
             {   
                 if(!is_array($value))
-                    $appData[$key] = htmlspecialchars_decode($value);
+                    $appData[$key] = ($value);
                 else
                     $appData[$key] = $value;
             } 
@@ -493,14 +507,14 @@ class archivedCasesClassCron
 				    if(isset($row[$field['COLUMN_CSV']]))
 				    {
 				        if($row[$field['COLUMN_CSV']])
-				    	    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
+				    	    $appData[$field['FIELD_NAME']] = $this->_convert($row[$field['COLUMN_CSV']]);
 				        else
 				    	    $appData[$field['FIELD_NAME']] = ' ';
 				    }
 				    else
 				    {
 				        if($field['COLUMN_CSV'])
-				    	    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
+				    	    $appData[$field['FIELD_NAME']] = $this->_convert($field['COLUMN_CSV']);
 				        else
 				    	    $appData[$field['FIELD_NAME']] = ' ';
 				    } 
@@ -509,9 +523,9 @@ class archivedCasesClassCron
 			    {
 				    $aCol = explode(' ', trim($field['COLUMN_CSV']));
 				    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-				        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
+				        $appData[$field['FIELD_NAME']] = $this->_convert($row[$aCol[1]]);
 				    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  )
-				        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
+				        $appData[$field['FIELD_NAME']] =  $this->_convert($field['COLUMN_CSV']);
 				            
 			    }
 			}  
@@ -660,9 +674,9 @@ class archivedCasesClassCron
 				    if($fieldNameEditDelete == $key )
 				    {
 				        if($whereUpdate == '')
-						    $whereUpdate = $key." = '".$fields."'";
+						    $whereUpdate = $key." = '".mysql_escape_string($fields)."'";
 					    else 
-						    $whereUpdate = $whereUpdate." AND " .$key." = '".$fields."'";
+						    $whereUpdate = $whereUpdate." AND " .$key." = '".mysql_escape_string($fields)."'";
 				    }
 			    } 
 			}
@@ -671,7 +685,7 @@ class archivedCasesClassCron
 		    foreach ($appData as $key => $value)
             {   
                 if(!is_array($value))
-                    $appData[$key] = htmlspecialchars_decode($value);
+                    $appData[$key] = ($value);
                 else
                     $appData[$key] = $value;
             } 
@@ -763,14 +777,14 @@ class archivedCasesClassCron
 				if(isset($row[$field['COLUMN_CSV']]))
 				{
 				    if($row[$field['COLUMN_CSV']])
-					    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$field['COLUMN_CSV']]);
+					    $appData[$field['FIELD_NAME']] = $this->_convert($row[$field['COLUMN_CSV']]);
 				    else
 					    $appData[$field['FIELD_NAME']] = ' ';
 				}
 				else
 				{
 				    if($field['COLUMN_CSV'])
-					    $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($field['COLUMN_CSV']);
+					    $appData[$field['FIELD_NAME']] = $this->_convert($field['COLUMN_CSV']);
 				    else
 					    $appData[$field['FIELD_NAME']] = ' ';
 				} 
@@ -779,9 +793,9 @@ class archivedCasesClassCron
 			    {
 				    $aCol = explode(' ', trim($field['COLUMN_CSV']));
 				    if( (isset($aCol[0]) && trim($aCol[0]) == 'Column' ) &&  ( isset($aCol[1]) && isset($row[$aCol[1]]) ) )
-				        $appData[$field['FIELD_NAME']] = htmlspecialchars_decode($row[$aCol[1]]);
+				        $appData[$field['FIELD_NAME']] = $this->_convert($row[$aCol[1]]);
 				    else if ( ( isset($aCol[0])  &&  trim($aCol[0]) != 'Column' )  ){
-				        $appData[$field['FIELD_NAME']] =  htmlspecialchars_decode($field['COLUMN_CSV']);
+				        $appData[$field['FIELD_NAME']] =  $this->_convert($field['COLUMN_CSV']);
 				    }        
 			    }
 			}  
@@ -931,9 +945,9 @@ class archivedCasesClassCron
 					if($fieldNameEditDelete == $key )
 					{
 					    if($whereDelete == '')
-						    $whereDelete = $key." = '".$fields."'";
+						    $whereDelete = $key." = '".mysql_escape_string($fields)."'";
 					    else 
-						    $whereDelete = $whereDelete." AND " .$key." = '".$fields."'";
+						    $whereDelete = $whereDelete." AND " .$key." = '".mysql_escape_string($fields)."'";
 					}
 			    } 
 					
