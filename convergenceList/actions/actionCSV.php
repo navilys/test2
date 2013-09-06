@@ -649,13 +649,13 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
 
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
             if($caseUID > 0) 
-            {   
+            {  
             	$oCase = new Cases ();
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
 			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER']; 
 			    $oCase->updateCase($caseUID,$FieldsCase);
                 autoDerivate($proUid,$caseUID,$USR_UID);
-                 die;
+              
 			    /* Comment by Nico 28/08/2013
                  * Please, don't remove the comment because make some bug on process
                  * or explain to me why you want to put this value
@@ -961,10 +961,12 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
             	$idCasesGenerate = $idCasesGenerate.", '".$caseUID."'";
             if($caseUID >0) 
             {
-                autoDerivate($proUid,$caseUID,$USR_UID);
                 $oCase = new Cases ();
                 $FieldsCase = $oCase->loadCase ( $caseUID );
                 $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
+                $oCase->updateCase($caseUID,$FieldsCase);
+            	autoDerivate($proUid,$caseUID,$USR_UID);
+               
                
                /* Comment by Nico 28/08/2013
                  * Please, don't remove the comment because make some bug on process
@@ -973,7 +975,7 @@ function importCreateCaseDelete($jsonMatchFields,$uidTask, $tableName,$firstLine
                  */
                 //$FieldsCase['APP_DATA']['STATUT'] = 1;
                 //$FieldsCase['APP_DATA']['LOOP'] = '';   
-                $oCase->updateCase($caseUID,$FieldsCase);
+               
             }
         }
         $totalCases++;
@@ -1265,10 +1267,12 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                 $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);
                 if ($caseUID > 0)
                 {
-                    autoDerivate($proUid, $caseUID, $USR_UID);
                     $oCase = new Cases ();
                     $FieldsCase = $oCase->loadCase($caseUID);
-                    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];                   
+                    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER']; 
+                    $oCase->updateCase($caseUID, $FieldsCase);
+                	autoDerivate($proUid, $caseUID, $USR_UID);
+                                      
                     
                     /* Comment by Nico 28/08/2013
                      * Please, don't remove the comment because make some bug on process
@@ -1277,7 +1281,7 @@ function importCreateCaseEdit($jsonMatchFields,$uidTask, $tableName,$firstLineHe
                      */
                     //$FieldsCase['APP_DATA']['STATUT'] = 1;
                     //$FieldsCase['APP_DATA']['LOOP'] = '';
-                    $oCase->updateCase($caseUID, $FieldsCase);
+                    
                 }
             }
         }
