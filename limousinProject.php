@@ -1,5 +1,6 @@
 <?php
 define('LimousinPort','8084');
+define('gpIdPartenaire', '89c7034503fb5da547bd3f684d50fa82');
 G::LoadClass("plugin");
 
 class limousinProjectPlugin extends PMPlugin

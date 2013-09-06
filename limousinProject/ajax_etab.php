@@ -9,7 +9,7 @@ class ajax_etab extends WebResource {
 
         function search_etab($uid) {
                 $res = '';
-                $query = 'SELECT NOM,RNE,ADR2,ADR1,VILLE,CP FROM PMT_ETABLISSEMENT where STATUT=1 AND NUM_DOSSIER ="'.$uid.'"';
+                $query = 'SELECT NOM,RNE,ADR2,ADR1,VILLE,CP FROM PMT_ETABLISSEMENT where STATUT=1 AND RNE ="'.$uid.'"';
                 $result = executeQuery($query);
                 if (isset($result))
                         $res = json_encode($result[1]);

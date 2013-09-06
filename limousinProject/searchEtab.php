@@ -1,6 +1,6 @@
 <?php
 G::LoadClass ('pmFunctions');
-$POST['NUM_DOSSIER']='';
+$POST['RNE']='';
 $POST['ETAB_NAME']='';
 $POST['VILLE']='';
 $POST['CODE_OPER']='';
@@ -13,7 +13,7 @@ $sWhere = ' WHERE STATUT=1 ';
 }*/
 if(isset($_POST['rne']) && $_POST['rne'] !=""){
     $sWhere .= "AND RNE LIKE '%".$_POST['rne']."%' ";
-    $POST['NUM_DOSSIER']=$_POST['rne'];
+    $POST['RNE']=$_POST['rne'];
 }
 if(isset($_POST['nom']) && $_POST['nom'] !=""){
     $sWhere .= "AND NOM LIKE '%".mysql_escape_string($_POST['nom'])."%' ";
@@ -30,7 +30,7 @@ $aResult = executeQuery ($sSQL);
 $aRows = array('RNE' => 'char', 'NOM' => 'char', 'ADR1' => 'char', 'VILLE' => 'char', 'CP' => 'char', 'SELECT_ETAB' => 'char');
 $aDatas[] = $aRows;
 foreach($aResult as $row){
-    $sLink='<span class="RowLink"><a class="tableOption" href="#" onClick="setEtabUid(\''.$row['NUM_DOSSIER'].'\');">OK</a></span>';
+    $sLink='<span class="RowLink"><a class="tableOption" href="#" onClick="setEtabUid(\''.$row['RNE'].'\');">OK</a></span>';
     $aRows = array('RNE' => $row['RNE'], 'NOM' => $row['NOM'],'ADR1' => $row['ADR1'], 'VILLE' => $row['VILLE'],'CP' => $row['CP'], 'SELECT_ETAB' =>$sLink );
     $aDatas[] = $aRows;
 }   

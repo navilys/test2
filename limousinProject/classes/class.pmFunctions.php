@@ -260,26 +260,34 @@ function limousinProject_createUser($app_id, $role) {
     if (!empty($rQuery))
     {
         $usr_uid = $rQuery[1]['USR_UID'];
-        $IP = $_SERVER['HTTP_HOST'];
-        $port = '8084'; // voir pour les constante workflow
-        $groupId = '1'; // voir pour les constante workflow
-        // creation du fe_user dans typo3
-        //$res = userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8084/');
-        /*       ini_set("soap.wsdl_cache_enabled", "0");
-          $hostTypo3 = 'http://'.$IP.':'.$port. '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
-          $pfServer = new SoapClient($hostTypo3);
-          $key = rand();
-          $ret = $pfServer->createAccount(array(
-          'username' => $fields['MAIL'],
-          'password' => md5($fields['PASSWORD']),
-          'email' => $fields['MAIL'],
-          'lastname' => $fields['PRENOM_CONTACT'],
-          'firstname' => $fields['NOM_CONTACT'],
-          'key' => $key,
-          'pmid' => $usr_uid,
-          'usergroup' => $groupId,
-          'cHash' => md5($fields['MAIL'] . '*' . $fields['PRENOM_CONTACT'] . '*' . $fields['NOM_CONTACT'] . '*' . $key)));
-         */
+        $qGpId = ' SELECT *  FROM `CONTENT` WHERE `CON_VALUE` LIKE "' . $role . '" AND CON_CATEGORY = "GRP_TITLE"';
+        $rGpId = executeQuery($qGpId);
+
+        if (!empty($rGpId[1]['CON_ID']))
+        {
+
+            $IP = $_SERVER['HTTP_HOST'];
+            $port = '8084'; // voir pour les constante workflow
+            $groupId = $rGpId[1]['CON_ID']; // voir pour les constante workflow
+            $var = PMFAssignUserToGroup($usr_uid, $groupId);
+
+            // creation du fe_user dans typo3
+            //$res = userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8084/');
+            ini_set("soap.wsdl_cache_enabled", "0");
+            $hostTypo3 = 'http://' . $IP . ':' . $port . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
+            $pfServer = new SoapClient($hostTypo3);
+            $key = rand();
+            $ret = $pfServer->createAccount(array(
+                'username' => $fields['MAIL'],
+                'password' => md5($fields['PASSWORD']),
+                'email' => $fields['MAIL'],
+                'lastname' => $fields['PRENOM_CONTACT'],
+                'firstname' => $fields['NOM_CONTACT'],
+                'key' => $key,
+                'pmid' => $usr_uid,
+                'usergroup' => $groupId,
+                'cHash' => md5($fields['MAIL'] . '*' . $fields['PRENOM_CONTACT'] . '*' . $fields['NOM_CONTACT'] . '*' . $key)));
+        }
     }
     else
     {
@@ -325,10 +333,11 @@ function limousinProject_updateAQPORTR($file) {
     else
         $num_fic = str_pad('1', 15, 0, STR_PAD_LEFT);
     $filler = str_pad('', 32, ' ');
-    $new_line = '00101004' . date("YmdHis") . $num_fic . $filler . "\n";
+    $start_line = '00101004' . date("YmdHis") . $num_fic . $filler . "\n";
+    $end_line = '00301004' . date("YmdHis") . $num_fic . $filler . "\n";
     $content = file($file);
-    array_unshift($content, $new_line);
-    array_push($content, $new_line);
+    array_unshift($content, $start_line);
+    array_push($content, $end_line);
     $new_content = implode('', $content);
     $fp = fopen($file, 'w');
     $w = fwrite($fp, $new_content);
