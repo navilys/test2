@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class.limousinProject.pmFunctions.php
  *
@@ -21,21 +22,18 @@ require_once("plugins/limousinProject/classes/Webservices/Identification.php");
 // License: LGPL, see LICENSE
 ////////////////////////////////////////////////////
 
-function limousinProject_getMyCurrentDate()
-{
+function limousinProject_getMyCurrentDate() {
     return G::CurDate('Y-m-d');
 }
 
-function limousinProject_getMyCurrentTime()
-{
+function limousinProject_getMyCurrentTime() {
     return G::CurDate('H:i:s');
 }
 
 //LOCAL : a transforme dans le moteur de regle
-function convergence_getIncompletErreur($app_id)
-{
-    $fields = convergence_getAllAppData($app_id);   
-    $incomplet = array();    
+function convergence_getIncompletErreur($app_id) {
+    $fields = convergence_getAllAppData($app_id);
+    $incomplet = array();
     if ($fields['FINOM'] == '')
     {
         $incomplet[] = "Votre nom";
@@ -45,7 +43,7 @@ function convergence_getIncompletErreur($app_id)
         $incomplet[] = "Votre prénom";
     }
     if ($fields['FIDATEDENAISSANCE'] == '')
-    { 
+    {
         $incomplet[] = "Votre date de naissance";
     }
     if ($fields['FIADRESSE1'] == '' || $fields['FICODEPOSTAL'] == '' || $fields['FIVILLE'] == '')
@@ -61,49 +59,49 @@ function convergence_getIncompletErreur($app_id)
         $incomplet[] = "Votre numéro de téléphone";
     }
     if ($fields['FIEMAIL'] == '')
-    { 
-        $incomplet[] = "Votre e-mail"; 
+    {
+        $incomplet[] = "Votre e-mail";
     }
     if ($fields['FISITUATION'] == '1' && $fields['FIETABLISSEMENT'] == '')
     {
         $incomplet[] = "Votre établissement";
-    }   
+    }
     if ($fields['FISITUATION'] == '2' && $fields['FISITUATIONDETAIL'] == '')
-    { 
+    {
         $incomplet[] = "Votre situation";
     }
-    return $incomplet; 
+    return $incomplet;
 }
 
-function convergence_getMsgErreur($app_id){
-   
+function convergence_getMsgErreur($app_id) {
+
     $refus = array();
     $fields = convergence_getAllAppData($app_id);
-    if(!isset($fields['GDCERTIFSCOLARITE']) || $fields['GDCERTIFSCOLARITE'] == 0)
+    if (!isset($fields['GDCERTIFSCOLARITE']) || $fields['GDCERTIFSCOLARITE'] == 0)
     {
         $refus[] = "Votre certificat de scolarité est manquant.";
     }
-    else if(!isset($fields['GDCERTIFSCOLARITEOK']) || $fields['GDCERTIFSCOLARITEOK'] == 0)
+    else if (!isset($fields['GDCERTIFSCOLARITEOK']) || $fields['GDCERTIFSCOLARITEOK'] == 0)
     {
         $refus[] = "Votre certificat de scolarité n'est pas conforme.";
     }
-    if(!isset($fields['GDSIGNATUREPARENTALE']) || $fields['GDSIGNATUREPARENTALE'] == 0)
+    if (!isset($fields['GDSIGNATUREPARENTALE']) || $fields['GDSIGNATUREPARENTALE'] == 0)
     {
         $refus[] = "Votre signature parentale est manquante.";
     }
-    if(!isset($fields['GDJUSTIFDOM']) || $fields['GDJUSTIFDOM'] == 0)
+    if (!isset($fields['GDJUSTIFDOM']) || $fields['GDJUSTIFDOM'] == 0)
     {
         $refus[] = "Votre justificatif de domicile est manquant.";
     }
-    else if(!isset($fields['GDJUSTIFDOMOK']) || $fields['GDJUSTIFDOMOK'] == 0)
+    else if (!isset($fields['GDJUSTIFDOMOK']) || $fields['GDJUSTIFDOMOK'] == 0)
     {
         $refus[] = "Votre justificatif de domicile n'est pas conforme.";
     }
-    if(!isset($fields['GDJUSTIFIDENTITE']) || $fields['GDJUSTIFIDENTITE'] == 0)
+    if (!isset($fields['GDJUSTIFIDENTITE']) || $fields['GDJUSTIFIDENTITE'] == 0)
     {
         $refus[] = "Votre justificatif d'identité est manquant.";
     }
-    else if(!isset($fields['GDJUSTIFIDENTITEOK']) || $fields['GDJUSTIFIDENTITEOK'] == 0)
+    else if (!isset($fields['GDJUSTIFIDENTITEOK']) || $fields['GDJUSTIFIDENTITEOK'] == 0)
     {
         $refus[] = "Votre justificatif d'identité n'est pas conforme.";
     }
@@ -111,141 +109,148 @@ function convergence_getMsgErreur($app_id){
 }
 
 function limousinProject_generatePorteurID($num_dossier) {
-    
-    /*Les 4 premiers caractères seront : 3028
-    Les 6 autres seront le numéro unique créé par convergence
-    Concernant le dernier la formule exacte est : 9 - somme(des 10 premiers chiffres) modulo 9.
-    Ce qui fait que l'exemple du document est faux : 23 mod 9 = 5, et 9-5=4 donc le dernier chiffre doit être 4.
-    */
-    
-    $prefix = '3028'; 
-    $temp_num_dossier = str_pad($num_dossier, 6, "0", STR_PAD_LEFT);     
-    $somme = array_sum(str_split($prefix.$temp_num_dossier));
-    $cle_modulo = 9 - $somme%9;
 
-     
-    $porteurID = $prefix.$temp_num_dossier.$cle_modulo;
+    /* Les 4 premiers caractères seront : 3028
+      Les 6 autres seront le numéro unique créé par convergence
+      Concernant le dernier la formule exacte est : 9 - somme(des 10 premiers chiffres) modulo 9.
+      Ce qui fait que l'exemple du document est faux : 23 mod 9 = 5, et 9-5=4 donc le dernier chiffre doit être 4.
+     */
+
+    $prefix = '3028';
+    $temp_num_dossier = str_pad($num_dossier, 6, "0", STR_PAD_LEFT);
+    $somme = array_sum(str_split($prefix . $temp_num_dossier));
+    $cle_modulo = 9 - $somme % 9;
+
+
+    $porteurID = $prefix . $temp_num_dossier . $cle_modulo;
 
     return $porteurID;
-    
 }
 
-
 function limousinProject_nouvelleTransaction() {
-    
-	// INIT Ws
+
+    // INIT Ws
     $t = new Transaction();
 
-	// SET Params
-	$t->operation = "_operation";
-	$t->partenaire = "_partenaire";
-	$t->porteurId = "_porteurId";
-	$t->sens = "_sens";
-	$t->montant = "_montant";
-	$t->addSousMontant("_reseau1","_montatnReseau1");
-	$t->addSousMontant("_reseau2","_montatnReseau2");
-	
-	// CALL Ws
-	try{
-		$retour = $t->call();
-	} catch (Exception $e) {
-		// TODO	
-		var_dump($e);
-		die();
-	}
-	
-	
+    // SET Params
+    $t->operation = "_operation";
+    $t->partenaire = "_partenaire";
+    $t->porteurId = "_porteurId";
+    $t->sens = "_sens";
+    $t->montant = "_montant";
+    $t->addSousMontant("_reseau1", "_montatnReseau1");
+    $t->addSousMontant("_reseau2", "_montatnReseau2");
+
+    // CALL Ws
+    try
+    {
+        $retour = $t->call();
+    }
+    catch (Exception $e)
+    {
+        // TODO
+        var_dump($e);
+        die();
+    }
 }
 
 function limousinProject_nouvelleActionCRM() {
-    
-	// INIT Ws
+
+    // INIT Ws
     $a = new ActionCRM();
-	$action ="_action";
-	$motif = "_motif";
-	
-	// SET Params
-	$a->partenaire = "_partenaire";
-	$a->porteurId = "_porteurId";
-	$a->action = $action;
-	if(!empty($motif))
-		$a->motif = $motif;
-	
-	// CALL Ws
-	try{
-		$retour = $a->call();
-	} catch (Exception $e) {
-		// TODO	
-		var_dump($e);
-		die();		
-	}
-	
+    $action = "_action";
+    $motif = "_motif";
+
+    // SET Params
+    $a->partenaire = "_partenaire";
+    $a->porteurId = "_porteurId";
+    $a->action = $action;
+    if (!empty($motif))
+        $a->motif = $motif;
+
+    // CALL Ws
+    try
+    {
+        $retour = $a->call();
+    }
+    catch (Exception $e)
+    {
+        // TODO
+        var_dump($e);
+        die();
+    }
 }
 
 function limousinProject_getOperations() {
-    
-	// INIT Ws
+
+    // INIT Ws
     $o = new Operation();
-	
-	// SET Params
-	$o->operation = "_operation";
-	$o->partenaire = "_partenaire";
-	$o->porteurId = "_porteurId";
-	$o->dateDepart = "_dateDepart";
-	$o->jours = "_jours";	
-	
-	// CALL Ws
-	try{
-		$retour = $o->call();
-	} catch (Exception $e) {
-		// TODO	
-		var_dump($e);
-		die();		
-	}
-	
+
+    // SET Params
+    $o->operation = "_operation";
+    $o->partenaire = "_partenaire";
+    $o->porteurId = "_porteurId";
+    $o->dateDepart = "_dateDepart";
+    $o->jours = "_jours";
+
+    // CALL Ws
+    try
+    {
+        $retour = $o->call();
+    }
+    catch (Exception $e)
+    {
+        // TODO
+        var_dump($e);
+        die();
+    }
 }
 
 function limousinProject_getSolde() {
-    
-	// INIT Ws
+
+    // INIT Ws
     $s = new Solde();
-	
-	// SET Params
-	$s->partenaire = "_partenaire";
-	$s->porteurId = "_porteurId";	
-	
-	// CALL Ws
-	try{
-		$retour = $s->call();
-	} catch (Exception $e) {
-		// TODO	
-		var_dump($e);
-		die();		
-	}
-	
+
+    // SET Params
+    $s->partenaire = "_partenaire";
+    $s->porteurId = "_porteurId";
+
+    // CALL Ws
+    try
+    {
+        $retour = $s->call();
+    }
+    catch (Exception $e)
+    {
+        // TODO
+        var_dump($e);
+        die();
+    }
 }
 
 function limousinProject_identification() {
-    
-	// INIT Ws
+
+    // INIT Ws
     $i = new Identification();
-	
-	// SET Params
-	$i->porteurId = "_porteurId";
-	$i->telephone = "_telephone";
-	$i->portable = "_portable";
-	$i->email = "_email";
-	$i->numcarte = "_numCarte";
-	
-	// CALL Ws
-	try{
-		$retour = $i->call();
-	} catch (Exception $e) {
-		// TODO	
-		var_dump($e);
-		die();		
-	}
-	
+
+    // SET Params
+    $i->porteurId = "_porteurId";
+    $i->telephone = "_telephone";
+    $i->portable = "_portable";
+    $i->email = "_email";
+    $i->numcarte = "_numCarte";
+
+    // CALL Ws
+    try
+    {
+        $retour = $i->call();
+    }
+    catch (Exception $e)
+    {
+        // TODO
+        var_dump($e);
+        die();
+    }
 }
 
 function limousinProject_createUser($app_id, $role) {
@@ -255,7 +260,7 @@ function limousinProject_createUser($app_id, $role) {
     if ($isCreate == 0)
         return false;
 
-    $uQuery = 'SELECT USR_UID FROM USERS WHERE USR_USERNAME ="' . $fields['MAIL'] . '"';    
+    $uQuery = 'SELECT USR_UID FROM USERS WHERE USR_USERNAME ="' . $fields['MAIL'] . '"';
     $rQuery = executeQuery($uQuery);
     if (!empty($rQuery))
     {
@@ -344,3 +349,39 @@ function limousinProject_updateAQPORTR($file) {
     fclose($fp);
 }
 
+/* * *
+ * On récupère tout les fichiers présent dans le dossier $remote_dir
+ *  via une connexion ssh et les retournes dans un tableau.
+ */
+
+function limousinProject_getFileByFtp($remote_dir = '.', $remote_bkp = '/save/', $pattern = '', $local_dir = '/var/tmp/') {
+    $remote_file = array();
+    $files_liste = array();
+    //$connection = ftp_connect(serveur_ftp);
+    //$login_res = ftp_login($connection, username_ftp, pwd_ftp);
+    if (!$ftp_stream = ftp_connect('172.17.20.29', 21, 120))
+        return false;
+    $login_res = ftp_login($ftp_stream, 'ftpttest', 'ftptest');
+    $ftp_nlist = ftp_nlist($ftp_stream, $remote_dir);
+    foreach ($ftp_nlist as $file_name)
+    {
+        if (ftp_size($ftp_stream, $file_name) != -1)
+            $remote_file [] = $file_name;
+    }
+    if (!empty($remote_file))
+    {
+        foreach ($remote_file as $file)
+        {            
+            if (preg_match($pattern, basename($file)) == 1)
+            {
+                $files_liste[] = $file;
+                ftp_get($ftp_stream, $local_dir . basename($file), $file, FTP_BINARY);
+                ftp_rename($ftp_stream, $file, $remote_bkp . basename($file));
+            }
+        }
+    }
+    ftp_close($ftp_stream);
+    return $files_liste;
+}
+
+?>

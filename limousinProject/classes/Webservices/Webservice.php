@@ -25,27 +25,30 @@ class Webservices {
 			)
 		);
 		
-		/*
-		
 		// ADD optionnal header
 		if(!empty($this->header))
 			$params['https']['header'] = $this->header;
 			
 		// BUILD And OPEN Stream
-		$ctx = stream_context_create($params);
-		
-		
-		
-		$fp = @fopen($this->url,'rb',false,$ctx);
-        
-		// CHECK Stream
+		try{
+		//$ctx = stream_context_create($params);
+		//var_dump($this->url);
+		//var_dump($params);
+		//$handle = fopen("https://extranet.aqoba-preprod.customers.artful.net/api/v09/solde?access_token=99ac21619656c825e788ffb8ac6bfa23f08f4b08", "r");
+		//var_dump(@stream_get_contents($handle));
+		phpinfo();
+		exit(0);
+		//$fp = @fopen("www.google.fr",'rb',false,$ctx);  
+		//var_dump($fp);		
+		//CHECK Stream
 		if(!$fp)
-			throw new Exception("Erreur Stream");		
+			throw new Exception("Erreur Stream");			
+		//GET Response
+		$response = @stream_get_contents($fp);	
+		}catch(Exception $e){
+			var_dump($e);
+		}
 		
-		// GET Response
-		$response = @stream_get_contents($fp);
-		
-		*/
 		$response = $this->bouchonWs;
 		
 		// CHECK Return
