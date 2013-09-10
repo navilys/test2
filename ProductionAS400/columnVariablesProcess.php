@@ -113,7 +113,7 @@ if (isset ( $_POST ['idProcess'] ) && $_POST ['idProcess'] != '')
 					  CA.CD_UID_CONFIG_AS = CD.CD_UID 
 					  AND CA.CD_FIELDNAME = '" . $index['FLD_UID'] . "' 
 					  AND CA.CD_UID_CONFIG_AS = '". $idConfigAS."'
-					  AND CA.CD_FIELD_DESCRIPTION = '" . $index['FIELD_DESCRIPTION']. "'";
+					  AND CA.CD_FIELD_DESCRIPTION = '" . mysql_escape_string($index['FIELD_DESCRIPTION']). "'";
 			
 			$newOptions = executeQuery ( $query );
 			$i=0;

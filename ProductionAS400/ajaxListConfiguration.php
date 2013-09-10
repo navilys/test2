@@ -1,6 +1,6 @@
 <?php
-//ini_set ( 'error_reporting', E_ALL );
-//ini_set ( 'display_errors', True );
+ini_set ( 'error_reporting', E_ALL );
+ini_set ( 'display_errors', True );
 G::LoadClass ( 'case' );
 G::LoadClass ( 'configuration' );
 G::loadClass ( 'pmFunctions' );
@@ -193,7 +193,7 @@ if (isset ( $_REQUEST ['idTable'] ) && $_REQUEST ['idTable'] != '')
 								"FLD_UID" => $value,
    	 							"ADD_TAB_UID" => $tableShow,
       							"ALIAS_TABLE" => $row['OLD_NAME'],
-								"FIELD_DESCRIPTION" => $value
+								"FIELD_DESCRIPTION" => mysql_escape_string($value)
 								);
 								
 					$newArrayInner[] = $arrayAux;
@@ -274,7 +274,7 @@ if (isset ( $_REQUEST ['idTable'] ) && $_REQUEST ['idTable'] != '')
 				  AND ID_TABLE = '".$index['ADD_TAB_UID']."' 
 				  AND ID_CONFIG_AS = '". $idConfigAS."'
 				  AND TABLENAME = '".$_POST['idTable']."' 
-				  AND FIELD_DESCRIPTION = '" . $index['FIELD_DESCRIPTION']. "'";
+				  AND FIELD_DESCRIPTION = '" . mysql_escape_string($index['FIELD_DESCRIPTION']). "'";
 		
 		//G::pr($query);
 		$newOptions = executeQuery ( $query );
