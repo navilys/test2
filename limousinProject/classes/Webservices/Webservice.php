@@ -16,46 +16,31 @@ class Webservices {
 	
 		//BUILD StreamContent
 		$streamContent = $this->buildInputXML($this->inputParams);		
-		
-		// INIT stream params
-		$params = array(
-			"https" => array(
-				"method" => "POST",
-				"content" => $streamContent
-			)
-		);
-		
-		// ADD optionnal header
-		if(!empty($this->header))
-			$params['https']['header'] = $this->header;
+				
+		$ch = curl_init($this->url);
+		curl_setopt($ch,CURLOPT_POST,1);
+		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));		
+		//curl_setopt($ch,CURLOPT_HEADER, true);	 
+		//curl_setopt($ch,CURLINFO_HEADER_OUT, true);	 
+		curl_setopt($ch,CURLOPT_POSTFIELDS,"$streamContent");
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false); 
+		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, 1);  
+		curl_setopt($ch,CURLOPT_SSLCERT, "/etc/apache2/ssl/limousin.pem"); 
+		curl_setopt($ch,CURLOPT_SSLCERTPASSWD, "pempp");
+		//curl_setopt($ch,CURLOPT_CERTINFO, true);
 			
-		// BUILD And OPEN Stream
-		try{
-		//$ctx = stream_context_create($params);
-		//var_dump($this->url);
-		//var_dump($params);
-		//$handle = fopen("https://extranet.aqoba-preprod.customers.artful.net/api/v09/solde?access_token=99ac21619656c825e788ffb8ac6bfa23f08f4b08", "r");
-		//var_dump(@stream_get_contents($handle));
-		phpinfo();
-		exit(0);
-		//$fp = @fopen("www.google.fr",'rb',false,$ctx);  
-		//var_dump($fp);		
-		//CHECK Stream
-		if(!$fp)
-			throw new Exception("Erreur Stream");			
-		//GET Response
-		$response = @stream_get_contents($fp);	
+		// GET Response
+		$response = curl_exec($ch);		
+		
+		try{			
+			// Check Response
+			$response = $this->checkReturn($response);
+		
 		}catch(Exception $e){
+			
 			var_dump($e);
-		}
-		
-		$response = $this->bouchonWs;
-		
-		// CHECK Return
-		try{
-			$this->checkReturn($response);
-		} catch (Exception $e) {
-			throw $e;				
+			
 		}
 		
 		// GET Return value        
@@ -148,7 +133,7 @@ class Webservices {
 	}
     
     private function checkReturn($retour){
-	
+
 		// BUILD dom
 		$dom = new DomDocument();
 		
@@ -158,11 +143,10 @@ class Webservices {
 		
 		//CHECK Return Code
 		if(empty($reponse->status)){
-		
+
 			throw new Exception('Status introuvable dans la réponse XML', 1);
 			
 		}elseif(empty($reponse->status->success)){
-		
 			if(!empty($reponse->status->failure)){
 			
 				foreach($reponse->status->failure->errors->field as $field)
@@ -178,7 +162,7 @@ class Webservices {
 		}
 
 		// RETURN
-		return true;		
+		return $reponse;		
 	
 	}
 }

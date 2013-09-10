@@ -1,6 +1,7 @@
 <?php
 
 function FupdateAPPDATATYPO3($APP_UID,$new = 0){
+    $_SESSION["PM_RUN_OUTSIDE_MAIN_APP"] = true;
     G::LoadClass("case");
     $caseInstance = new Cases ();
     $newFields = $caseInstance->loadCase ($APP_UID);

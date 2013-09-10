@@ -1,5 +1,9 @@
 <?php
 define('LimousinPort','8084');
+define('port_ftp','21');
+define('username_ftp','ftpttest');
+define('pwd_ftp','ftptest');
+define('serveur_ftp','172.17.20.29');
 define('gpIdPartenaire', '89c7034503fb5da547bd3f684d50fa82');
 G::LoadClass("plugin");
 

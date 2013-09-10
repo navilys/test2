@@ -133,11 +133,11 @@ function limousinProject_nouvelleTransaction() {
     $t = new Transaction();
 
     // SET Params
-    $t->operation = "_operation";
-    $t->partenaire = "_partenaire";
-    $t->porteurId = "_porteurId";
-    $t->sens = "_sens";
-    $t->montant = "_montant";
+    $t->operation = "01";
+    $t->partenaire = "00028";
+    $t->porteurId = "30280000023";
+    $t->sens = "C";
+    $t->montant = "100";
     $t->addSousMontant("_reseau1", "_montatnReseau1");
     $t->addSousMontant("_reseau2", "_montatnReseau2");
 
@@ -152,6 +152,7 @@ function limousinProject_nouvelleTransaction() {
         var_dump($e);
         die();
     }
+	var_dump($retour);
 }
 
 function limousinProject_nouvelleActionCRM() {
@@ -213,7 +214,7 @@ function limousinProject_getSolde() {
 
     // SET Params
     $s->partenaire = "_partenaire";
-    $s->porteurId = "_porteurId";
+    $s->porteurId = 30280000023;
 
     // CALL Ws
     try
@@ -258,7 +259,7 @@ function limousinProject_createUser($app_id, $role) {
     //PMFCreateUser(string userId, string password, string firstname, string lastname, string email, string role)
     $isCreate = PMFCreateUser($fields['MAIL'], $fields['PASSWORD'], $fields['NOM_CONTACT'], $fields['PRENOM_CONTACT'], $fields['MAIL'], $role);
     if ($isCreate == 0)
-        return false;
+        return FALSE;
 
     $uQuery = 'SELECT USR_UID FROM USERS WHERE USR_USERNAME ="' . $fields['MAIL'] . '"';
     $rQuery = executeQuery($uQuery);
@@ -272,8 +273,10 @@ function limousinProject_createUser($app_id, $role) {
         {
 
             $IP = $_SERVER['HTTP_HOST'];
-            $port = '8084'; // voir pour les constante workflow
-            $groupId = $rGpId[1]['CON_ID']; // voir pour les constante workflow
+            $port = port_extranet;
+            if(empty($port))
+                $port = '8084';
+            $groupId = $rGpId[1]['CON_ID'];
             $var = PMFAssignUserToGroup($usr_uid, $groupId);
 
             // creation du fe_user dans typo3
@@ -296,9 +299,9 @@ function limousinProject_createUser($app_id, $role) {
     }
     else
     {
-        return false;
+        return FALSE;
     }
-    return true;
+    return TRUE;
 }
 
 function limousinProject_getEtablissementFromRNE($rneCode) {
@@ -324,10 +327,15 @@ function limousinProject_getPathAQPORTR() {
         $path = $res[1]['PATH_FILE'] . '/OUT/AQ_PORT_R_001_00008.' . date('Ymd');
     }
     else
-        $path = '/var/tmp/AQPORT000008' . date('Ymd') . '_no_path_know.txt';
+        $path = '/var/tmp/AQ_PORT_R_001_00008.' . date('Ymd');
 
     return $path;
 }
+
+/*  Ajout les lignes d'entête et de fin de fichier pour le fichier AQ_PORT 
+ * 
+ * @param string $file le chemin du fichier à modifier
+ *  */
 
 function limousinProject_updateAQPORTR($file) {
 
@@ -349,39 +357,65 @@ function limousinProject_updateAQPORTR($file) {
     fclose($fp);
 }
 
-/* * *
- * On récupère tout les fichiers présent dans le dossier $remote_dir
- *  via une connexion ssh et les retournes dans un tableau.
+/*  Supprime les lignes d'entête et de fin de fichier fournie par AQOBA
+ * 
+ * @param   array   $list_file  liste des fichiers sur la machine PM en local
+ * 
+ * @return  array   $list_file  liste des fichiers modifiés sur la machine PM en local
+ * 
  */
-
-function limousinProject_getFileByFtp($remote_dir = '.', $remote_bkp = '/save/', $pattern = '', $local_dir = '/var/tmp/') {
-    $remote_file = array();
-    $files_liste = array();
-    //$connection = ftp_connect(serveur_ftp);
-    //$login_res = ftp_login($connection, username_ftp, pwd_ftp);
-    if (!$ftp_stream = ftp_connect('172.17.20.29', 21, 120))
-        return false;
-    $login_res = ftp_login($ftp_stream, 'ftpttest', 'ftptest');
-    $ftp_nlist = ftp_nlist($ftp_stream, $remote_dir);
-    foreach ($ftp_nlist as $file_name)
-    {
-        if (ftp_size($ftp_stream, $file_name) != -1)
-            $remote_file [] = $file_name;
-    }
-    if (!empty($remote_file))
-    {
-        foreach ($remote_file as $file)
-        {            
-            if (preg_match($pattern, basename($file)) == 1)
+function limousin_Project_removeWrapFileAqoba($list_file){
+    
+    if(!empty($list_file)){        
+        foreach ($list_file as $file) 
+        {
+            $content = file($file);
+            if(!empty($content))
             {
-                $files_liste[] = $file;
-                ftp_get($ftp_stream, $local_dir . basename($file), $file, FTP_BINARY);
-                ftp_rename($ftp_stream, $file, $remote_bkp . basename($file));
+                $first = array_shift($content);
+                $last = array_pop($content);
+                $new_content =  implode('', $content);
+                $fp = fopen($file, 'w+');
+                $w = fwrite($fp, $new_content);
+                fclose($fp);
             }
         }
+        return TRUE;        
     }
-    ftp_close($ftp_stream);
-    return $files_liste;
+    return FALSE;
 }
-
+function limousinProject_updateFromAQPORTREJ($file){
+    //on récupère le contenu du fichier
+    $content = file($file);
+    $data = array();
+    if(!empty($content))
+    {
+        foreach($content as $line)            
+        {
+            $code_erreurs = substr($line, 1123);
+            $porter_id = substr($line, 29, 12);
+            
+            $q = 'select APP_UID from PMT_DEMANDES where PORTEUR_ID = "'.$porter_id.'" and STATUT = 7';
+            $r = executeQuery($q);
+            if(!empty($r[1]['APP_UID']))
+            {
+                convergence_changeStatut($r[1]['APP_UID'], 71, 'Erreur dans le fichier AQ_PORT_R code :' . $code_erreurs);
+                $code_err = strtr($code_erreurs, ' ', ',');                
+                $qError = 'select LABEL_E_AQ from PMT_CODE_ERREUR_AQOBA where CODE_E_AQ IN('.$code_err.')';
+                $rError= executeQuery($qError);
+                mail('nicolas@oblady.fr','debug du $rError'.date('H:i:s'),var_export($rError,true));
+                foreach ($rError as $value) {
+                 $data[$r[1]['APP_UID']][] = $value['LABEL_E_AQ'];    
+                }                                
+            }
+        }
+        foreach ($data as $app_uid => $list_err) 
+        {            
+            $msgList = implode("\n\t - ", $list_err);
+            $msg['MSGREFUS'] = "Création de carte refusé par AQOBA pour les raisons suivante : \n".$msgList;            
+            //convergence_updateDemande($app_uid, $msg);
+            mail('nicolas@oblady.fr','debug du $msg'.date('H:i:s'),var_export($msg,true));
+        }
+    }
+}
 ?>

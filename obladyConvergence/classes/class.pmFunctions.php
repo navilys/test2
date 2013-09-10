@@ -652,8 +652,165 @@ function convergence_concatFiles($files) {
     return $return;
 }
 
+/* * *
+ *      Récupère la liste des fichiers sur le server ftp distant
+ * 
+ * @param       string  $remote_dir     le chemin d'acces au dossier à lister, racine du ftp par defaut.
+ * @param       string  $remote_bkp     le chemin d'acces au dossier de sauvegarde où l'on déplace les fichiers après les avoir récupérés.
+ * @param       string  $pattern        expression régulière pour filtrer le nom des fichiers désirés.
+ * @param       string  $local_dir      le chemin d'acces du dossier sur la machine local (PM) où l'on récupère les fichiers pour les traiter.
+ * 
+ * @constant    string  serveur_ftp     constante dans le fichier php du dispositif contenant l'host Ftp
+ * @constant    string  port_ftp        constante dans le fichier php du dispositif contenant le port Ftp
+ * @constant    string  username_ftp    constante dans le fichier php du dispositif contenant le login Ftp
+ * @constant    string  pwd_ftp         constante dans le fichier php du dispositif contenant le password Ftp
+ * 
+ * @return      array   $files_liste    liste des fichiers chargés avec leur chemin d'acces sur le serveur Ftp, retourne false si échec de connection
+ **/
+
+function convergence_getFileByFtp($remote_dir = '.', $remote_bkp = '', $pattern = '', $local_dir = '/var/tmp/') {
+    
+    $remote_file = array();
+    $files_liste = array();
+    $host = serveur_ftp;
+        $user = username_ftp;
+        $pwd = pwd_ftp;
+        $port_ftp = port_ftp;
+        if($host == 'serveur_ftp')
+            $host = '172.17.20.29';        
+        if($user == 'username_ftp')
+            $user = 'ftpttest';        
+        if($port_ftp == 'port_ftp')
+            $port_ftp = 21;        
+        if($pwd == 'pwd_ftp')
+            $pwd = 'ftptest';
+
+    if (!$ftp_stream = ftp_connect($host, $port_ftp, 120))
+        return FALSE;
+    $login_res = ftp_login($ftp_stream, $user, $pwd);
+    $ftp_nlist = ftp_nlist($ftp_stream, $remote_dir);
+    foreach ($ftp_nlist as $file_name)
+    {
+        if (ftp_size($ftp_stream, $file_name) != -1)
+            $remote_file [] = $file_name;
+    }
+    if (!empty($remote_file))
+    {
+        foreach ($remote_file as $file)
+        {            
+            if (preg_match($pattern, basename($file)) == 1)
+            {
+                if(ftp_get($ftp_stream, $local_dir . basename($file), $file, FTP_BINARY))
+                        $files_liste[] = $local_dir . basename ($file);
+                if($remote_bkp != '')
+                    if(!ftp_rename($ftp_stream, $file, $remote_bkp . basename($file)))
+                            mail('nicolas@oblady.fr','debug du bkp rename err '.date('H:i:s'),var_export($file,true));
+            }
+        }
+    }
+    ftp_close($ftp_stream);
+    return $files_liste;
+}
+/* * *
+ *      Récupère un fichier depuis le serveur Ftp distant pour l'uploader
+ * 
+ * @param       string  $remote_file    le chemin d'acces sur le Ftp du fichier à charger.
+ * @param       string  $local_dir      le chemin d'acces du dossier sur la machine local (PM) où l'on récupère les fichiers pour les traiter.
+ * 
+ * @constant    string  serveur_ftp     constante dans le fichier php du dispositif contenant l'host Ftp
+ * @constant    string  port_ftp        constante dans le fichier php du dispositif contenant le port Ftp
+ * @constant    string  username_ftp    constante dans le fichier php du dispositif contenant le login Ftp
+ * @constant    string  pwd_ftp         constante dans le fichier php du dispositif contenant le password Ftp
+ * 
+ * @return      string  $files_liste    le chemin du fichier récupéré
+ **/
+
+function convergence_uploadFileByFtp($remote_file = '', $local_dir = '/var/tmp/') {
+    
+    if($remote_file != '')
+    {
+        $remote_file = array();
+        $files_liste = array();
+        $host = serveur_ftp;
+        $user = username_ftp;
+        $pwd = pwd_ftp;
+        $port_ftp = port_ftp;
+        if($host == 'serveur_ftp')
+            $host = '172.17.20.29';        
+        if($user == 'username_ftp')
+            $user = 'ftpttest';        
+        if($port_ftp == 'port_ftp')
+            $port_ftp = 21;        
+        if($pwd == 'pwd_ftp')
+            $pwd = 'ftptest';
+
+        if (!$ftp_stream = ftp_connect($host, $port_ftp, 120))
+            return FALSE;
+        $login_res = ftp_login($ftp_stream, $user, $pwd);
+        $local_file =$local_dir . basename($remote_dir);
+        $bool = ftp_get($ftp_stream, $local_file, $remote_file, FTP_BINARY);
+        ftp_close($ftp_stream);
+        if($bool)
+            return $local_file;
+    }
+    return FALSE;
+}
+
+/* * *
+ *      Dépose un fichier sur le server ftp distant
+ * 
+ * @param       string  $local_file     le chemin sur la machine local (PM) du fichier à déposer.
+ * @param       string  $remote_dir     le chemin d'acces au dossier où l'on souhaite déposer le fichier, racine du ftp par defaut.
+ * @param       string  $remote_bkp     le chemin d'acces au dossier de sauvegarde sur le server Ftp (Facultatif).
+ * @param       integer $deletLocal     si 1, supprime $local_file (Facultatif).
+ * 
+ * @constant    string  serveur_ftp     constante dans le fichier php du dispositif contenant l'host Ftp
+ * @constant    string  port_ftp        constante dans le fichier php du dispositif contenant le port Ftp
+ * @constant    string  username_ftp    constante dans le fichier php du dispositif contenant le login Ftp
+ * @constant    string  pwd_ftp         constante dans le fichier php du dispositif contenant le password Ftp
+ * 
+ * @return      bool                    retourne true si réussie.
+ **/
+
+function convergence_putFileByFtp($local_file = '', $remote_dir = '.', $remote_bkp = '',$deletLocal = 0) {
+   
+    if(!empty($local_file))
+    {        
+        $host = serveur_ftp;
+        $user = username_ftp;
+        $pwd = pwd_ftp;
+        $port_ftp = port_ftp;
+        if($host == 'serveur_ftp')
+            $host = '172.17.20.29';        
+        if($user == 'username_ftp')
+            $user = 'ftpttest';        
+        if($port_ftp == 'port_ftp')
+            $port_ftp = 21;        
+        if($pwd == 'pwd_ftp')
+            $pwd = 'ftptest';
+        
+        if (!$ftp_stream = ftp_connect($host, $port_ftp, 60))
+        {
+            return FALSE;
+        }
+        if(!$login_res = ftp_login($ftp_stream, $user, $pwd))
+        {
+            return FALSE;
+        }
+        $remote_file = $remote_dir.basename($local_file);                
+        $bool = ftp_put($ftp_stream , $remote_file , $local_file , FTP_BINARY);
+                mail('nicolas@oblady.fr','debug $bool du '.date('H:i:s'),var_export($bool,true));
+        if($remote_bkp != '')
+            $bool = ftp_put($ftp_stream , $remote_bkp.  basename($local_file) , $local_file , FTP_BINARY);
+        ftp_close($ftp_stream);
+        if($deletLocal == 1)
+            unlink ($local_file);
+        return $bool;
+    }
+    return FALSE;
+}
+
 //GLOBAL
-//TODO passer en param le nom de fichier complet et son chemin, à calculer en amont dans le trigger car trop de différence selon les dispositif
 // $useCodeOper à 0 si on ne veux pas tenir compte de $onlyThisCodeOper, des code opération en générale, du code oper dans le nom du fichier et un seul fichier pour tout le dispositif
 function convergence_exportToAS400($process_id, $file_base, $code, $liste = null, $makeRetourProdTxtForRecette = 0, $onlyThisCodeOper = 0, $useCodeOper = 1) {
     if (!isset($process_id))
@@ -985,6 +1142,33 @@ function convergence_checkReproduction($line_import) {
     return 0;
 }
 
+/*      Récupère toutes les données de chaque fichier importé depuis le serveur Ftp pour
+ * les fusionner en un seul afin d'être traité par la function importFromAS400 facilement
+ * 
+ * @param   array   $list_file  liste des fichiers sur le serveur en local
+ * 
+ * @return  string  $file       chemin du fichier regroupé à traiter
+ */
+function convergence_concatImportFile($list_file, $app_uid)
+{
+    if(!empty($list_file))
+    {
+        $new_file = dirname($list_file[0]).'/import_'.$app_uid;
+        $globalContent = '';
+        foreach ($list_file as $file) 
+        {
+            $globalContent .= file_get_contents($file);
+            unlink($file);       
+        }
+        $handle = fopen($new_file, 'w+');
+        $w = fwrite($handle, $globalContent);
+        fclose($handle);
+        
+        return $new_file;
+    }
+    else
+        return FALSE;
+}
 //GLOBAL
 /* * ***
  * Lecture d'un fichier plat provenant de l'AS400
@@ -993,27 +1177,29 @@ function convergence_checkReproduction($line_import) {
  * $app_id          @array     app_uid du cas courant
  * $childProc       @array     0 on ne lance pas le process de traitement des données
  */
-function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0) {
+function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0, $filePath = '') {
     if ($app_id != '')
     {
-        try
+        if($filePath == '')
         {
-            $query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
-            WHERE AD.APP_UID="' . $app_id . '" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
-           AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';
-            $result = executeQuery($query);
-            if (!empty($result))
+            try
             {
-                $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
+                $query = 'SELECT C.CON_ID, C.CON_VALUE, AD.DOC_VERSION FROM APP_DOCUMENT AD, CONTENT C
+                WHERE AD.APP_UID="' . $app_id . '" AND AD.APP_DOC_TYPE="INPUT" AND AD.APP_DOC_STATUS="ACTIVE"
+               AND AD.APP_DOC_UID=C.CON_ID AND C.CON_CATEGORY="APP_DOC_FILENAME" AND C.CON_VALUE<>""';
+                $result = executeQuery($query);
+                if (!empty($result))
+                {
+                    $filePath = PATH_DOCUMENT . $app_id . '/' . $result[1]['CON_ID'] . '_' . $result[1]['DOC_VERSION'] . '.' . pathinfo($result[1]['CON_VALUE'], PATHINFO_EXTENSION);
+                }
+            }
+            catch (Exception $e)
+            {
+                G::pr('Erreur lors de la récupération du document');
+                G::pr($e);
+                die();
             }
         }
-        catch (Exception $e)
-        {
-            G::pr('Erreur lors de la récupération du document');
-            G::pr($e);
-            die();
-        }
-
         if (!isset($process_uid))
         {
             G::pr('Le process_uid n\'est pas renseigné pour configurer l\'import du fichier');
@@ -1510,6 +1696,7 @@ function convergence_changeStatutFromImport($data, $statut = 6) {
             $result = executeQuery($query);
             if (!empty($result))
             {
+                convergence_changeStatut($result[1]['APP_UID'], $statut, 'Retour de production Chéquier N°' . $value);
                 //Si production complémentaire, on insert un historique dans le dossier d'origine
                 if (isset($result[1]['NUM_DOSSIER_COMPLEMENT']) && !is_null($result[1]['NUM_DOSSIER_COMPLEMENT']) && $result[1]['NUM_DOSSIER_COMPLEMENT'] != '')
                 {
@@ -1517,10 +1704,10 @@ function convergence_changeStatutFromImport($data, $statut = 6) {
                     $rComplement = executeQuery($qComplement);
                     insertHistoryLogPlugin($rComplement[1]['APP_UID'], $_SESSION['USER_LOGGED'], date('Y-m-d H:i:s'), '0', '', "Chéquier de Complément N°" . $value . " produit", 6);
                 }
-                else
+                /*else
                 {
                     convergence_changeStatut($result[1]['APP_UID'], $statut, 'Retour de production Chéquier N°' . $value);
-                }
+                }*/
             }
         }
         catch (Exception $e)
