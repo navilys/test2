@@ -60,7 +60,7 @@ function obtainRoleInfo($name){
   $queryRole = "SELECT * FROM ROLES WHERE ROL_CODE = '$name' ";  
   $queryRole1 = executeQuery($queryRole,'rbac');
   $res = '';
-  if(isset($queryRole1) && $queryRole1!='')
+  if(isset($queryRole1[1]['ROL_UID']) && $queryRole1[1]['ROL_UID'] !='')
     $res = $queryRole1[1]['ROL_UID'];  
   
   return $res;

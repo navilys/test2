@@ -1,5 +1,4 @@
 <?php   
-
     G::LoadClass('case');
     G::LoadClass('configuration');
     G::loadClass('pmFunctions');    

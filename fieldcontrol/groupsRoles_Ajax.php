@@ -1,4 +1,6 @@
 <?php
+//ini_set ( 'error_reporting', E_ALL );
+//ini_set ( 'display_errors', True );
 
 if (($RBAC_Response=$RBAC->userCanAccess("PM_USERS"))!=1) return $RBAC_Response;
 G::LoadInclude('ajax');
@@ -66,7 +68,7 @@ switch ($_POST['action'])
     $rolstatus = 0;
     if(isset($_POST['status']) && $_POST['status'] == 'ACTIVE')
       $rolstatus = 1;
-    $aData['ROL_STATUS'] = $rolstatus;     
+    $aData['ROL_STATUS'] = $rolstatus;
     $oCriteria = $RBAC->updateRole($aData);
     ## UPDATE CONTENT ROL NANE LANGUAGE
    /* G::LoadClass('pmFunctions');
@@ -136,7 +138,7 @@ switch ($_POST['action'])
     	{   
     		$sw = 0;
     		$group = $rowG['GRP_TITLE'];
- 			foreach ( $rolesData as $rowid => $row )
+ 			foreach ( $rolesData as $rowid => $row )  
     		{ 				
     			$rolCode =  $row['ROL_CODE'];
     			$rolName = $row['ROL_NAME'];
@@ -144,9 +146,14 @@ switch ($_POST['action'])
        			{
        				$sw = 1;
         		}
-        	}
+        		else 
+        		{
+        			$rolCodeAux = $rolCode;
+        			$rolNameAux = $rolName;
+        		}
+        	} 
     		if($sw == 0)
-    		{
+    		{ //G::pr($group.'  ----   '.$rolCodeAux.'  ' .$rolNameAux);
     			/*$code=G::generateUniqueID();
     			$newid = md5($code.date("d-M-Y_H:i:s"));
     			$aData['ROL_UID'] = $newid;    
