@@ -230,7 +230,8 @@ class archivedCasesClassCron
     	return $_dataForms;
     }
 
-	function _convert($content) {
+	function _convert($content) 
+	{
     	if(!mb_check_encoding($content, 'UTF-8') OR !($content === mb_convert_encoding(mb_convert_encoding($content, 'UTF-32', 'UTF-8' ), 'UTF-8', 'UTF-32'))) {
 
         	$content = mb_convert_encoding($content, 'UTF-8');
@@ -456,12 +457,14 @@ class archivedCasesClassCron
            
             $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
             if($caseUID >0) 
-            {   $controlCron = false;
-                autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
-                $oCase = new Cases ();
+            {   
+            	$oCase = new Cases ();
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
 			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
 			    $oCase->updateCase($caseUID,$FieldsCase);
+            	$controlCron = false;
+                autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
+                
             }
 		    $totalCases++;
 		    $update = "UPDATE wf_".$this->workspace.".PMT_IMPORT_CSV_DATA SET IMPCSV_TOTCASES = '$totalCases' WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ";
@@ -705,9 +708,8 @@ class archivedCasesClassCron
 			        $appData['eligible'] = 0; // only process beneficiary
 			        $appData['FLAG_EDIT'] = 1;
 			        $appData['CurrentUserAutoDerivate'] = $USR_UID;
-			        $appData['STATUT'] = 1;
 			        $appData = array_merge($FieldsCase['APP_DATA'],$appData);
-			        $FieldsCase['APP_DATA'] = $appData;
+			        $FieldsCase['APP_DATA'] = $appData;			        
 					$oCase->updateCase($index['APP_UID'],$FieldsCase);
 					
 				}
@@ -724,12 +726,13 @@ class archivedCasesClassCron
 			    $caseUID = PMFNewCase($proUid, $USR_UID, $uidTask, $appData);        
 			    if($caseUID >0) 
 			    {
-				    $controlCron = false;
-                	autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
 				    $oCase = new Cases ();
 				    $FieldsCase = $oCase->loadCase ( $caseUID );
 				    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
 				    $oCase->updateCase($caseUID,$FieldsCase);
+			    	$controlCron = false;
+				    autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
+				    
 			    }
 			}   
 		    
@@ -987,13 +990,14 @@ class archivedCasesClassCron
 		    else
 			    $idCasesGenerate = $idCasesGenerate.", '".$caseUID."'";
 		    if($caseUID >0) 
-		    {
-			    $controlCron = false;
-                autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
+		    {			    
 			    $oCase = new Cases ();
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
 			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];
 			    $oCase->updateCase($caseUID,$FieldsCase);
+			    $controlCron = false;
+                autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
+			    
 		    }
 		    
 		    $totalCases++;
