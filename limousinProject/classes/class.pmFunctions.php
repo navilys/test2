@@ -127,6 +127,18 @@ function limousinProject_generatePorteurID($num_dossier) {
     return $porteurID;
 }
 
+function limousinProject_getDemandeFromUserID($userId) {
+    $arrayDemandeInfos = array();
+    $queryDemande = "SELECT APP_UID FROM PMT_DEMANDES WHERE USER_ID = '" . $userId . "' AND STATUT = 6 AND THEMATIQUE = 1";
+    $resultAppUid = executeQuery($queryDemande);
+    if(sizeof($resultAppUid) == 1)
+    {
+        $appUid = $resultAppUid[1]['APP_UID'];
+        $arrayDemandeInfos = convergence_getAllAppData($appUid, 1);
+    }
+    return $arrayDemandeInfos;
+}
+
 function limousinProject_nouvelleTransaction() {
 
     // INIT Ws
@@ -152,7 +164,7 @@ function limousinProject_nouvelleTransaction() {
         var_dump($e);
         die();
     }
-	var_dump($retour);
+    var_dump($retour);
 }
 
 function limousinProject_nouvelleActionCRM() {
@@ -364,7 +376,7 @@ function limousinProject_updateAQPORTR($file) {
  * @return  array   $list_file  liste des fichiers modifiés sur la machine PM en local
  * 
  */
-function limousin_Project_removeWrapFileAqoba($list_file){
+function limousinProject_removeWrapFileAqoba($list_file){
     
     if(!empty($list_file)){        
         foreach ($list_file as $file) 
@@ -386,36 +398,52 @@ function limousin_Project_removeWrapFileAqoba($list_file){
 }
 function limousinProject_updateFromAQPORTREJ($file){
     //on récupère le contenu du fichier
-    $content = file($file);
+    $content = file($file);    
     $data = array();
     if(!empty($content))
     {
         foreach($content as $line)            
-        {
-            $code_erreurs = substr($line, 1123);
-            $porter_id = substr($line, 29, 12);
-            
-            $q = 'select APP_UID from PMT_DEMANDES where PORTEUR_ID = "'.$porter_id.'" and STATUT = 7';
+        {            
+            $code_erreurs = trim(substr($line, 1123));
+            $porter_id = trim(substr($line, 29, 12));
+            $q = 'select APP_UID from PMT_DEMANDES where PORTEUR_ID = "' . $porter_id . '"'; // and STATUT = 7';
             $r = executeQuery($q);
             if(!empty($r[1]['APP_UID']))
             {
-                convergence_changeStatut($r[1]['APP_UID'], 71, 'Erreur dans le fichier AQ_PORT_R code :' . $code_erreurs);
-                $code_err = strtr($code_erreurs, ' ', ',');                
+                convergence_changeStatut($r[1]['APP_UID'], 41, 'Erreur dans le fichier AQ_PORT_R code :' . $code_erreurs);
+                $code_err = '"' . strtr(trim($code_erreurs), array(' ' => '","')) . '"';
                 $qError = 'select LABEL_E_AQ from PMT_CODE_ERREUR_AQOBA where CODE_E_AQ IN('.$code_err.')';
-                $rError= executeQuery($qError);
-                mail('nicolas@oblady.fr','debug du $rError'.date('H:i:s'),var_export($rError,true));
-                foreach ($rError as $value) {
-                 $data[$r[1]['APP_UID']][] = $value['LABEL_E_AQ'];    
-                }                                
+                $rError = executeQuery($qError);
+                foreach ($rError as $value)
+                {
+                    $data[$r[1]['APP_UID']][] = $value['LABEL_E_AQ'];
+                }
             }
-        }
-        foreach ($data as $app_uid => $list_err) 
+        }            
+        foreach ($data as $app_uid => $list_err)
         {            
-            $msgList = implode("\n\t - ", $list_err);
-            $msg['MSGREFUS'] = "Création de carte refusé par AQOBA pour les raisons suivante : \n".$msgList;            
-            //convergence_updateDemande($app_uid, $msg);
-            mail('nicolas@oblady.fr','debug du $msg'.date('H:i:s'),var_export($msg,true));
+            $msgList = '<br/>&nbsp;-&nbsp;' . implode('<br/>&nbsp;-&nbsp;', $list_err);
+            $msg['msgRefus'] = 'Création de carte refusé par AQOBA pour les raisons suivante : <br/>' . $msgList;
+            convergence_updateDemande($app_uid, $msg);
+            
         }
     }
 }
+function limousinProject_explicationStatut_callback($app_data) {
+
+    $libelStatut = 'SELECT TITLE FROM PMT_STATUT WHERE UID=' . intval($app_data['STATUT']);
+    $libelRes = executeQuery($libelStatut);
+    switch (intval($app_data['STATUT']))
+    {
+        case 41 :
+            $messageInfo = $app_data['msgRefus'];
+            break;
+
+        default :
+            $messageInfo = 'Le dossier est en statut : <b>' . strtolower($libelRes[1]['TITLE']) . '</b>';
+            break;
+    }
+    return $messageInfo;
+}
+
 ?>

@@ -703,8 +703,7 @@ function convergence_getFileByFtp($remote_dir = '.', $remote_bkp = '', $pattern 
                 if(ftp_get($ftp_stream, $local_dir . basename($file), $file, FTP_BINARY))
                         $files_liste[] = $local_dir . basename ($file);
                 if($remote_bkp != '')
-                    if(!ftp_rename($ftp_stream, $file, $remote_bkp . basename($file)))
-                            mail('nicolas@oblady.fr','debug du bkp rename err '.date('H:i:s'),var_export($file,true));
+                    ftp_rename($ftp_stream, $file, $remote_bkp . basename($file));
             }
         }
     }
@@ -799,7 +798,6 @@ function convergence_putFileByFtp($local_file = '', $remote_dir = '.', $remote_b
         }
         $remote_file = $remote_dir.basename($local_file);                
         $bool = ftp_put($ftp_stream , $remote_file , $local_file , FTP_BINARY);
-                mail('nicolas@oblady.fr','debug $bool du '.date('H:i:s'),var_export($bool,true));
         if($remote_bkp != '')
             $bool = ftp_put($ftp_stream , $remote_bkp.  basename($local_file) , $local_file , FTP_BINARY);
         ftp_close($ftp_stream);
@@ -1295,7 +1293,7 @@ function convergence_importFromAS400($process_uid, $app_id = '', $childProc = 0,
                 //$data contien tous les importLine
                 if ($childProc == 1)
                 {
-                    $importLine['APPUID_RELATION'] = $app_id; // use it if you need relation fields from the parent process in the child process
+                    $importLine['APPUID_RELATION'] = $app_id; // use it if you need relation fields from the parent process in the child process                    
                     new_case_for_import($importLine, $config);
                 }
             }
@@ -1492,7 +1490,6 @@ function new_case_for_import($line, $config) {
     $newFields['APP_DATA']['LINE_IMPORT'] = $line;
     $newFields['APP_DATA']['CONFIG_IMPORT'] = $config;
 
-
     PMFSendVariables($data['APPLICATION'], $newFields['APP_DATA']);
     $caseInstance->updateCase($data['APPLICATION'], $newFields);
     $resInfo = PMFDerivateCase($data['APPLICATION'], 1, true, $_SESSION['USER_LOGGED']);
@@ -1633,7 +1630,9 @@ function convergence_InsertLineImport($line, $config) {
     {
 
         $query = 'INSERT INTO ' . $config['TABLENAME'] . '(' . $key . ') VALUES (' . $value . ')';
+        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $query mail ', var_export($query, true));
         $result = executeQuery($query);
+        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $result mail ', var_export($result, true));
     }
     catch (Exception $e)
     {

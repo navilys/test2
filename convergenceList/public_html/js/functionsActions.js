@@ -277,8 +277,10 @@ function exportInboxNpai(npaiOrAdr, fileType, callback) {
     post(urlData, {array: idField, sFieldValue: sFieldValue, sFieldName: sFieldName, type: npaiOrAdr, ext: fileType, IdInbox: IdInbox, callback: callback});
 }
 
-function explicationStatut(appUid){
+function explicationStatut(appUid, callback) {
 
+    if (!callback)
+        callback = '';
     idField = myApp.addTab_inside();                    
     urlData = "../convergenceList/actions/explicationStatut.php";
     
@@ -294,7 +296,9 @@ function explicationStatut(appUid){
     Ext.Ajax.request({
            url : urlData,
            params : {
-             array  : idField
+            array: idField,
+            callback: callback,
+            app_uid: appUid
            },
            success: function (result, request) {
              var response = Ext.util.JSON.decode(result.responseText);
