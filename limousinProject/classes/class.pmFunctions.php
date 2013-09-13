@@ -139,6 +139,11 @@ function limousinProject_getDemandeFromUserID($userId) {
     return $arrayDemandeInfos;
 }
 
+function limousin_addTransactionPriv($codePartenaire, $porteurID, $montant, $libelle, $thematique) {
+    $queryInsertTransactionPriv = "INSERT INTO PMT_TRANSACTIONS_PRIV(CODE_PARTENAIRE, PORTEUR_ID, MONTANT, LIBELLE, THEMATIQUE) VALUES('".$codePartenaire."','".$porteurID."','".$montant."','".$libelle."','".$thematique."')";
+    executeQuery($queryInsertTransactionPriv);
+}
+
 function limousinProject_nouvelleTransaction($operation) {
 
     // INIT Ws
@@ -148,7 +153,7 @@ function limousinProject_nouvelleTransaction($operation) {
     $t->operation = $operation;
     $t->partenaire = "00028";
     //$t->porteurId = "30280000023";
-	$t->porteurId = "999999999";
+    $t->porteurId = "999999999";
     $t->sens = "C";
     $t->montant = "100";
     $t->addSousMontant("_reseau1", "_montatnReseau1");
@@ -269,9 +274,9 @@ function limousinProject_identification() {
 
 
 function limousinProject_importTransationsAqoba() {
-	
-	
-	
+    
+    
+    
 
 
 
@@ -361,14 +366,22 @@ function limousinProject_getPathAQPORTR() {
  * @param string $file le chemin du fichier à modifier
  *  */
 
-function limousinProject_updateAQPORTR($file) {
+function limousinProject_updateAQPORTR($file, $num_dossier) {
 
-    $qIdFile = 'select max(ID) as num_fic from PMT_NUM_PROD_FOR_AQOBA where statut = 1';
+    $qIdFile = 'select max(ID)+1 as num_fic from PMT_NUM_PROD_FOR_AQOBA';
     $rIdFile = executeQuery($qIdFile);
-    if (!empty($rIdFile[1]['num_fic']))
+    if (!empty($rIdFile[1]['num_fic']) && $rIdFile[1]['num_fic'] != 0)
+    {
         $num_fic = str_pad($rIdFile[1]['num_fic'], 15, 0, STR_PAD_LEFT);
+        $id = $rIdFile[1]['num_fic'];
+    }
     else
+    {
         $num_fic = str_pad('1', 15, 0, STR_PAD_LEFT);
+        $id = 1;
+    }
+    $qAdd = 'insert into PMT_NUM_PROD_FOR_AQOBA (FILE_NAME, NUM_PROD, ID) values ("' . mysql_escape_string(basename($file)) . '","' . intval($num_dossier) . '","' . intval($id) . '")';
+    $rAdd = executeQuery($qAdd);
     $filler = str_pad('', 32, ' ');
     $start_line = '00101004' . date("YmdHis") . $num_fic . $filler . "\n";
     $end_line = '00301004' . date("YmdHis") . $num_fic . $filler . "\n";
@@ -457,35 +470,89 @@ function limousinProject_explicationStatut_callback($app_data) {
     }
     return $messageInfo;
 }
-function limousinProject_insertLineFromAQCARTE($line){
+function limousinProject_readLineFromAQCARTE($datas) {
+    
+    //INIT
+    $err = array();
 
-// INIT
-$config['TABLENAME'] = 'PMT_CHEQUES';
-	switch($line['CODE_EVENT'])
-	{
-		case '05' :
+    foreach ($datas as $line)
+    {
+        $escapeLine = array();
 
-			break;
- case '06' :
-                        break;
- case '07' :
-                        break;
- case '08' :
-                        break;
- case '09' :
-                        break;
- case '10' :
-                        break;
- case '11' :
-                        break;
- case '12' :
-                        break;
- case '13' :
-                        break;
+        // Escape scpeial caracters
+        foreach ($line as $key => $lineItem)
+            $escapeLine[$key] = mysql_escape_string($lineItem);
 
-		default:
-			break;
-	}
+        $qExist = 'select count(UID) as nb from PMT_CHEQUES where CARTE_PORTEUR_ID = "' . $escapeLine['CARTE_PORTEUR_ID'] . '"';
+        $rExist = executeQuery($qExist);
+        $nbID = $rExist[1]['nb'];
+        switch ($escapeLine['CODE_EVENT'])
+        {
+            case '05' :// Phase 1 : Prise en compte et création dans le système AQOBA
+                /* création de la ligne dans la table PMT_CHEQUES */
+                if ($nbID == 0)
+                {
+                    $escapeLine['CARTE_STATUT'] = 'Création';
+                    $escapeLine['DATE_CREATION'] = date('Ymd');
+                    $keys = implode(',', array_keys($escapeLine));
+                    $values = '"' . implode('","', $escapeLine) . '"';
+                    $query = 'INSERT INTO PMT_CHEQUES (' . $keys . ') VALUES (' . $values . ')';
+                    $result = executeQuery($query);
+                }
+                else                
+                    $err[] = 'Porteur Id existe déjà';                
+                break;
+
+            case '14' : //Phase 2 : Frabrication et envoie
+                /* Dans ce cas, vérifier si une demande possède ce porteur id en mode ré-édition
+                 * pour transférer les soldes entre les deux cartes
+                 * sinon mettre à jour simplement la ligne et le statut            */
+                if ($nbID > 0)
+                {
+                    $set = array();
+                    $escapeLine['CARTE_STATUT'] = 'Envoyée';
+                    foreach ($escapeLine as $key => $value)
+                    {
+                        $set[] = $key . '="' . $value . '"';
+                    }
+                    $update = implode(',', $set);
+                    $query = 'update PMT_CHEQUES SET ' . $update . ' where CARTE_PORTEUR_ID= "' . $escapeLine['CARTE_PORTEUR_ID'] . '"';
+                    $result = executeQuery($query);
+                    // reste les ws dans le cas des ré-édition
+                    $qDemande = 'select count(*) as nb, OLD_PORTEUR_ID from PMT_DEMANDES where PORTEUR_ID ="' . $escapeLine['CARTE_PORTEUR_ID'] . '" and STATUT <> 0 and STATUT <> 999';
+                    $rDemande = executeQuery($qDemande);
+                    if ($rDemande[1]['nb'] > 0)
+                    {
+                        // ws pour le transfert des soldes
+                    }
+                }
+                else
+                    $err[] = "Porteur Id n'existe pas";
+                break;
+
+            case '10' : // Phase 3 : Activation
+                /* Mettre à jour la ligne, le DATE_ACTIVE et le statut à Active */
+                if ($nbID > 0)
+                {
+                    $escapeLine['CARTE_STATUT'] = 'Active';
+                    $escapeLine['DATE_ACTIVE'] = date('Ymd');
+                    foreach ($escapeLine as $key => $value)
+                    {
+                        $set[] = $key . '="' . $value . '"';
+                    }
+                    $update = implode(',', $set);
+                    $query = 'update PMT_CHEQUES SET ' . $update . ' where CARTE_PORTEUR_ID= "' . $escapeLine['CARTE_PORTEUR_ID'] . '"';
+                    $result = executeQuery($query);
+                }
+                else
+                    $err[] = "Porteur Id n'existe pas";
+                break;
+
+            default:
+                break;
+        }
+    }
+    return TRUE;
 }
 
 ?>

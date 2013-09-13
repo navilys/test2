@@ -772,7 +772,6 @@ function convergence_uploadFileByFtp($remote_file = '', $local_dir = '/var/tmp/'
  **/
 
 function convergence_putFileByFtp($local_file = '', $remote_dir = '.', $remote_bkp = '',$deletLocal = 0) {
-   
     if(!empty($local_file))
     {        
         $host = serveur_ftp;
@@ -902,10 +901,22 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                             case 'Entier':
                                 $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
                                 break;
-                            case 'Date':
-                                $char = array('-', '/');
-                                $line .= substr(str_pad(str_replace($char, '.', $row[$field['FIELD_NAME']]), $field['LENGTH'], $token), 0, $field['LENGTH']);
-                                break;
+                            case 'Ymd':
+                            case 'ymd':
+                            case 'y-m-d':
+                            case 'Y-m-d':
+                            case 'y.m.d':
+                            case 'Y.m.d':
+                            case 'dmY':
+                            case 'd.m.y':
+                            case 'd-m-y':
+                            case 'dmy':
+                            case 'd.m.Y':
+                            case 'd-m-Y':
+                                $dateIn = date_create($row[$field['FIELD_NAME']]);
+                                $dateOut = date_format($dateIn, $field['AS400_TYPE']);
+                                $line .= substr(str_pad($dateOut, $field['LENGTH'], $token), 0, $field['LENGTH']);
+                                break;                            
                             case 'Decimal'://0000000.00
                                 $char = array('.', ',');
                                 $count = count(explode('.', $row[$field['FIELD_NAME']]));
@@ -1901,6 +1912,13 @@ function convergence_justeOneDemande($user) {
         }
     }
     return 1;
+}
+
+// Récupère le champs UID généré par l'auto-incrémentation pour le conserver lors d'une édition
+function convergence_keepAutoIncrement($app_uid, $table, $field = 'UID') {
+    $q = 'select ' . strtoupper($field) . ' as uid from ' . strtoupper($table) . ' where APP_UID = "' . $app_uid . '"';
+    $r = executeQuery($q);
+    return $r[1]['uid'];
 }
 
 ## disable user conection web services

@@ -9,7 +9,7 @@ class ajax_presta extends WebResource {
 
         function search_presta($uid) {
                 $res = '';
-                $query = 'SELECT RAISONSOCIALE,CONVENTION,VILLE, ADRESSE1, CP, VILLE FROM PMT_PRESTATAIRE where STATUT=1 AND CONVENTION ="'.$uid.'"';
+                $query = 'SELECT RAISONSOCIALE,CONVENTION,VILLE, ADRESSE1, CP, VILLE, PARTENAIRE_UID FROM PMT_PRESTATAIRE where STATUT=1 AND CONVENTION ="'.$uid.'"';
                 $result = executeQuery($query);
                 if (isset($result))
                         $res = json_encode($result[1]);
