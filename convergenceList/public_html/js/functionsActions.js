@@ -4371,7 +4371,7 @@ function actionAddComment(app_uid) {
         name: 'caseNoteText',
         width: 400,
         grow: false,
-        height: 250,
+        height: 200,
         growMin: 40,
         growMax: 80,
         maxLengthText: 500,
@@ -4389,9 +4389,9 @@ function actionAddComment(app_uid) {
     var w = new Ext.Window(
    {
         title: 'Ajouter votre commentaire pour ce dossier',
-        bodyStyle: 'padding: 10px; background-color: #F7D358',
-        width: 650,
-        height: 400,
+        bodyStyle: 'background-color: #f2f2f2',
+        width: 600,
+        height: 310,
         modal: true,
         autoScroll: true,
         maximizable: true,
@@ -4447,8 +4447,9 @@ function actionAddComment(app_uid) {
                                 var response = Ext.util.JSON.decode(result.responseText);
                         if (response.success)
                         {
+                            //textField1.reset();
                             Ext.MessageBox.hide();
-                            w.hide();
+                            w.close();
 
                                 }
                                 else {
@@ -4459,6 +4460,7 @@ function actionAddComment(app_uid) {
                             },
                     failure: function(result, request)
                     {
+                        //textField1.reset();
                                 Ext.MessageBox.hide();
                             }
                         });

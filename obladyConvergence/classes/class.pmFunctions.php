@@ -1624,15 +1624,21 @@ function convergence_updateListeRemboursement($app_id, $res) {
 //convergence_InsertLineImport(@@LINE_IMPORT,@@CONFIG_IMPORT);
 //GLOBAL
 function convergence_InsertLineImport($line, $config) {
-    $key = implode(',', array_keys($line));
-    $value = '"' . implode('","', $line) . '"';
+
+	// INIT
+	$finalTab = array();
+	
+	// Escape scpeial caracters
+	foreach($line as $key=>$lineItem)
+		$finalTab[$key] = mysql_escape_string($lineItem);
+
+    $key = implode(',', array_keys($finalTab));
+    $value = '"' . implode('","', $finalTab) . '"';
     try
     {
 
         $query = 'INSERT INTO ' . $config['TABLENAME'] . '(' . $key . ') VALUES (' . $value . ')';
-        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $query mail ', var_export($query, true));
         $result = executeQuery($query);
-        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $result mail ', var_export($result, true));
     }
     catch (Exception $e)
     {

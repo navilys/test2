@@ -6,8 +6,8 @@ class Webservices {
     protected $url;
 	protected $wsId;
 	protected $inputParams;
-	protected $errors;
-	protected $failureCode;
+	public $errors;
+	public $failureCode;
 	
 	public function __construct() { 
     }
@@ -39,7 +39,7 @@ class Webservices {
 		
 		}catch(Exception $e){
 			
-			var_dump($e);
+			throw $e;
 			
 		}
 		
@@ -149,10 +149,10 @@ class Webservices {
 		}elseif(empty($reponse->status->success)){
 			if(!empty($reponse->status->failure)){
 			
-				foreach($reponse->status->failure->errors->field as $field)
-					$this->errors[] = array("field" => $field['name'],"desc" => $field);
+				/*foreach($reponse->status->failure->errors->field as $field)
+					$this->errors[] = array("field" => $field['name'],"desc" => $field);*/
 					
-				$this->failureCode = $reponse->status->failure->errors->code;
+				$this->errors = $reponse->status->failure;
 	
 				throw new Exception('Status en echec dans la réponse XML.', 1);
 				

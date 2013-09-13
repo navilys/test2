@@ -139,15 +139,16 @@ function limousinProject_getDemandeFromUserID($userId) {
     return $arrayDemandeInfos;
 }
 
-function limousinProject_nouvelleTransaction() {
+function limousinProject_nouvelleTransaction($operation) {
 
     // INIT Ws
     $t = new Transaction();
 
     // SET Params
-    $t->operation = "01";
+    $t->operation = $operation;
     $t->partenaire = "00028";
-    $t->porteurId = "30280000023";
+    //$t->porteurId = "30280000023";
+	$t->porteurId = "999999999";
     $t->sens = "C";
     $t->montant = "100";
     $t->addSousMontant("_reseau1", "_montatnReseau1");
@@ -161,10 +162,10 @@ function limousinProject_nouvelleTransaction() {
     catch (Exception $e)
     {
         // TODO
-        var_dump($e);
+        var_dump($t->errors);
         die();
     }
-    var_dump($retour);
+    
 }
 
 function limousinProject_nouvelleActionCRM() {
@@ -265,6 +266,17 @@ function limousinProject_identification() {
         die();
     }
 }
+
+
+function limousinProject_importTransationsAqoba() {
+	
+	
+	
+
+
+
+}
+
 
 function limousinProject_createUser($app_id, $role) {
     $fields = convergence_getAllAppData($app_id);
@@ -444,6 +456,36 @@ function limousinProject_explicationStatut_callback($app_data) {
             break;
     }
     return $messageInfo;
+}
+function limousinProject_insertLineFromAQCARTE($line){
+
+// INIT
+$config['TABLENAME'] = 'PMT_CHEQUES';
+	switch($line['CODE_EVENT'])
+	{
+		case '05' :
+
+			break;
+ case '06' :
+                        break;
+ case '07' :
+                        break;
+ case '08' :
+                        break;
+ case '09' :
+                        break;
+ case '10' :
+                        break;
+ case '11' :
+                        break;
+ case '12' :
+                        break;
+ case '13' :
+                        break;
+
+		default:
+			break;
+	}
 }
 
 ?>
