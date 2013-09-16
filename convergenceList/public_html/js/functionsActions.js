@@ -4700,3 +4700,190 @@ function listeChequierDemande(num_dossier)
     //winTitre.maximize();
     winTitre.toFront();
 }
+
+function listeCarteProduite(app_uid)
+{
+    var adaptiveHeight = getDocHeight() - 50;
+
+    var _dblColumns = new Array();
+    var _dblFields = new Array();
+    var storeCarte;
+    var _CLOSE = 'Fermer';
+    var _NO_PROD = 'Aucune carte produite';
+    var _WINTITLE_DOUBLON = "Liste des cartes produites";
+
+    column = {id: 'DMDAPPUID', header: 'demande ID', width: 20, dataIndex: 'DMDAPPUID', hidden: true};
+    _dblColumns.push(column);
+    _dblFields.push({name: 'DMDAPPUID'});
+
+    /*
+     column = {id: 'UID', header: '#', width: 20, dataIndex: 'UID', hidden: true};
+     _dblColumns.push(column);
+     _dblFields.push({name: 'APP_UID'});
+     */
+
+    column = {
+        id: 'PORT_ID',
+        header: 'N&deg; Porteur Id',
+        width: 120,
+        dataIndex: 'PORT_ID',
+        renderer: function(value, meta, record) {
+            var dmdID = record.data.DMDAPPUID;
+            if (value != null)
+                return '<a href="#" onclick="viewForms(\'' + dmdID + '\',1)">' + value + '</a>';
+            else
+                return '';
+        },
+        hidden: false
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'PORT_ID'});
+
+    column = {
+        id: 'CARTE_NUM',
+        header: 'N&deg; de carte',
+        width: 120, //30,req
+        dataIndex: 'CARTE_NUM'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'CARTE_NUM'});
+
+    column = {
+        id: 'NOM',
+        header: 'Nom',
+        width: 120, //30,req
+        dataIndex: 'NOM'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'NOM'});
+
+    column = {
+        id: 'PRENOM',
+        header: 'Pr&eacute;nom',
+        width: 120,
+        dataIndex: 'PRENOM'
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'PRENOM'});
+
+    column = {
+        id: 'CARTE_STATUT',
+        header: 'Statut',
+        width: 120, //30,req
+        dataIndex: 'CARTE_STATUT'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'CARTE_STATUT'});
+
+    column = {
+        id: 'CARTE_TYPE',
+        header: 'Type de carte',
+        width: 120, //30,req
+        dataIndex: 'CARTE_TYPE'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'CARTE_TYPE'});
+
+    column = {
+        id: 'PND',
+        header: 'NPAI ?',
+        width: 100,
+        renderer: function(value) {
+
+            if (value == 1)
+                value = 'Oui';
+            else
+                value = 'Non'
+
+            return value;
+        },
+        dataIndex: 'PND'
+
+    };
+    _dblColumns.push(column);
+    _dblFields.push({name: 'PND'});
+
+    storeCarte = new Ext.data.JsonStore({
+        url: '../convergenceList/actions/listeCarte.php?app_uid=' + app_uid,
+        root: 'data',
+        totalProperty: 'total',
+        autoWidth: true,
+        fields: _dblFields
+    });
+    storeCarte.load();
+
+    var cmCarte = new Ext.grid.ColumnModel({
+        defaults: {
+            width: 20,
+            sortable: true
+        },
+        columns: _dblColumns
+    });
+    cmCarte.defaultSortable = true;
+
+    var gridCarte = new Ext.grid.GridPanel({
+        store: storeCarte,
+        cm: cmCarte,
+        stripeRows: true,
+        columnLines: true,
+        autoScroll: true,
+        autoWidth: true,
+        stateful: true,
+        id: 'gridCarte',
+        layout: 'fit',
+        viewConfig: {
+            forceFit: false,
+            emptyText: (_('NO_PROD'))
+        },
+        /*bbar: new Ext.PagingToolbar({
+         pageSize: 300,
+         store: storeCarte,
+         displayInfo: true,
+         displayMsg: _('ID_DISPLAY_ITEMS') + ' &nbsp; ',
+         emptyMsg: _('ID_DISPLAY_EMPTY')
+         }),*/
+        listeners: {
+            render: function(grid) {
+
+            },
+            afterrender: function() {
+
+            },
+            cellcontextmenu: function(grid, rowIndex, cellIndex, event) {
+
+
+            }
+        },
+        tbar: [{
+                text: _CLOSE,
+                iconCls: 'button_menu_ext ss_sprite ss_accept',
+                handler: function() {
+                    winTitre.close();
+                }
+            }]
+    });
+    ///////////// end grid
+    winTitre = new Ext.Window({
+        closeAction: 'hide',
+        autoDestroy: true,
+        maximizable: true,
+        id: 'winDoublon',
+        title: _WINTITLE_DOUBLON,
+        width: 900,
+        height: 400,
+        modal: true,
+        closable: true,
+        constrain: true,
+        autoScroll: true,
+        layout: 'fit',
+        items: gridCarte
+    });
+
+    winTitre.show();
+    //winTitre.maximize();
+    winTitre.toFront();
+}
