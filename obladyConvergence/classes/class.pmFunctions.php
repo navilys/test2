@@ -668,46 +668,31 @@ function convergence_concatFiles($files) {
  * @return      array   $files_liste    liste des fichiers chargés avec leur chemin d'acces sur le serveur Ftp, retourne false si échec de connection
  **/
 
-function convergence_getFileByFtp($remote_dir = '.', $remote_bkp = '', $pattern = '', $local_dir = '/var/tmp/') {
-    
+function convergence_getFileByFtp($remote_dir = '/.', $remote_bkp = '', $pattern = '', $local_dir = '/var/tmp/') {
+    //INIT
     $remote_file = array();
     $files_liste = array();
     $host = serveur_ftp;
-        $user = username_ftp;
-        $pwd = pwd_ftp;
-        $port_ftp = port_ftp;
-        if($host == 'serveur_ftp')
-            $host = '172.17.20.29';        
-        if($user == 'username_ftp')
-            $user = 'ftpttest';        
-        if($port_ftp == 'port_ftp')
-            $port_ftp = 21;        
-        if($pwd == 'pwd_ftp')
-            $pwd = 'ftptest';
+    $user = username_ftp;
+    $pwd = pwd_ftp;
+    $port_ftp = port_ftp;
+    $protocol = protocol_transfert;
+    $ssh2 = "ssh2.$protocol://$user:$pwd@$host:$port_ftp";
 
-    if (!$ftp_stream = ftp_connect($host, $port_ftp, 120))
-        return FALSE;
-    $login_res = ftp_login($ftp_stream, $user, $pwd);
-    $ftp_nlist = ftp_nlist($ftp_stream, $remote_dir);
-    foreach ($ftp_nlist as $file_name)
-    {
-        if (ftp_size($ftp_stream, $file_name) != -1)
-            $remote_file [] = $file_name;
-    }
+    $remote_file = scandir($ssh2 . $remote_dir);
     if (!empty($remote_file))
     {
         foreach ($remote_file as $file)
-        {            
-            if (preg_match($pattern, basename($file)) == 1)
-            {
-                if(ftp_get($ftp_stream, $local_dir . basename($file), $file, FTP_BINARY))
-                        $files_liste[] = $local_dir . basename ($file);
-                if($remote_bkp != '')
-                    ftp_rename($ftp_stream, $file, $remote_bkp . basename($file));
+        {
+            if (preg_match($pattern, $file) == 1)
+            {                
+                if (copy($ssh2 . $remote_dir . $file, $local_dir . $file))
+                    $files_liste[] = $local_dir . $file;
+                if ($remote_bkp != '')
+                    rename($ssh2 . $remote_dir . $file, $ssh2 . $remote_bkp . $file);
             }
         }
     }
-    ftp_close($ftp_stream);
     return $files_liste;
 }
 /* * *
@@ -728,27 +713,18 @@ function convergence_uploadFileByFtp($remote_file = '', $local_dir = '/var/tmp/'
     
     if($remote_file != '')
     {
+        //INIT
         $remote_file = array();
         $files_liste = array();
         $host = serveur_ftp;
         $user = username_ftp;
         $pwd = pwd_ftp;
         $port_ftp = port_ftp;
-        if($host == 'serveur_ftp')
-            $host = '172.17.20.29';        
-        if($user == 'username_ftp')
-            $user = 'ftpttest';        
-        if($port_ftp == 'port_ftp')
-            $port_ftp = 21;        
-        if($pwd == 'pwd_ftp')
-            $pwd = 'ftptest';
+        $protocol = protocol_transfert;
+        $ssh2 = "ssh2.$protocol://$user:$pwd@$host:$port_ftp";
 
-        if (!$ftp_stream = ftp_connect($host, $port_ftp, 120))
-            return FALSE;
-        $login_res = ftp_login($ftp_stream, $user, $pwd);
-        $local_file =$local_dir . basename($remote_dir);
-        $bool = ftp_get($ftp_stream, $local_file, $remote_file, FTP_BINARY);
-        ftp_close($ftp_stream);
+        $local_file = $local_dir . basename($remote_file);
+        $bool = copy($ssh2 . $remote_file, $local_file);
         if($bool)
             return $local_file;
     }
@@ -771,34 +747,20 @@ function convergence_uploadFileByFtp($remote_file = '', $local_dir = '/var/tmp/'
  * @return      bool                    retourne true si réussie.
  **/
 
-function convergence_putFileByFtp($local_file = '', $remote_dir = '.', $remote_bkp = '',$deletLocal = 0) {
+function convergence_putFileByFtp($local_file = '', $remote_dir = '/', $remote_bkp = '', $deletLocal = 0) {
     if(!empty($local_file))
-    {        
+    {
+        //  INIT
         $host = serveur_ftp;
         $user = username_ftp;
         $pwd = pwd_ftp;
         $port_ftp = port_ftp;
-        if($host == 'serveur_ftp')
-            $host = '172.17.20.29';        
-        if($user == 'username_ftp')
-            $user = 'ftpttest';        
-        if($port_ftp == 'port_ftp')
-            $port_ftp = 21;        
-        if($pwd == 'pwd_ftp')
-            $pwd = 'ftptest';
-        
-        if (!$ftp_stream = ftp_connect($host, $port_ftp, 60))
-        {
-            return FALSE;
-        }
-        if(!$login_res = ftp_login($ftp_stream, $user, $pwd))
-        {
-            return FALSE;
-        }
-        $remote_file = $remote_dir.basename($local_file);                
-        $bool = ftp_put($ftp_stream , $remote_file , $local_file , FTP_BINARY);
+        $protocol = protocol_transfert;
+        $ssh2 = "ssh2.$protocol://$user:$pwd@$host:$port_ftp";
+        $remote_file = $remote_dir . basename($local_file);
+        $bool = copy($local_file, $ssh2 . $remote_file);
         if($remote_bkp != '')
-            $bool = ftp_put($ftp_stream , $remote_bkp.  basename($local_file) , $local_file , FTP_BINARY);
+            copy($local_file, $ssh2 . $remote_bkp);
         ftp_close($ftp_stream);
         if($deletLocal == 1)
             unlink ($local_file);

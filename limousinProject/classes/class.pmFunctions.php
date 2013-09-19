@@ -353,10 +353,10 @@ function limousinProject_getPathAQPORTR() {
     $res = executeQuery($sql);
     if (!empty($res))
     {
-        $path = $res[1]['PATH_FILE'] . '/OUT/AQ_PORT_R_001_00008.' . date('Ymd');
+        $path = $res[1]['PATH_FILE'] . '/OUT/AQ_PORT_R_001_00028.' . date('Ymd');
     }
     else
-        $path = '/var/tmp/AQ_PORT_R_001_00008.' . date('Ymd');
+        $path = '/var/tmp/AQ_PORT_R_001_00028.' . date('Ymd');
 
     return $path;
 }
@@ -423,7 +423,7 @@ function limousinProject_removeWrapFileAqoba($list_file){
 }
 function limousinProject_updateFromAQPORTREJ($file){
     //on récupère le contenu du fichier
-    $content = file($file);    
+    $content = file($file);
     $data = array();
     if(!empty($content))
     {
@@ -431,7 +431,7 @@ function limousinProject_updateFromAQPORTREJ($file){
         {            
             $code_erreurs = trim(substr($line, 1123));
             $porter_id = trim(substr($line, 29, 12));
-            $q = 'select APP_UID from PMT_DEMANDES where PORTEUR_ID = "' . $porter_id . '"'; // and STATUT = 7';
+            $q = 'select APP_UID from PMT_DEMANDES where PORTEUR_ID = "' . $porter_id . '" and STATUT = 7';
             $r = executeQuery($q);
             if(!empty($r[1]['APP_UID']))
             {
@@ -553,6 +553,40 @@ function limousinProject_readLineFromAQCARTE($datas) {
         }
     }
     return TRUE;
+}
+
+// non op
+function limousinProject_showPdf($app_uid) {
+    $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID="' . $app_uid . '" AND DOC_UID="884895097521c61f362fc13075215643" AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "fr"';
+    $result = executeQuery($query);
+    if (method_exists('G', 'getPathFromUID'))
+    {
+        $app_uid = G::getPathFromUID($app_uid);
+    }
+
+    $path = PATH_DOCUMENT . $app_uid . PATH_SEP . 'outdocs' . PATH_SEP . $result[1]['APP_DOC_UID'] . '_' . $result[1]['DOC_VERSION'];
+    $file = $path . '.pdf';
+
+   /* mail('nicolas@oblady.fr', date('H:i:s') . ' debug $filemail ', var_export($file, true));
+
+      if (file_exists($file))
+      {
+      //OUPUT HEADERS
+      header("Pragma: public");
+      header("Expires: 0");
+      //header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+      //header("Cache-Control: private",false);
+      header("Content-Type: application/pdf");
+      header('Content-Disposition: attachment; filename="' . $result[1]['CON_VALUE'] . '.pdf";');
+      header('Content-Length: ' . sizeof($file));
+      header("Content-Transfer-Encoding: binary");
+      header('Content-Description: File Transfer');
+      header('Cache-Control: must-revalidate');
+      //ob_clean();
+      //flush();
+      mail('nicolas@oblady.fr', date('H:i:s') . ' flush debug mail ', var_export($file, true));
+      readfile($file);
+      } */
 }
 
 ?>
