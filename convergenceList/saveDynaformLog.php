@@ -1,13 +1,12 @@
 <?php
 
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', True);
+
 G::LoadClass("case");
 G::LoadClass("pmFunctions");
 require_once ("classes/model/AppHistory.php");
 
 if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
-{  
+{
   //unsetSessionVars("FLAG|FLAG_ACTION");
 # Set Variables
 	$version = 1;
@@ -86,24 +85,23 @@ if(isset($_REQUEST['APP_UID']) && $_REQUEST['APP_UID']!='' )
 			$newAPP_UID = $_SESSION['APPLICATION_EDIT']; 
 		}
 		else
-		{ //G::pr($Fields2['APP_DATA']); print($PRO_UID.'  '.$USR_UID.'  '.$TAS_UID);
+		{
 			$newAPP_UID = PMFNewCase($PRO_UID, $USR_UID, $TAS_UID, $Fields2['APP_DATA']); 	
 		}   
 		$newFields = $oCase->loadCase ($newAPP_UID);
 		$newFields["APP_DATA"] = array_merge( $newFields["APP_DATA"], G::getSystemConstants() );
-		//G::pr($DYNAFORMDATA);
+		
 	  	$newFields['APP_DATA']['FLAG_ACTION'] = 'editForms'; # this is for the typo3 trigger
 		$newFields['APP_DATA']['DYN_UID'] = $DYN_UID; # this is for the typo3 trigger
 		$newFields['APP_DATA']['CURRENTDATETIME'] = $CURRENTDATETIME; # this is for the typo3 trigger
 		$newFields['APP_DATA']['NUM_DOSSIER'] = $APP_NUMBER_DOSSIER;
   		$newFields['APP_DATA']['FLG_INITUSERUID'] = $auxUsrUID;
   		$newFields['APP_DATA']['FLG_INITUSERNAME'] = $auxUsruname;
+  		$newFields['APP_DATA']['SW_CREATE_CASE'] = 1; # control trigger create new cases csv
 		//$newFields['APP_DATA']['VALIDATION'] = isset($newFields['APP_DATA']['VALIDATION']) ? $newFields['APP_DATA']['VALIDATION'] :'0'; 
 	
 		$newFields = str_replace("'","'",$newFields ['APP_DATA']);  
 	 
-		//$newFields['APP_DATA'] = array_replace_recursive($newFields , ( array ) $DYNAFORMDATA);
-		//$newFields['APP_DATA'] = G::array_merges($newFields , ( array ) $DYNAFORMDATA);
 		$newFields["APP_DATA"] = array_merge( $newFields, $_POST['form'] );
 	  	$newFields['APP_DATA']['APPLICATION'] = $newAPP_UID;
 	  	$newFields['APP_DATA']['FLAG_EDIT'] = 1;

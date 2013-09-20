@@ -1,15 +1,7 @@
 <?php
-
-
-class cronCreateCasesClassCron   
-{
-   /**
-   * Default Constructor for the class
-   */
-  function __construct (  ) {
-    
-  }
-
+ini_set ( 'error_reporting', E_ALL );
+ini_set ( 'display_errors', True );
+  executeCron(); 
   function executeCron()
   {
     $pluginFile = PATH_PLUGINS.'convergenceList'.PATH_SEP.'services'.PATH_SEP.'class.createCasescron.php';
@@ -23,8 +15,6 @@ class cronCreateCasesClassCron
     
     
   }
-
-}
 
 
 ?>

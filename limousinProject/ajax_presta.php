@@ -22,4 +22,3 @@ class ajax_presta extends WebResource {
 $o = new ajax_presta($_SERVER['REQUEST_URI'], $_POST);
 
 ?>
-
