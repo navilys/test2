@@ -1930,7 +1930,19 @@ function getProUid($tableName){
     $sSQL ="SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME ='$tableName'";
     $aResult= executeQuery($sSQL);
     $proUid = '0';
-    if(is_array($aResult) && count($aResult)>0){$proUid =$aResult[1]['PRO_UID'];} 
+    if(is_array($aResult) && count($aResult)>0)	
+	 	 if(is_array($aResult) && count($aResult)>0){$proUid =$aResult[1]['PRO_UID'];}
+		 {	  
+		 	$proUid =$aResult[1]['PRO_UID'];		
+		 }		
+		 else		
+		 {		
+		     $sSQL = "SELECT PRO_UID FROM APPLICATION WHERE APP_UID='$tableName'";		
+		     $aResult = executeQuery($sSQL);		
+
+		     if (isset($aResult[1]['PRO_UID']))		
+		         $proUid =$aResult[1]['PRO_UID'];		
+		 }
     return $proUid;
 }
 
@@ -2339,7 +2351,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
         $totRow = sizeof($row);
         $totIni = 1;
        
-        if($totalCases >= 5)
+        if($totalCases >= 100)
         {
             /* add header on csv temp files for import background */
             if ($firstLineHeader == 'on' && $swInsert == 0)
@@ -3341,7 +3353,6 @@ function loadParametersCSV($idInbox,$pathCSV,$actionType,$fileNameCSV)
     $oCase = new Cases();
     $fieldsCase = $oCase->loadCase($appUidCasOrig);
     $dataAnt = $fieldsCase['APP_DATA'];
-    //G::pr($fieldsCase);
     $query1 = "SELECT ID_TABLE FROM PMT_INBOX_PARENT_TABLE WHERE ID_INBOX = '".$idInbox."' AND ROL_CODE = '".$rolesAdmin."' ";
     $result = executeQuery($query1);
     
