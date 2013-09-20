@@ -1931,7 +1931,6 @@ function getProUid($tableName){
     $aResult= executeQuery($sSQL);
     $proUid = '0';
     if(is_array($aResult) && count($aResult)>0)	
-	 	 if(is_array($aResult) && count($aResult)>0){$proUid =$aResult[1]['PRO_UID'];}
 		 {	  
 		 	$proUid =$aResult[1]['PRO_UID'];		
 		 }		
