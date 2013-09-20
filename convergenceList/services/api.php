@@ -59,7 +59,7 @@ class API extends REST {
 			$this->response('',406);
 		}
 		else{
-				
+
 				if((!(isset($this->_request["username"]))) || ($this->_request["username"] == "")){
 						$error = array('status' => "Failed", "msg" => "username index or value empty");
 						$this->response($this->json($error),400);
@@ -73,9 +73,9 @@ class API extends REST {
 						$this->response($this->json($error),400);						
 				}
 				else{
-					
+
 						$uname = urldecode($this->_request['username']);
-						$currentpasswd = urldecode($this->_request['currentpasswd']);
+						$currentpasswd = md5(urldecode($this->_request['currentpasswd']));
 						$newpasswd = md5(urldecode($this->_request['newpasswd']));
 						$checkuser = executeQuery("SELECT USR_USERNAME, CONCAT(USR_FIRSTNAME, ' ', USR_LASTNAME) FROM USERS WHERE USR_USERNAME = '".$uname."' AND USR_PASSWORD = '".$currentpasswd."' ","rbac");						
 						if(sizeof($checkuser) == 0){

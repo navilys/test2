@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 G::loadClass("webResource");
 G::loadClass("pmFunctions");

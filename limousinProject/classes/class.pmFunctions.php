@@ -22,18 +22,18 @@ require_once("plugins/limousinProject/classes/Webservices/Identification.php");
 // License: LGPL, see LICENSE
 ////////////////////////////////////////////////////
 
-function limousinProject_getMyCurrentDate() {
+function limousinProject_getMyCurrentDate(){
     return G::CurDate('Y-m-d');
 }
 
-function limousinProject_getMyCurrentTime() {
+function limousinProject_getMyCurrentTime(){
     return G::CurDate('H:i:s');
 }
 
 //LOCAL : a transforme dans le moteur de regle
-function convergence_getIncompletErreur($app_id) {
-    $fields = convergence_getAllAppData($app_id);
-    $incomplet = array();
+function convergence_getIncompletErreur($app_id){
+    $fields = convergence_getAllAppData($app_id);   
+    $incomplet = array();    
     if ($fields['FINOM'] == '')
     {
         $incomplet[] = "Votre nom";
@@ -74,7 +74,7 @@ function convergence_getIncompletErreur($app_id) {
 }
 
 function convergence_getMsgErreur($app_id) {
-
+   
     $refus = array();
     $fields = convergence_getAllAppData($app_id);
     if (!isset($fields['GDCERTIFSCOLARITE']) || $fields['GDCERTIFSCOLARITE'] == 0)
@@ -109,7 +109,7 @@ function convergence_getMsgErreur($app_id) {
 }
 
 function limousinProject_generatePorteurID($num_dossier) {
-
+    
     /* Les 4 premiers caractères seront : 3028
       Les 6 autres seront le numéro unique créé par convergence
       Concernant le dernier la formule exacte est : 9 - somme(des 10 premiers chiffres) modulo 9.
@@ -145,11 +145,11 @@ function limousin_addTransactionPriv($codePartenaire, $porteurID, $montant, $lib
 }
 
 function limousinProject_nouvelleTransaction($operation) {
-
+    
     // INIT Ws
     $t = new Transaction();
 
-    // SET Params
+	// SET Params
     $t->operation = $operation;
     $t->partenaire = "00028";
     //$t->porteurId = "30280000023";
@@ -170,14 +170,14 @@ function limousinProject_nouvelleTransaction($operation) {
         var_dump($t->errors);
         die();
     }
-    
+
 }
 
 function limousinProject_nouvelleActionCRM() {
 
     // INIT Ws
     $a = new ActionCRM();
-    $action = "_action";
+	$action = "_action";
     $motif = "_motif";
 
     // SET Params
@@ -201,7 +201,7 @@ function limousinProject_nouvelleActionCRM() {
 }
 
 function limousinProject_getOperations() {
-
+    
     // INIT Ws
     $o = new Operation();
 
@@ -226,7 +226,7 @@ function limousinProject_getOperations() {
 }
 
 function limousinProject_getSolde() {
-
+    
     // INIT Ws
     $s = new Solde();
 
@@ -248,7 +248,7 @@ function limousinProject_getSolde() {
 }
 
 function limousinProject_identification() {
-
+    
     // INIT Ws
     $i = new Identification();
 
@@ -274,9 +274,9 @@ function limousinProject_identification() {
 
 
 function limousinProject_importTransationsAqoba() {
-    
-    
-    
+
+
+
 
 
 
@@ -362,7 +362,7 @@ function limousinProject_getPathAQPORTR() {
 }
 
 /*  Ajout les lignes d'entête et de fin de fichier pour le fichier AQ_PORT 
- * 
+ *
  * @param string $file le chemin du fichier à modifier
  *  */
 
@@ -395,12 +395,12 @@ function limousinProject_updateAQPORTR($file, $num_dossier) {
 }
 
 /*  Supprime les lignes d'entête et de fin de fichier fournie par AQOBA
- * 
+ *
  * @param   array   $list_file  liste des fichiers sur la machine PM en local
  * 
  * @return  array   $list_file  liste des fichiers modifiés sur la machine PM en local
- * 
  */
+
 function limousinProject_removeWrapFileAqoba($list_file){
     
     if(!empty($list_file)){        

@@ -17,17 +17,17 @@ else
     $app_uid = $items[0]['APP_UID'];
 }
 /*
-  if (isset($_SESSION['APPLICATION']) && $_SESSION['APPLICATION'] != '') {
-
-  $app_uid = $_SESSION['APPLICATION'];
-  // $_GET['APP_UID'] = $_SESSION['APPLICATION'];
-  } */
+if (isset($_SESSION['APPLICATION']) && $_SESSION['APPLICATION'] != '') {
+    
+    $app_uid = $_SESSION['APPLICATION'];
+   // $_GET['APP_UID'] = $_SESSION['APPLICATION'];
+} */
 $oCase = new Cases ();
 $Fields = $oCase->loadCase($app_uid);
 $libelStatut = 'SELECT TITLE FROM PMT_STATUT WHERE UID=' . intval($Fields['APP_DATA']['STATUT']);
 $libelRes = executeQuery($libelStatut);
 {
-    switch (strtolower($libelRes[1]['TITLE']))
+    switch (strtolower($libelRes[1]['TITLE'])) 
     {
 
         case 'refusé' :

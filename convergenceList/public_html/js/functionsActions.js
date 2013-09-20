@@ -188,11 +188,11 @@ function editFormsWithTag(appUid,tag){
     windowTabs(appUid,urlData,appNumb);
 }
 
-function classerNPAI(annuleFlag, callback) {
+function classerNPAI(annuleFlagg, callback) {
 
     if (!annuleFlag) { annuleFlag = 0; } 
     if (!callback) {
-        callback = '';
+      callback = '';
     }
 
     idField = myApp.addTab_inside();                    
@@ -296,9 +296,9 @@ function explicationStatut(appUid, callback) {
     Ext.Ajax.request({
            url : urlData,
            params : {
-            array: idField,
-            callback: callback,
-            app_uid: appUid
+             array: idField,
+             callback: callback,
+             app_uid: appUid
            },
            success: function (result, request) {
              var response = Ext.util.JSON.decode(result.responseText);
@@ -1670,7 +1670,7 @@ function ActioncreateNewCase(uidForm)
 
 function actionModifyAdresse(uidForm, app_uid)
 {               
-    urlData = "../convergenceList/actions/actionModifyAdresse?task=" + uidForm + "&uid=" + app_uid;
+        urlData = "../convergenceList/actions/actionModifyAdresse?task=" + uidForm + "&uid=" + app_uid;
         var adaptiveHeight = getDocHeight() - 50;
         
         var win2 = new Ext.Window({

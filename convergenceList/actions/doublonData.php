@@ -1,6 +1,6 @@
 <?php
 G::loadClass ( 'pmFunctions' );
-
+/*
 function getProUid($appUid){
 	$sSQL = "SELECT PRO_UID FROM APPLICATION WHERE APP_UID='$appUid'";
     $aResult = executeQuery($sSQL);
@@ -8,7 +8,7 @@ function getProUid($appUid){
     if (isset($aResult[1]['PRO_UID']))
     	$proUid =$aResult[1]['PRO_UID'];
     return $proUid;
-}
+}*/
  
 function getTotalDuplicateRecords($reg, $fldNamStat, $fldValStat) {
 
@@ -46,7 +46,7 @@ function getTotalDuplicateRecords($reg, $fldNamStat, $fldValStat) {
    	}
    	return (array($totalRegisters, $aCase_elected, $exist_case_elected));
 }
-
+/*
 function genDataReport ($tableName){
     G::loadClass( 'pmTable' );
     G::loadClass ( 'pmFunctions' );
@@ -105,7 +105,7 @@ function deletePMCases($caseId) {
 	$query12="DELETE FROM wf_".SYS_SYS.".APP_HISTORY WHERE APP_UID='".$caseId."'";
 	$apps12=executeQuery($query12);
 }
-
+*/
 function deleteDuplicatedCases($appUidElected, $tableName ='') {
 	G::LoadClass("case");
 	$numDeletedCases = 0;
@@ -514,6 +514,7 @@ function createCase($appUid, $appData,$uidTask,$jsonSelected,$hiddenUids, $idInb
     	$_SESSION['USR_USERNAME'] = $arrayUser['username'];
 	}
 	$newFields['APP_DATA']['FLAG_EDIT'] = 1;
+	$newFields['APP_DATA']['SW_CREATE_CASE'] = 1; # control trigger create new cases csv
 	$caseUID = PMFNewCase($PRO_UID, $USR_UID, $uidTask, $newFields['APP_DATA']);	
 	$hiddenUids = json_decode($hiddenUids,true);
 	$rowSelected = json_decode($jsonSelected,true);

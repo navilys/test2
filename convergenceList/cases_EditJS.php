@@ -1,5 +1,6 @@
 <?php
-
+ini_set ( 'error_reporting', E_ALL );
+ini_set ( 'display_errors', True );
 G::LoadClass ( 'case' );
 G::LoadClass ( 'configuration' );
 G::loadClass ( 'pmFunctions' );
@@ -47,73 +48,69 @@ $oCase = new Cases();
 $Fields = $oCase->loadCase($APP_UID);
 if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
 {     
-            $Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
-            if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
-            {
-                $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
-                $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
-            }
-            $oCase->updateCase($APP_UID, $Fields);
-            # execute Triggers task Ini
-		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-	        $startTasks = executeQuery($query);
-	        foreach($startTasks as $rowTask){
-		        $taskId = $rowTask['TAS_UID'];
-		        $stepsByTask = getStepsByTask($taskId);
-	            foreach ($stepsByTask as $caseStep){
-				    $caseStepRes[] = 	 $caseStep->getStepUidObj();
-			    }
-			    break;
-	        }
+	$Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
+	$Fields['APP_DATA']['SW_CREATE_CASE'] = 1;
+    if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
+    {
+    	$userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
+        $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+    }
+    $oCase->updateCase($APP_UID, $Fields);
+    # execute Triggers task Ini
+	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	$startTasks = executeQuery($query);
+	foreach($startTasks as $rowTask){
+		$taskId = $rowTask['TAS_UID'];
+		$stepsByTask = getStepsByTask($taskId);
+		foreach ($stepsByTask as $caseStep){
+			$caseStepRes[] = 	 $caseStep->getStepUidObj();
+		}
+		break;
+	}
 	        
-			$totStep = 0;
-			foreach($caseStepRes as $index)
-			{
-				$stepUid = $index;
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-				$totStep++;
-			} 
+	$totStep = 0;
+	foreach($caseStepRes as $index)
+	{
+		$stepUid = $index;
+		executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+		executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+		$totStep++;
+	} 
 			# end execute Triggers task Ini
-	  	}
-	  	else if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
-	  	{
-	        $userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
-	        $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
-            $oCase->updateCase($APP_UID, $Fields);
-            # execute Triggers task Ini
-		  	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-	        $startTasks = executeQuery($query);
-	        foreach($startTasks as $rowTask){
-		        $taskId = $rowTask['TAS_UID'];
-		        $stepsByTask = getStepsByTask($taskId);
-	            foreach ($stepsByTask as $caseStep){
-				    $caseStepRes[] = $caseStep->getStepUidObj();
-			    }
-			    break;
-	        }
+}
+else if((isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED']) || (isset($Fields['APP_DATA']['FLAG_EDIT']) && $Fields['APP_DATA']['FLAG_EDIT'] == 1 ))
+{
+	$userLoggedIni = $Fields['APP_DATA']['USER_LOGGED'];
+	$Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
+	$Fields['APP_DATA']['SW_CREATE_CASE'] = 1;
+    $oCase->updateCase($APP_UID, $Fields);
+    # execute Triggers task Ini
+	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
+	$startTasks = executeQuery($query);
+	foreach($startTasks as $rowTask){
+		$taskId = $rowTask['TAS_UID'];
+		$stepsByTask = getStepsByTask($taskId);
+	    foreach ($stepsByTask as $caseStep){
+			$caseStepRes[] = $caseStep->getStepUidObj();
+		}
+		break;
+	}
 	        
-			$totStep = 0;
-			foreach($caseStepRes as $index)
-			{
-				$stepUid = $index;
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-				executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-				$totStep++;
-			} 
+	$totStep = 0;
+	foreach($caseStepRes as $index)
+	{
+		$stepUid = $index;
+		executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
+		executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
+		$totStep++;
+	} 
 			# end execute Triggers task Ini 
-	  	}
-      	/*if($userLoggedIni != '')
-      	{
-            $Fields = $oCase->loadCase($APP_UID);
-            $Fields['APP_DATA']['USER_LOGGED'] = $userLoggedIni;
-            $oCase->updateCase($APP_UID, $Fields);
-      	}*/
-
+}
+   
 # end execute Triggers task Ini   
 
 # Get Dynaforms
-   
+
 if($rolesAdmin == 'PROCESSMAKER_ADMIN')
 {
 	$query = " SELECT DISTINCT STEP_UID_OBJ AS DYN_UID, STEP_CONDITION, MIN( STEP_POSITION ) AS POSITION  FROM STEP 

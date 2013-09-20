@@ -147,7 +147,7 @@ else if ($type != 'npai')
         $resultDate = executeQuery($query);
         $qSetPnd = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED,count(*) as nb_pnd FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION="Classer en PND"'; //2013-07-23 06:13:06
         $rSetPnd = executeQuery($qSetPnd);
-        $qUnsetPnd = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION="Enlever des PND"'; //2013-07-23 06:13:06
+        $qSetPnd = 'SELECT max(HLOG_DATECREATED) as HLOG_DATECREATED,count(*) as nb_pnd FROM PMT_HISTORY_LOG WHERE HLOG_APP_UID="' . $npai['APP_UID'] . '" AND HLOG_ACTION="Classer en PND"'; //2013-07-23 06:13:06
         $rUnsetPnd = executeQuery($qUnsetPnd);
         if (isset($resultDate[1]['HLOG_DATECREATED']) && $resultDate[1]['HLOG_DATECREATED'] != '' && isset($rSetPnd[1]['HLOG_DATECREATED']) && $rSetPnd[1]['HLOG_DATECREATED'] != '')
         {/* Modifié le 16/09/13 de HLOG_DATECREATED < $rSetPnd[1]['HLOG_DATECREATED'] à HLOG_DATECREATED > $rSetPnd[1]['HLOG_DATECREATED'] selon le mail de Stéphane du 9 Sept 2013
