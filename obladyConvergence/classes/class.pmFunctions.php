@@ -3311,9 +3311,19 @@ function getCSVHeader($dataCSV, $csv_sep) {
 ## end actions import CSV
 
 ## function load parameters csv
-function loadParametersCSV($idInbox,$pathCSV,$actionType)
+function loadParametersCSV($idInbox,$pathCSV,$actionType,$fileNameCSV)
 {
-    G::loadClass( 'pmTable' );
+	$directory = PATH_DOCUMENT.$pathCSV;
+    chmodr($directory, 0777);
+    chownr($directory, 'apache');
+    chgrpr($directory, 'apache');
+    
+    $directoryFile = PATH_DOCUMENT.$pathCSV."/".$fileNameCSV;
+    chmodr($directoryFile, 0777);
+    chownr($directoryFile, 'apache');
+    chgrpr($directoryFile, 'apache');
+    
+	G::loadClass( 'pmTable' );
     G::loadClass ( 'pmFunctions' );
     G::LoadClass('case');
 
@@ -3326,7 +3336,6 @@ function loadParametersCSV($idInbox,$pathCSV,$actionType)
     $Roles=$Us->load($users);
     $rolesAdmin = $Roles['USR_ROLE'];
     
-
     // Uid retrieve current case
     $appUidCasOrig = $_SESSION['APPLICATION'];
     $oCase = new Cases();
@@ -3378,58 +3387,42 @@ function loadParametersCSV($idInbox,$pathCSV,$actionType)
 	$matchFields = json_encode($dataImportCSV); 
     $dataDeleteEdit = json_encode($dataDeleteCSV);
 
-    $directory = PATH_DOCUMENT.$pathCSV;
-    $dir = $directory;
-    chmod($directory, 0777);
-    chmod($dir, 0777);
-    $arrayFiles = array();
-    $arrayFiles = readFiles($dir);
-
-            if(count($arrayFiles))
-            {
-                foreach ($arrayFiles as $key => $row) {
-                    
-                    $fileCSV = $row['filename'];
-                    $filePath = $row['filepath']."/".$row['filename'];
-                    
-                    $uidTask = isset($_SESSION['TASK'])?$_SESSION['TASK']:"";
-            
-                    // ************** TOT CASES  ****************+
-                    //$queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
-                    //$totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
-
-                    $informationCSV = getDataCronCSV($firstLineHeader,$fileCSV,0,$filePath);
-
-                    $_SESSION['REQ_DATA_CSV'] = $informationCSV;
-                    $_SESSION['CSV_FILE_NAME'] = $fileCSV;
-                    
-                    switch($actionType)
-                    {
-                        case "add":
-                            $typeAction = 'ADD';
-                            $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
-                            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-                            break;
-
-                        case "deleteAdd":
-                            $totalCases = importCreateCaseDelete($matchFields, $uidTask, $tableName, $firstLineHeader, $dataDeleteEdit);
-                            echo G::json_encode(array("success" => true, "message" => "OK" , "totalCases" => $totalCases));
-                            break;
-
-                        case "editAdd": 
-                            $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataDeleteEdit);
-                            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-                            break;
-
-                        case "truncateAdd": 
-                            $totalCases = importCreateCaseTruncate($matchFields,$uidTask,$tableName,$firstLineHeader);
-                            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-                            break;
-                    }
-                }
-            }
-
+    $fileCSV =  $fileNameCSV;
+    $filePath = $directory."/".$fileCSV;
+    $uidTask = isset($_SESSION['TASK'])?$_SESSION['TASK']:"";
     
+    // ************** TOT CASES  ****************+
+    //$queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
+    //$totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
+    $informationCSV = getDataCronCSV($firstLineHeader,$fileCSV,0,$filePath);
+
+    $_SESSION['REQ_DATA_CSV'] = $informationCSV;
+    $_SESSION['CSV_FILE_NAME'] = $fileCSV;
+    
+    switch($actionType)
+    {
+        case "add":
+            $typeAction = 'ADD';
+            $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
+            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+            break;
+
+        case "deleteAdd":
+            $totalCases = importCreateCaseDelete($matchFields, $uidTask, $tableName, $firstLineHeader, $dataDeleteEdit);
+            echo G::json_encode(array("success" => true, "message" => "OK" , "totalCases" => $totalCases));
+            break;
+
+        case "editAdd": 
+            $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataDeleteEdit);
+            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+            break;
+
+        case "truncateAdd": 
+            $totalCases = importCreateCaseTruncate($matchFields,$uidTask,$tableName,$firstLineHeader);
+            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+            break;
+    }
+
     // case reset
     $_SESSION['APPLICATION'] = $appUidCasOrig;
     $oCase = new Cases ();
@@ -3440,42 +3433,12 @@ function loadParametersCSV($idInbox,$pathCSV,$actionType)
     $fieldsCase1 = $oCase->loadCase($appUidCasOrig);
     $dataNew = $fieldsCase1['APP_DATA']; 
    
-
-}
-
-function readFiles($dir)
-{
-        if (is_dir($dir)) {
-         $objects = scandir($dir);
-         
-          foreach ($objects as $object) {
-             if ($object != "." && $object != "..") {
-                
-                 if (filetype($dir . "/" . $object) == "dir") {
-                     readFiles($dir . "/" . $object);
-                    
-                 } else {
-                    $filename = $object;
-                    $fileCSV = explode(".",$filename);
-                    $record = "";
-                    if($fileCSV[1] == 'csv')
-                    {
-                        $record = array("filename"=>$filename, "filepath"=>$dir);
-                        $arrayFiles[] = $record;
-                    }
-                 }
-            }
-         }
-        }
-        reset($objects);
-        
-        return $arrayFiles;
 }
 
 function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $totCasesCSV,$pathCSV) {
 	
       set_include_path(PATH_PLUGINS . 'convergenceList' . PATH_SEPARATOR . get_include_path());
- 
+      
       //PATH_DOCUMENT . "csvTmp/".$fileCSV."csv"
       if (!$handle = fopen($pathCSV, "r")) {  
         echo "Cannot open file";  
@@ -3529,7 +3492,6 @@ function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $totCasesCSV,$pathCSV)
             }
             $i++;
     }
-   
       return $csvData;        
   }
   
