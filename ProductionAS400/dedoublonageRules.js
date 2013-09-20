@@ -199,7 +199,6 @@ Ext.onReady(function()
     	bodyCssClass: 'frameRules', // Css Production
     	frame		: false,
     	width		: 200,
- 		labelAlign  : 'center',
  		labelStyle  : 'font-weight:bold;',
  	    labelAlign  : 'right',
  	    border      : false, 
@@ -216,15 +215,15 @@ Ext.onReady(function()
 			    border:false,
 			    bodyCssClass: 'frameRules'
 			},
-			labelWidth: 120,
+			labelWidth: 150,
 			items  :[
 	                {   // column #1
-	                    columnWidth: .29,
+	                    columnWidth: .32,
 	                    layout: 'form',
 	                    border: false,
 	                    items: [ ProcessCombo ] // close items for first column
 	                } ,{   // column #1
-	                    columnWidth: .29,
+	                    columnWidth: .32,
 	                    layout: 'form',
 	                    border: false,
 	                    items: [ TableCombo ] // close items for second column
