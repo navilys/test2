@@ -668,46 +668,31 @@ function convergence_concatFiles($files) {
  * @return      array   $files_liste    liste des fichiers chargés avec leur chemin d'acces sur le serveur Ftp, retourne false si échec de connection
  **/
 
-function convergence_getFileByFtp($remote_dir = '.', $remote_bkp = '', $pattern = '', $local_dir = '/var/tmp/') {
-    
+function convergence_getFileByFtp($remote_dir = '/.', $remote_bkp = '', $pattern = '', $local_dir = '/var/tmp/') {
+    //INIT
     $remote_file = array();
     $files_liste = array();
     $host = serveur_ftp;
         $user = username_ftp;
         $pwd = pwd_ftp;
         $port_ftp = port_ftp;
-        if($host == 'serveur_ftp')
-            $host = '172.17.20.29';        
-        if($user == 'username_ftp')
-            $user = 'ftpttest';        
-        if($port_ftp == 'port_ftp')
-            $port_ftp = 21;        
-        if($pwd == 'pwd_ftp')
-            $pwd = 'ftptest';
+    $protocol = protocol_transfert;
+    $ssh2 = "ssh2.$protocol://$user:$pwd@$host:$port_ftp";
 
-    if (!$ftp_stream = ftp_connect($host, $port_ftp, 120))
-        return FALSE;
-    $login_res = ftp_login($ftp_stream, $user, $pwd);
-    $ftp_nlist = ftp_nlist($ftp_stream, $remote_dir);
-    foreach ($ftp_nlist as $file_name)
-    {
-        if (ftp_size($ftp_stream, $file_name) != -1)
-            $remote_file [] = $file_name;
-    }
+    $remote_file = scandir($ssh2 . $remote_dir);
     if (!empty($remote_file))
     {
         foreach ($remote_file as $file)
         {            
-            if (preg_match($pattern, basename($file)) == 1)
+            if (preg_match($pattern, $file) == 1)
             {
-                if(ftp_get($ftp_stream, $local_dir . basename($file), $file, FTP_BINARY))
-                        $files_liste[] = $local_dir . basename ($file);
-                if($remote_bkp != '')
-                    ftp_rename($ftp_stream, $file, $remote_bkp . basename($file));
+                if (copy($ssh2 . $remote_dir . $file, $local_dir . $file))
+                    $files_liste[] = $local_dir . $file;
+                if ($remote_bkp != '')
+                    rename($ssh2 . $remote_dir . $file, $ssh2 . $remote_bkp . $file);
             }
         }
     }
-    ftp_close($ftp_stream);
     return $files_liste;
 }
 /* * *
@@ -728,28 +713,19 @@ function convergence_uploadFileByFtp($remote_file = '', $local_dir = '/var/tmp/'
     
     if($remote_file != '')
     {
+        //INIT
         $remote_file = array();
         $files_liste = array();
         $host = serveur_ftp;
         $user = username_ftp;
         $pwd = pwd_ftp;
         $port_ftp = port_ftp;
-        if($host == 'serveur_ftp')
-            $host = '172.17.20.29';        
-        if($user == 'username_ftp')
-            $user = 'ftpttest';        
-        if($port_ftp == 'port_ftp')
-            $port_ftp = 21;        
-        if($pwd == 'pwd_ftp')
-            $pwd = 'ftptest';
+        $protocol = protocol_transfert;
+        $ssh2 = "ssh2.$protocol://$user:$pwd@$host:$port_ftp";
 
-        if (!$ftp_stream = ftp_connect($host, $port_ftp, 120))
-            return FALSE;
-        $login_res = ftp_login($ftp_stream, $user, $pwd);
-        $local_file =$local_dir . basename($remote_dir);
-        $bool = ftp_get($ftp_stream, $local_file, $remote_file, FTP_BINARY);
-        ftp_close($ftp_stream);
-        if($bool)
+        $local_file = $local_dir . basename($remote_file);
+        $bool = copy($ssh2 . $remote_file, $local_file);
+        if ($bool)
             return $local_file;
     }
     return FALSE;
@@ -771,35 +747,20 @@ function convergence_uploadFileByFtp($remote_file = '', $local_dir = '/var/tmp/'
  * @return      bool                    retourne true si réussie.
  **/
 
-function convergence_putFileByFtp($local_file = '', $remote_dir = '.', $remote_bkp = '',$deletLocal = 0) {
-   
+function convergence_putFileByFtp($local_file = '', $remote_dir = '/', $remote_bkp = '', $deletLocal = 0) {
     if(!empty($local_file))
     {        
+        //  INIT
         $host = serveur_ftp;
         $user = username_ftp;
         $pwd = pwd_ftp;
         $port_ftp = port_ftp;
-        if($host == 'serveur_ftp')
-            $host = '172.17.20.29';        
-        if($user == 'username_ftp')
-            $user = 'ftpttest';        
-        if($port_ftp == 'port_ftp')
-            $port_ftp = 21;        
-        if($pwd == 'pwd_ftp')
-            $pwd = 'ftptest';
-        
-        if (!$ftp_stream = ftp_connect($host, $port_ftp, 60))
-        {
-            return FALSE;
-        }
-        if(!$login_res = ftp_login($ftp_stream, $user, $pwd))
-        {
-            return FALSE;
-        }
-        $remote_file = $remote_dir.basename($local_file);                
-        $bool = ftp_put($ftp_stream , $remote_file , $local_file , FTP_BINARY);
-        if($remote_bkp != '')
-            $bool = ftp_put($ftp_stream , $remote_bkp.  basename($local_file) , $local_file , FTP_BINARY);
+        $protocol = protocol_transfert;
+        $ssh2 = "ssh2.$protocol://$user:$pwd@$host:$port_ftp";
+        $remote_file = $remote_dir . basename($local_file);
+        $bool = copy($local_file, $ssh2 . $remote_file);
+        if ($remote_bkp != '')
+            copy($local_file, $ssh2 . $remote_bkp);
         ftp_close($ftp_stream);
         if($deletLocal == 1)
             unlink ($local_file);
@@ -902,9 +863,21 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                             case 'Entier':
                                 $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], 0, STR_PAD_LEFT), 0, $field['LENGTH']);
                                 break;
-                            case 'Date':
-                                $char = array('-', '/');
-                                $line .= substr(str_pad(str_replace($char, '.', $row[$field['FIELD_NAME']]), $field['LENGTH'], $token), 0, $field['LENGTH']);
+                            case 'Ymd':
+                            case 'ymd':
+                            case 'y-m-d':
+                            case 'Y-m-d':
+                            case 'y.m.d':
+                            case 'Y.m.d':
+                            case 'dmY':
+                            case 'd.m.y':
+                            case 'd-m-y':
+                            case 'dmy':
+                            case 'd.m.Y':
+                            case 'd-m-Y':
+                                $dateIn = date_create($row[$field['FIELD_NAME']]);
+                                $dateOut = date_format($dateIn, $field['AS400_TYPE']);
+                                $line .= substr(str_pad($dateOut, $field['LENGTH'], $token), 0, $field['LENGTH']);
                                 break;
                             case 'Decimal'://0000000.00
                                 $char = array('.', ',');
@@ -1624,15 +1597,21 @@ function convergence_updateListeRemboursement($app_id, $res) {
 //convergence_InsertLineImport(@@LINE_IMPORT,@@CONFIG_IMPORT);
 //GLOBAL
 function convergence_InsertLineImport($line, $config) {
-    $key = implode(',', array_keys($line));
-    $value = '"' . implode('","', $line) . '"';
+
+	// INIT
+    $finalTab = array();
+
+    // Escape scpeial caracters
+    foreach ($line as $key => $lineItem)
+        $finalTab[$key] = mysql_escape_string($lineItem);
+
+    $key = implode(',', array_keys($finalTab));
+    $value = '"' . implode('","', $finalTab) . '"';
     try
     {
 
         $query = 'INSERT INTO ' . $config['TABLENAME'] . '(' . $key . ') VALUES (' . $value . ')';
-        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $query mail ', var_export($query, true));
         $result = executeQuery($query);
-        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $result mail ', var_export($result, true));
     }
     catch (Exception $e)
     {
@@ -1897,7 +1876,15 @@ function convergence_justeOneDemande($user) {
     return 1;
 }
 
+// Récupère le champs UID généré par l'auto-incrémentation pour le conserver lors d'une édition
+function convergence_keepAutoIncrement($app_uid, $table, $field = 'UID') {
+    $q = 'select ' . strtoupper($field) . ' as uid from ' . strtoupper($table) . ' where APP_UID = "' . $app_uid . '"';
+    $r = executeQuery($q);
+    return $r[1]['uid'];
+}
+
 ## disable user conection web services
+
 function pmDisableUser($userName)
 { 
     $ret = 1;
