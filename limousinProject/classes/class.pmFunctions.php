@@ -10,6 +10,7 @@
 require_once("plugins/limousinProject/classes/Webservices/Webservice.php");
 require_once("plugins/limousinProject/classes/Webservices/Transaction.php");
 require_once("plugins/limousinProject/classes/Webservices/ActionCRM.php");
+require_once("plugins/limousinProject/classes/Webservices/Activation.php");
 require_once("plugins/limousinProject/classes/Webservices/Operation.php");
 require_once("plugins/limousinProject/classes/Webservices/Solde.php");
 require_once("plugins/limousinProject/classes/Webservices/Identification.php");
@@ -156,21 +157,23 @@ function limousinProject_nouvelleTransaction($operation) {
     $t->porteurId = "30280055364";
     //$t->porteurId = "0009";
     $t->sens = "C";
-    $t->montant = "100";
-    $t->addSousMontant("_reseau1", "_montatnReseau1");
-    $t->addSousMontant("_reseau2", "_montatnReseau2");
+    $t->montant = "200";
+   /* $t->addSousMontant("_reseau1", "_montatnReseau1");
+      $t->addSousMontant("_reseau2", "_montatnReseau2"); */
 
     // CALL Ws
     try
     {
         $retour = $t->call();
+        $echo = $retour->idTransaction;        //die;
+        echo 'trans ok = ' . $echo;
     }
     catch (Exception $e)
     {
         // TODO
-        var_dump($t->errors);
-        var_dump($e);
-        die();
+        $echo = $t->errors->code;
+        echo 'err = ' . $echo . '---';
+        //die();
     }
 
 }
@@ -179,12 +182,12 @@ function limousinProject_nouvelleActionCRM() {
 
     // INIT Ws
     $a = new ActionCRM();
-	$action = "_action";
-    $motif = "_motif";
+	$action = "06";
+    $motif = "02";
 
     // SET Params
-    $a->partenaire = "_partenaire";
-    $a->porteurId = "_porteurId";
+    $a->partenaire = "00028";
+    $a->porteurId = "30280055364";
     $a->action = $action;
     if (!empty($motif))
         $a->motif = $motif;
@@ -193,12 +196,14 @@ function limousinProject_nouvelleActionCRM() {
     try
     {
         $retour = $a->call();
+        echo 'ok => crm' . $retour . '--- end retour';
     }
     catch (Exception $e)
     {
         // TODO
-        var_dump($e);
-        die();
+        $echo = $a->errors;
+        var_dump($a);
+        echo 'err crm = ' . $echo . '---';
     }
 }
 
@@ -208,45 +213,51 @@ function limousinProject_getOperations() {
     $o = new Operation();
 
     // SET Params
-    $o->operation = "_operation";
-    $o->partenaire = "_partenaire";
-    $o->porteurId = "_porteurId";
-    $o->dateDepart = "_dateDepart";
-    $o->jours = "_jours";
+    $o->operation = "3";
+    $o->partenaire = "00028";
+    $o->porteurId = 30280000023;
+    $o->dateDepart = date("Ymd");
+    $o->jours = "5";
 
     // CALL Ws
     try
     {
         $retour = $o->call();
+        echo 'ok oper => ' . $retour . '--- end retour';
+        var_dump($retour);
     }
     catch (Exception $e)
     {
         // TODO
-        var_dump($e);
-        die();
+        $echo = $o->errors->code;
+        echo 'err oper = ' . $echo . '---';
     }
 }
 
 function limousinProject_getSolde() {
     
     // INIT Ws
-    $s = new Solde();
+    //$s = new Solde();
+    $s = new Activation();
 
     // SET Params
-    $s->partenaire = "_partenaire";
-    $s->porteurId = 30280055364;
+    $s->partenaire = "00028";
+    //$s->porteurId = 30280055364;
+    $s->porteurId = 30280000023;
 
     // CALL Ws
     try
     {
-        $retour = $s->call();       
+        $retour = $s->call();
+        echo 'ok act => ' . $retour . '--- end retour';
+        var_dump($retour);
     }
     catch (Exception $e)
     {
         // TODO
         //var_dump($e);
-        var_dump($s->errors);
-        die();
+       $echo = $s->errors;
+        echo 'err act = ' . $echo . '---';
     }
 }
 
@@ -256,7 +267,7 @@ function limousinProject_identification() {
     $i = new Identification();
 
     // SET Params
-    $i->porteurId = "_porteurId";
+    $i->porteurId = "30280055364";
     $i->telephone = "_telephone";
     $i->portable = "_portable";
     $i->email = "_email";
@@ -270,8 +281,8 @@ function limousinProject_identification() {
     catch (Exception $e)
     {
         // TODO
-        var_dump($e);
-        die();
+        $echo = $i->errors->code;
+        echo 'err = ' . $echo . '---';
     }
 }
 

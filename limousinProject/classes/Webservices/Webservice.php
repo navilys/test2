@@ -13,28 +13,33 @@ class Webservices {
     }
 
 	public function _call() {
-
-		//BUILD StreamContent
+        $info = array();
+        //BUILD StreamContent
 		$streamContent = $this->buildInputXML($this->inputParams);		
         //var_dump($streamContent);
         $ch = curl_init($this->url);
 		curl_setopt($ch,CURLOPT_POST,1);
 		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));		
-		//curl_setopt($ch,CURLOPT_HEADER, true);	 
-		//curl_setopt($ch,CURLINFO_HEADER_OUT, true);	 
-		curl_setopt($ch,CURLOPT_POSTFIELDS,"$streamContent");
+		//curl_setopt($ch,CURLOPT_HEADER, true);
+        //curl_setopt($ch,CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch,CURLOPT_POSTFIELDS,"$streamContent");
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
 		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false); 
-		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, 1);  
-		curl_setopt($ch,CURLOPT_SSLCERT, "/etc/apache2/ssl/limousin.pem"); 
-		curl_setopt($ch,CURLOPT_SSLCERTPASSWD, "pempp");
-		//curl_setopt($ch,CURLOPT_CERTINFO, true);
-
-		// GET Response
-		$response = curl_exec($ch);		
-
-		try{			
-			// Check Response
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
+        curl_setopt($ch,CURLOPT_SSLCERT, "/etc/apache2/ssl/limousin.pem");
+        curl_setopt($ch, CURLOPT_SSLCERTPASSWD, "pempp");        
+        //curl_setopt($ch,CURLOPT_CERTINFO, true);
+        // GET Response
+		$response = curl_exec($ch);
+        
+        $info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $info;
+        echo 'info = ' . $info;
+        /*   var_dump($response);
+          die;
+         */
+        try{
+        // Check Response
 			$response = $this->checkReturn($response);
 
 		}catch(Exception $e){
