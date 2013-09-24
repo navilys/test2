@@ -20,7 +20,7 @@ class Webservices {
         $ch = curl_init($this->url);
 		curl_setopt($ch,CURLOPT_POST,1);
 		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));		
-		//curl_setopt($ch,CURLOPT_HEADER, true);
+		curl_setopt($ch,CURLOPT_HEADER, true);
         //curl_setopt($ch,CURLINFO_HEADER_OUT, true);
         curl_setopt($ch,CURLOPT_POSTFIELDS,"$streamContent");
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -47,8 +47,8 @@ class Webservices {
 			throw $e;
 
 		}
-
-		// GET Return value        
+        curl_close($ch);
+        // GET Return value
         return $response;
 
     }

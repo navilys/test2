@@ -242,9 +242,8 @@ function limousinProject_getSolde() {
 
     // SET Params
     $s->partenaire = "00028";
-    //$s->porteurId = 30280055364;
-    $s->porteurId = 30280000023;
-
+    $s->porteurId = 30280055364;
+    //$s->porteurId = 30280000023;
     // CALL Ws
     try
     {
