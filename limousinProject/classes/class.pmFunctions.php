@@ -153,7 +153,8 @@ function limousinProject_nouvelleTransaction($operation) {
     $t->operation = $operation;
     $t->partenaire = "00028";
     //$t->porteurId = "30280000023";
-    $t->porteurId = "999999999";
+    $t->porteurId = "30280055364";
+    //$t->porteurId = "0009";
     $t->sens = "C";
     $t->montant = "100";
     $t->addSousMontant("_reseau1", "_montatnReseau1");
@@ -168,6 +169,7 @@ function limousinProject_nouvelleTransaction($operation) {
     {
         // TODO
         var_dump($t->errors);
+        var_dump($e);
         die();
     }
 
@@ -232,17 +234,18 @@ function limousinProject_getSolde() {
 
     // SET Params
     $s->partenaire = "_partenaire";
-    $s->porteurId = 30280000023;
+    $s->porteurId = 30280055364;
 
     // CALL Ws
     try
     {
-        $retour = $s->call();
+        $retour = $s->call();       
     }
     catch (Exception $e)
     {
         // TODO
-        var_dump($e);
+        //var_dump($e);
+        var_dump($s->errors);
         die();
     }
 }
@@ -270,16 +273,6 @@ function limousinProject_identification() {
         var_dump($e);
         die();
     }
-}
-
-
-function limousinProject_importTransationsAqoba() {
-
-
-
-
-
-
 }
 
 
@@ -506,7 +499,7 @@ function limousinProject_readLineFromAQCARTE($datas) {
             case '14' : //Phase 2 : Frabrication et envoie
                 /* Dans ce cas, vérifier si une demande possède ce porteur id en mode ré-édition
                  * pour transférer les soldes entre les deux cartes
-                 * sinon mettre à jour simplement la ligne et le statut            */
+                 * sinon mettre à jour simplement la ligne et le statut, et mettre la demande en produite  */
                 if ($nbID > 0)
                 {
                     $set = array();
@@ -519,11 +512,15 @@ function limousinProject_readLineFromAQCARTE($datas) {
                     $query = 'update PMT_CHEQUES SET ' . $update . ' where CARTE_PORTEUR_ID= "' . $escapeLine['CARTE_PORTEUR_ID'] . '"';
                     $result = executeQuery($query);
                     // reste les ws dans le cas des ré-édition
-                    $qDemande = 'select count(*) as nb, OLD_PORTEUR_ID from PMT_DEMANDES where PORTEUR_ID ="' . $escapeLine['CARTE_PORTEUR_ID'] . '" and STATUT <> 0 and STATUT <> 999';
+                    $qDemande = 'select count(*) as nb, APP_UID, OLD_PORTEUR_ID from PMT_DEMANDES where PORTEUR_ID ="' . $escapeLine['CARTE_PORTEUR_ID'] . '" and STATUT <> 0 and STATUT <> 999';
                     $rDemande = executeQuery($qDemande);
                     if ($rDemande[1]['nb'] > 0)
                     {
-                        // ws pour le transfert des soldes
+                        convergence_changeStatut($rDemande[1]['APP_UID'], 6);
+                        if (!empty($rDemande[1]['OLD_PORTEUR_ID']))
+                        {
+                            // ws pour le transfert des soldes
+                        }
                     }
                 }
                 else

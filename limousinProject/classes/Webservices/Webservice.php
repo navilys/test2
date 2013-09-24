@@ -16,8 +16,8 @@ class Webservices {
 
 		//BUILD StreamContent
 		$streamContent = $this->buildInputXML($this->inputParams);		
-
-		$ch = curl_init($this->url);
+        //var_dump($streamContent);
+        $ch = curl_init($this->url);
 		curl_setopt($ch,CURLOPT_POST,1);
 		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));		
 		//curl_setopt($ch,CURLOPT_HEADER, true);	 
@@ -132,9 +132,8 @@ class Webservices {
 
 	}
     
-    private function checkReturn($retour){
-
-		// BUILD dom
+    private function checkReturn($retour){      
+        // BUILD dom
 		$dom = new DomDocument();
 
 		//LOAD

@@ -1,11 +1,18 @@
 <?php
-define('LimousinPort','8084');
+
+//extranet
+define('LimousinPort', '8084');
+define('gpIdPartenaire', '89c7034503fb5da547bd3f684d50fa82');
+//sftp
 define('port_ftp', '22');
 define('username_ftp', 'ad_belim');
 define('pwd_ftp', 'QsS5oboj7Jj5BJ4TRE');
 define('serveur_ftp', '217.108.231.49');
 define('protocol_transfert', 'sftp');
-define('gpIdPartenaire', '89c7034503fb5da547bd3f684d50fa82');
+//WebService
+//define('wsHote', 'https://www.gaiacardsystem.com/api/v09/');
+define('wsHote_Url', 'https://extranet.aqoba-preprod.customers.artful.net/api/v09/');
+define('wsToken_param', '?access_token=99ac21619656c825e788ffb8ac6bfa23f08f4b08');
 G::LoadClass("plugin");
 
 class limousinProjectPlugin extends PMPlugin
