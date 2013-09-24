@@ -4,16 +4,22 @@ ini_set ( 'display_errors', True );
 // Script Delete Cases
 G::loadClass ( 'pmFunctions' );
 G::LoadClass ( "case" );
+
 if(isset($_GET['PRO_UID']))
-        $proUid = $_GET['PRO_UID'];
-    else
-        $proUid = isset($_REQUEST['PRO_UID'])?$_REQUEST['PRO_UID']:"";
+    $proUid = $_GET['PRO_UID'];
+else
+    $proUid = isset($_REQUEST['PRO_UID'])?$_REQUEST['PRO_UID']:"";
+
 if($proUid != "")
 {   
     // ***************** DELETE ALL FILES SITES EXCEPT input,output,logos *******************
     deleteFilesProcess($proUid);
     // ***************** DELETE ALL CASES OF SPECIFIC PROCESS ****************     
     deleteCasesProcess($proUid); 
+    // ***************** TRUNCATE Report Tables FRANCIA *************************
+    truncateReportTables();
+    // ****************** truncate Pmtables ***********************
+    truncatePmtables();
 }
 else
 {
@@ -29,7 +35,7 @@ function cleanAllCases()
 {
     $cnn = Propel::getConnection('workflow');
     $stmt = $cnn->createStatement();
-    // ******* DELETE ALL CASES -> TABLES PROCESSMAKER ******
+    // ******* Delete All Cases -> Tables PROCESSMAKER *******
     $query1 ="TRUNCATE TABLE wf_" . SYS_SYS . ".APPLICATION";
     $apps1 = $stmt->executeQuery($query1, ResultSet::FETCHMODE_NUM);
     
@@ -75,7 +81,7 @@ function cleanAllCases()
     echo "*********** Ils courent correctement ***************";
 }
 
-function tablesFrancia()
+function truncatePmtables()
 {
     $cnn = Propel::getConnection('workflow');
     $stmt = $cnn->createStatement();
@@ -87,109 +93,10 @@ function tablesFrancia()
     $query4 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_USER_CONTROL_CASES";
     $apps4 = $stmt->executeQuery ( $query4, ResultSet::FETCHMODE_NUM ); 
 
-    // ******************** REPORT TABLES *************************
-    
-    //  PMT_DEMANDES    
-    $query5 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_DEMANDES";
-    $apps5 = $stmt->executeQuery ( $query5, ResultSet::FETCHMODE_NUM ); 
+    // pmtable PMT_IMPORT_CSV_DATA
+    $query5 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_IMPORT_CSV_DATA";
+    $apps5 = $stmt->executeQuery ( $query4, ResultSet::FETCHMODE_NUM ); 
 
-    //  PMT_PRESTATAIRE    ******
-    $query7 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_PRESTATAIRE";
-    $apps7 = $stmt->executeQuery ( $query7, ResultSet::FETCHMODE_NUM ); 
-
-       //  PMT_LISTE_PROD    
-    $query10 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LISTE_PROD";
-    $apps10 = $stmt->executeQuery ( $query10, ResultSet::FETCHMODE_NUM ); 
-
-    //  PMT_LISTE_RMBT    
-    $query11 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LISTE_RMBT";
-    $apps11 = $stmt->executeQuery ( $query11, ResultSet::FETCHMODE_NUM ); 
-
-    if ("wf_".SYS_SYS == "wf_aquitaine")
-    {
-        // **************************+ REPORT TABLES **************************+
-        //  PMT_CONSEILLER_EIE  ****  
-        $query9 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_CONSEILLER_EIE";
-        $apps9 = $stmt->executeQuery ( $query9, ResultSet::FETCHMODE_NUM ); 
-
-        //  PMT_EIES    ******
-        $query8 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_EIES";
-        $apps8 = $stmt->executeQuery ( $query8, ResultSet::FETCHMODE_NUM );   
-
-        //  PMT_REMBOURSEMENT   *****   
-        $query6 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_REMBOURSEMENT";
-        $apps6 = $stmt->executeQuery ( $query6, ResultSet::FETCHMODE_NUM );   
-    }
-
-    if("wf_".SYS_SYS == "wf_CheqLivreApp")
-    {
-        //****************** REPORT TABLES  *************************
-        //  PMT_LIMOUSIN    
-        $query10 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LIMOUSIN";
-        $apps10 = $stmt->executeQuery ( $query10, ResultSet::FETCHMODE_NUM); 
-
-        //  PMT_ETABLISSEMENT    
-        $query11 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_ETABLISSEMENT";
-        $apps11 = $stmt->executeQuery ( $query11, ResultSet::FETCHMODE_NUM ); 
-
-        //  PMT_AJOUT_USER    
-        $query12 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_AJOUT_USER";
-        $apps12 = $stmt->executeQuery ( $query12, ResultSet::FETCHMODE_NUM ); 
-
-        //  PMT_REMBOURSEMENT    
-        $query6 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_REMBOURSEMENT";
-        $apps6 = $stmt->executeQuery ( $query6, ResultSet::FETCHMODE_NUM ); 
-
-        //  PMT_EIES    
-        $query8 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_EIES";
-        $apps8 = $stmt->executeQuery ( $query8, ResultSet::FETCHMODE_NUM );     
-        // ******************* END REPORT TABLES **********************
-    }
-
-    if("wf_".SYS_SYS == 'wf_idfTranSport')
-    {
-        // PMT_VN_FOR_RMH esta vacio
-        $query13 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_VN_FOR_RMH";
-        $apps13 = $stmt->executeQuery ( $query13, ResultSet::FETCHMODE_NUM ); 
-
-        // ******************* REPORT TABLES **************************
-         // PMT_ETABLISSEMENT
-        $query14 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_ETABLISSEMENT";
-        $apps14 = $stmt->executeQuery ( $query14, ResultSet::FETCHMODE_NUM ); 
-
-         // PMT_AJOUT_USER 
-        $query15 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_AJOUT_USER";
-        $apps15 = $stmt->executeQuery ( $query15, ResultSet::FETCHMODE_NUM ); 
-
-         // PMT_FICHIER_RMH 
-        $query16 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_FICHIER_RMH";
-        $apps16 = $stmt->executeQuery ( $query16, ResultSet::FETCHMODE_NUM ); 
-        // ******************END REPORT TABLES ************************
-    }
-
-    if( "wf_".SYS_SYS == 'wf_limousin')
-    {
-        $query17 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_AUTORISATIONS";
-        $apps17 = $stmt->executeQuery ( $query17, ResultSet::FETCHMODE_NUM );
-
-        $query18 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_TRANSACTIONS";
-        $apps18 = $stmt->executeQuery ( $query18, ResultSet::FETCHMODE_NUM );
-        // ***************** REPORT TABLES ********************
-        $query19 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_DEMANDES_CHEQUIER";
-        $apps19 = $stmt->executeQuery ( $query19, ResultSet::FETCHMODE_NUM );
-
-        $query20 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_VOUCHER";
-        $apps20 = $stmt->executeQuery ( $query20, ResultSet::FETCHMODE_NUM );
-
-         // PMT_ETABLISSEMENT
-        $query21 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_ETABLISSEMENT";
-        $apps21 = $stmt->executeQuery ( $query21, ResultSet::FETCHMODE_NUM ); 
-
-         // PMT_ETABLISSEMENT
-        $query22 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_NUM_PROD_FOR_AQOBA";
-        $apps22 = $stmt->executeQuery ( $query22, ResultSet::FETCHMODE_NUM );         
-        // ***************** END REPORT TABLES ****************
-    }
     echo "*********** Ils courent additional tables correctement ***************";
 }
 
@@ -250,6 +157,7 @@ function deleteFilesProcess($proUid)
 
 function deleteFilesAll()
 {
+    $arrayDirectories = array();
     // Obtain the documents array
     if($directory = opendir(PATH_DOCUMENT)) 
     { 
@@ -263,23 +171,25 @@ function deleteFilesAll()
          } 
          closedir($directory); 
     }  
-    
+
     // Delete all files from the directory array
-    if(count($arrayDirectories)):
-	    foreach ($arrayDirectories as $key => $value):
-		     $directory = PATH_DOCUMENT.$value;
-		     chmod($directory, 0777);
-		     rrmdir($directory);		        
-	    endforeach;		
-        endif;     
+    if(count($arrayDirectories)){
+        foreach ($arrayDirectories as $key => $value):
+             $directory = PATH_DOCUMENT.$value;
+             //chmod($directory, 0777);
+             rrmdir($directory);                
+        endforeach;     
     echo "*********** Ils courent files correctement ***************";
+    }
+    else
+        echo "*********** Les répertoires sont pas à supprimer ***************";   
 }
 
 
 function deleteCasesProcess($proUid)
 {
     // Master for obtain all APP_UID from the specific process
-    $masterSelect = "SELECT * FROM wf_" . SYS_SYS . ".APPLICATION WHERE PRO_UID= '". $proUid ."'";
+    $masterSelect = "SELECT * FROM wf_" . SYS_SYS . ".APPLICATION WHERE PRO_UID = '". $proUid ."'";
     $appglobal = executeQuery($masterSelect);
 
     // Go over result of the master table
@@ -319,6 +229,7 @@ function deleteCasesProcess($proUid)
                     WHERE wf_" . SYS_SYS . ".SUB_APPLICATION.APP_UID='".$value["APP_UID"]."'";
         $app6 = executeQuery($query7);
 
+        ############### PMTABLES #######################################
         // Delete all data from PMT_HISTORY_LOG related to process
         $querya = " DELETE FROM wf_" . SYS_SYS . ".PMT_HISTORY_LOG
                     WHERE wf_" . SYS_SYS . ".PMT_HISTORY_LOG.HLOG_APP_UID='".$value["APP_UID"]."'";
@@ -328,29 +239,29 @@ function deleteCasesProcess($proUid)
         $queryb = " DELETE FROM wf_" . SYS_SYS . ".PMT_USER_CONTROL_CASES
                     WHERE wf_" . SYS_SYS . ".PMT_USER_CONTROL_CASES.APP_UID='".$value["APP_UID"]."'";
         $appb = executeQuery($queryb);
+        ############### END PMTABLES ###################################
     
     }
 
     // Delete all data from APP_DELAY related to process
-    $query8 = " DELETE FROM wf_" . SYS_SYS . ".APP_DELAY 
-                WHERE PRO_UID= '".$proUid."' ";        
+    $query8 = " DELETE FROM wf_" . SYS_SYS . ".APP_DELAY WHERE PRO_UID= '".$proUid."' ";        
     $app8 = executeQuery($query8);
 	
     // Delete all data from APP_DELEGATION related to process
 	$query9 = "DELETE FROM wf_" . SYS_SYS . ".APP_DELEGATION  WHERE PRO_UID= '".$proUid."' ";
-        $app9 = executeQuery($query9);
+    $app9 = executeQuery($query9);
 	
     // Delete all data from APP_CACHE_VIEW related to process
 	$query10 = "DELETE FROM wf_" . SYS_SYS . ".APP_CACHE_VIEW  WHERE PRO_UID= '".$proUid."' ";
-        $app10 = executeQuery($query10);
+    $app10 = executeQuery($query10);
 	
     // Delete all data from APP_HISTORY related to process
 	$query11 = "DELETE FROM wf_" . SYS_SYS . ".APP_HISTORY WHERE PRO_UID= '".$proUid."' ";
-        $app11 = executeQuery($query11);
+    $app11 = executeQuery($query11);
 	
     // Delete all data from APPLICATION related to process
 	$query12 = "DELETE FROM wf_" . SYS_SYS . ".APPLICATION  WHERE PRO_UID= '".$proUid."' ";
-        $app12 = executeQuery($query12);
+    $app12 = executeQuery($query12);
 
 	echo "******** WARNING : Processus visant à éliminer mate ***************";
 }
@@ -364,10 +275,14 @@ function rrmdir($dir)
           foreach ($objects as $object) {
              if ($object != "." && $object != "..") {
               G::pr("type => ".$dir . "/" . $object);
+              //G::pr(filetype($dir . "/" . $object));
                  if (filetype($dir . "/" . $object) == "dir") {
                      rrmdir($dir . "/" . $object);
                  } else {
-                     unlink($dir . "/" . $object);
+                        /*chmodr($dir . "/" . $object, 0777);
+                        chownr($dir . "/" . $object, 'apache');
+                        chgrpr($dir . "/" . $object, 'apache');*/
+                        unlink($dir . "/" . $object);
                  }
             }
          }
@@ -377,10 +292,12 @@ function rrmdir($dir)
     }
 }
 
+
 function truncateReportTables()
 {
     $cnn = Propel::getConnection('workflow');
     $stmt = $cnn->createStatement();
+
     // ******************** REPORT TABLES *************************
     //  PMT_DEMANDES    
     $query1 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_DEMANDES";
@@ -391,13 +308,16 @@ function truncateReportTables()
     //  PMT_LISTE_PROD    
     $query3 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LISTE_PROD";
     $apps3 = $stmt->executeQuery ( $query3, ResultSet::FETCHMODE_NUM ); 
-    //  PMT_LISTE_RMBT    
-    $query4 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LISTE_RMBT";
-    $apps4 = $stmt->executeQuery ( $query4, ResultSet::FETCHMODE_NUM ); 
+    
 
     if ("wf_".SYS_SYS == "wf_aquitaine")
     {
-        // **************************+ REPORT TABLES **************************+
+        // *************************** REPORT TABLES **************************
+
+        //  PMT_LISTE_RMBT    
+        $query4 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LISTE_RMBT";
+        $apps4 = $stmt->executeQuery ( $query4, ResultSet::FETCHMODE_NUM ); 
+
         //  PMT_CONSEILLER_EIE  ****  
         $query5 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_CONSEILLER_EIE";
         $apps5 = $stmt->executeQuery ( $query5, ResultSet::FETCHMODE_NUM ); 
@@ -414,6 +334,10 @@ function truncateReportTables()
     if("wf_".SYS_SYS == "wf_CheqLivreApp")
     {
         //****************** REPORT TABLES  *************************
+        //  PMT_LISTE_RMBT    
+        $query4 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LISTE_RMBT";
+        $apps4 = $stmt->executeQuery ( $query4, ResultSet::FETCHMODE_NUM ); 
+
         //  PMT_LIMOUSIN    
         $query8 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LIMOUSIN";
         $apps8 = $stmt->executeQuery ( $query8, ResultSet::FETCHMODE_NUM); 
@@ -433,12 +357,17 @@ function truncateReportTables()
         //  PMT_EIES    
         $query12 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_EIES";
         $apps8 = $stmt->executeQuery ( $query12, ResultSet::FETCHMODE_NUM );
-	// ******************* END REPORT TABLES **********************
+    // ******************* END REPORT TABLES **********************
     }
 
     if("wf_".SYS_SYS == 'wf_idfTranSport')
     {
         // ******************* REPORT TABLES **************************
+
+        //  PMT_LISTE_RMBT    
+        $query4 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LISTE_RMBT";
+        $apps4 = $stmt->executeQuery ( $query4, ResultSet::FETCHMODE_NUM ); 
+
          // PMT_ETABLISSEMENT
         $query14 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_ETABLISSEMENT";
         $apps14 = $stmt->executeQuery ( $query14, ResultSet::FETCHMODE_NUM ); 
@@ -450,9 +379,9 @@ function truncateReportTables()
          // PMT_FICHIER_RMH 
         $query16 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_FICHIER_RMH";
         $apps16 = $stmt->executeQuery ( $query16, ResultSet::FETCHMODE_NUM );
-	
-	// This table are the BD but not in aditional tables
-	$query16a = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LIST_PROD";
+    
+    // This table are the BD but not in aditional tables
+    $query16a = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_LIST_PROD";
         $apps16a = $stmt->executeQuery ( $query16a, ResultSet::FETCHMODE_NUM ); 
 
         // ******************END REPORT TABLES ************************
@@ -460,7 +389,7 @@ function truncateReportTables()
 
     if( "wf_".SYS_SYS == 'wf_limousin')
     {
-	// ***************** REPORT TABLES ********************
+    // ***************** REPORT TABLES ********************
         $query17 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_DEMANDES_CHEQUIER";
         $apps17 = $stmt->executeQuery ( $query17, ResultSet::FETCHMODE_NUM );
 
@@ -474,9 +403,10 @@ function truncateReportTables()
         $query20 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_SAISIE_TRANS";
         $apps20 = $stmt->executeQuery ( $query20, ResultSet::FETCHMODE_NUM );         
         // ***************** END REPORT TABLES ****************
-	
+    
     }
     
 }
+   
 
 ?>

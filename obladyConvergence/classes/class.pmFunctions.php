@@ -749,8 +749,8 @@ function convergence_uploadFileByFtp($remote_file = '', $local_dir = '/var/tmp/'
 
 function convergence_putFileByFtp($local_file = '', $remote_dir = '/', $remote_bkp = '', $deletLocal = 0) {
     if(!empty($local_file))
-    {        
-        //  INIT
+    {
+       //  INIT
         $host = serveur_ftp;
         $user = username_ftp;
         $pwd = pwd_ftp;
@@ -1598,7 +1598,7 @@ function convergence_updateListeRemboursement($app_id, $res) {
 //GLOBAL
 function convergence_InsertLineImport($line, $config) {
 
-	// INIT
+    // INIT
     $finalTab = array();
 
     // Escape scpeial caracters
@@ -1917,18 +1917,7 @@ function getProUid($tableName){
     $sSQL ="SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME ='$tableName'";
     $aResult= executeQuery($sSQL);
     $proUid = '0';
-    if(is_array($aResult) && count($aResult)>0)	
-		 {	  
-		 	$proUid =$aResult[1]['PRO_UID'];		
-		 }		
-		 else		
-		 {		
-		     $sSQL = "SELECT PRO_UID FROM APPLICATION WHERE APP_UID='$tableName'";		
-		     $aResult = executeQuery($sSQL);		
-
-		     if (isset($aResult[1]['PRO_UID']))		
-		         $proUid =$aResult[1]['PRO_UID'];		
-		 }
+    if(is_array($aResult) && count($aResult)>0){$proUid =$aResult[1]['PRO_UID'];} 
     return $proUid;
 }
 
@@ -2017,21 +2006,28 @@ function getDynaformFields($jsonFieldsCSV,$tableName) {
 }
 
 
-function getConfigCSV($data,$idInbox){
+function getConfigCSV($data,$idInbox,$firstLineHeader=""){
 	
 	$rolUser= getRolUserImport();
 	$query = "SELECT * FROM PMT_CONFIG_CSV_IMPORT WHERE ROL_CODE = '".$rolUser."' AND ID_INBOX = '".$idInbox."'";
-	
 	$aData = executeQuery($query);
 	if(sizeof($aData))
 	{
 		for($i = 0; $i < count($data); $i++)
 			{
 				foreach($aData As $key => $row)
-				{
+				{    
+                    G::pr($data[$i]['FIELD_NAME']." --- ".$row['CSV_FIELD_NAME']);
 					if($data[$i]['FIELD_NAME'] == $row['CSV_FIELD_NAME'])
 					{
-						$data[$i]['COLUMN_CSV'] = $row['CSV_COLUMN'];
+                        if($firstLineHeader == "")
+                            $data[$i]['COLUMN_CSV'] = $row['CSV_COLUMN'];
+                        else
+                        {
+                            if($row['CSV_FIRST_LINE_HEADER'] == $firstLineHeader) 
+                                $data[$i]['COLUMN_CSV'] = $row['CSV_COLUMN'];
+                        }
+                    
                         if (!empty($row['CSV_TYPE']))
                         {
                             $data[$i]['COLUMN_TYPE'] = $row['CSV_TYPE'];
@@ -2316,7 +2312,7 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $proUid  = getProUid($tableName);
     $totalCases = 0;
     // check all fields and remove wrong data
-    
+
     $dataCSVdebug = createLog($dataCSV, $items, $tableName, $firstLineHeader);
     //$dataCSV = $dataCSVdebug;
     // load Dynaforms of process
@@ -2332,12 +2328,13 @@ function importCreateCase($jsonMatchFields,$uidTask, $tableName,$firstLineHeader
     $csv="";  
     $csv_end = "\n";
     $swInsert = 0;
+
     foreach ($dataCSV as $row) 
     {
         $totRow = sizeof($row);
         $totIni = 1;
        
-        if($totalCases >= 100)
+        if($totalCases >= 5)
         {
             /* add header on csv temp files for import background */
             if ($firstLineHeader == 'on' && $swInsert == 0)
@@ -3339,18 +3336,20 @@ function loadParametersCSV($idInbox,$pathCSV,$actionType,$fileNameCSV)
     $oCase = new Cases();
     $fieldsCase = $oCase->loadCase($appUidCasOrig);
     $dataAnt = $fieldsCase['APP_DATA'];
+    //G::pr($fieldsCase);
     $query1 = "SELECT ID_TABLE FROM PMT_INBOX_PARENT_TABLE WHERE ID_INBOX = '".$idInbox."' AND ROL_CODE = '".$rolesAdmin."' ";
     $result = executeQuery($query1);
     
     $tableName = $result[1]['ID_TABLE'];
     $fieldsCSV  = isset($_REQUEST["fieldsCSV"])?$_REQUEST["fieldsCSV"]:"";
     list($dataNum, $data) = getDynaformFields($fieldsCSV,$tableName );
-    $resultConfig = getConfigCSV($data,$idInbox);
-
+    
     $query2 = "SELECT * FROM  PMT_CONFIG_CSV_IMPORT WHERE ID_INBOX  = '".$idInbox."' ";
     $resultFields = executeQuery($query2);
     $firstLineHeader = $resultFields[1]['CSV_FIRST_LINE_HEADER'];
     
+    $resultConfig = getConfigCSV($data,$idInbox,"");
+
     $fieldsCSV = array();
     $dataDeleteCSV = array();
   
@@ -3380,55 +3379,62 @@ function loadParametersCSV($idInbox,$pathCSV,$actionType,$fileNameCSV)
                         $dataDeleteCSV[] = $record1;
 		        	}
 		        }
-		       
-	$matchFields = json_encode($dataImportCSV); 
-    $dataDeleteEdit = json_encode($dataDeleteCSV);
-
-    $fileCSV =  $fileNameCSV;
-    $filePath = $directory."/".$fileCSV;
-    $uidTask = isset($_SESSION['TASK'])?$_SESSION['TASK']:"";
-    
-    // ************** TOT CASES  ****************+
-    //$queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
-    //$totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
-    $informationCSV = getDataCronCSV($firstLineHeader,$fileCSV,0,$filePath);
-
-    $_SESSION['REQ_DATA_CSV'] = $informationCSV;
-    $_SESSION['CSV_FILE_NAME'] = $fileCSV;
-    
-    switch($actionType)
+    if(count($dataImportCSV))
     {
-        case "add":
-            $typeAction = 'ADD';
-            $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
-            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-            break;
+        $matchFields = json_encode($dataImportCSV); 
+        $dataDeleteEdit = json_encode($dataDeleteCSV);
 
-        case "deleteAdd":
-            $totalCases = importCreateCaseDelete($matchFields, $uidTask, $tableName, $firstLineHeader, $dataDeleteEdit);
-            echo G::json_encode(array("success" => true, "message" => "OK" , "totalCases" => $totalCases));
-            break;
+        $fileCSV =  $fileNameCSV;
+        $filePath = $directory."/".$fileCSV;
+        $uidTask = isset($_SESSION['TASK'])?$_SESSION['TASK']:"";
+        
+        // ************** TOT CASES  ****************+
+        //$queryTot = executeQuery("SELECT IMPCSV_TOTCASES FROM wf_".$this->workspace.".PMT_IMPORT_CSV_DATA WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName'");
+        //$totCasesCSV = $queryTot[1]['IMPCSV_TOTCASES'];
+        $informationCSV = getDataCronCSV($firstLineHeader,$fileCSV,0,$filePath);
 
-        case "editAdd": 
-            $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataDeleteEdit);
-            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-            break;
+        $_SESSION['REQ_DATA_CSV'] = $informationCSV;
+        $_SESSION['CSV_FILE_NAME'] = $fileCSV;
+        
+        switch($actionType)
+        {
+            case "add":
+                $typeAction = 'ADD';
+                $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
+                echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+                break;
 
-        case "truncateAdd": 
-            $totalCases = importCreateCaseTruncate($matchFields,$uidTask,$tableName,$firstLineHeader);
-            echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-            break;
+            case "deleteAdd":
+                $totalCases = importCreateCaseDelete($matchFields, $uidTask, $tableName, $firstLineHeader, $dataDeleteEdit);
+                echo G::json_encode(array("success" => true, "message" => "OK" , "totalCases" => $totalCases));
+                break;
+
+            case "editAdd": 
+                $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataDeleteEdit);
+                echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+                break;
+
+            case "truncateAdd": 
+                $totalCases = importCreateCaseTruncate($matchFields,$uidTask,$tableName,$firstLineHeader);
+                echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+                break;
+        }
+
+        // case reset
+        $_SESSION['APPLICATION'] = $appUidCasOrig;
+        $oCase = new Cases ();
+        $FieldsCase = $oCase->loadCase($appUidCasOrig);
+        $FieldsCase['APP_DATA']= $dataAnt; 
+        $oCase->updateCase($appUidCasOrig, $FieldsCase);
+        
+        $fieldsCase1 = $oCase->loadCase($appUidCasOrig);
+        $dataNew = $fieldsCase1['APP_DATA'];  
     }
-
-    // case reset
-    $_SESSION['APPLICATION'] = $appUidCasOrig;
-    $oCase = new Cases ();
-    $FieldsCase = $oCase->loadCase($appUidCasOrig);
-    $FieldsCase['APP_DATA']= $dataAnt; 
-    $oCase->updateCase($appUidCasOrig, $FieldsCase);
-   	
-    $fieldsCase1 = $oCase->loadCase($appUidCasOrig);
-    $dataNew = $fieldsCase1['APP_DATA']; 
+    else
+    {    echo G::json_encode(array("success"    => false,
+                                   "message"    => "Il devrait y avoir un cadre pour importer un fichier CSV", 
+                                   "totalCases" => 0));
+    }	
    
 }
 

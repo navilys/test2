@@ -20,8 +20,9 @@ try {
                 $fieldsCSV  = isset($_REQUEST["fieldsCSV"])?$_REQUEST["fieldsCSV"]:'';
                 $tableName  = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
                 $idInbox    = isset($_REQUEST["idInbox"])?$_REQUEST["idInbox"]:'';
+                $firstLineHeader = isset($_REQUEST["firstLineHeader"])?$_REQUEST["firstLineHeader"]:'';
                 list($dataNum, $data) = getDynaformFields($fieldsCSV,$tableName );
-                $result = getConfigCSV($data,$idInbox);
+                $result = getConfigCSV($data,$idInbox,$firstLineHeader);
                 //echo G::json_encode(array("success" => true, "total" => $dataNum, "data" => $data));
                 echo G::json_encode(array("success" => true, "total" => $dataNum, "data" => $result));
                 break;
@@ -35,7 +36,7 @@ try {
 			    break;
 	case "resetConfigCSV":
 				$fieldsCSV  = isset($_REQUEST["fieldsCSV"])?$_REQUEST["fieldsCSV"]:'';
-				$idInbox= isset($_REQUEST["idInbox"])?$_REQUEST["idInbox"]:'';
+				$idInbox = isset($_REQUEST["idInbox"])?$_REQUEST["idInbox"]:'';
 				$tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
 				$resp = resetFieldsCSV($idInbox);
 				list($dataNum, $data) = getDynaformFields($fieldsCSV,$tableName );
@@ -43,45 +44,70 @@ try {
 			  break;
 			              
     case "importCreateCase":
-    	 $sRadioOption = $_REQUEST["radioOption"];
-            switch ($sRadioOption) {
-    		case "add": 
-                $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
-                $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
-                $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
-                $firstLineHeader = isset($_REQUEST["firstLineHeader"]) ? $_REQUEST["firstLineHeader"] : 'on';
-                $typeAction = 'ADD';
-                $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
-                echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-                break;
-            case "deleteAdd": 
-                $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
-                $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
-                $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
-                $dataDelete  = isset($_REQUEST["dataEditDelete"])?$_REQUEST["dataEditDelete"]:'';
-                $firstLineHeader   = isset($_REQUEST["firstLineHeader"])?$_REQUEST["firstLineHeader"]:'on';
-                $totalCases = importCreateCaseDelete($matchFields, $uidTask, $tableName, $firstLineHeader, $dataDelete);
-                echo G::json_encode(array("success" => true, "message" => "OK" , "totalCases" => $totalCases));
-                break;
-           case "editAdd": 
-                $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
-                $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
-                $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
-                $dataEdit  = isset($_REQUEST["dataEditDelete"])?$_REQUEST["dataEditDelete"]:'';
-                $firstLineHeader   = isset($_REQUEST["firstLineHeader"])?$_REQUEST["firstLineHeader"]:'on';
-                $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataEdit);
-                echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-                break;
-          case "truncateAdd": 
-                $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
-                $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
-                $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
-                $firstLineHeader   = isset($_REQUEST["firstLineHeader"])?$_REQUEST["firstLineHeader"]:'on';
-                $totalCases = importCreateCaseTruncate($matchFields,$uidTask,$tableName,$firstLineHeader);
-                echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
-                break;
+    	    $sRadioOption = $_REQUEST["radioOption"];
+            $resultFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
+            $fieldsConfiguration = json_decode($resultFields);
+            $firstLineHeader = isset($_REQUEST["firstLineHeader"]) ? $_REQUEST["firstLineHeader"] : 'on';
+            $idInbox = isset($_REQUEST['idInbox']) ? $_REQUEST['idInbox']:'';
+            $rolUser = getRolUserImport();
+            
+            if(count($fieldsConfiguration))
+            {
+                /*$query = "SELECT * FROM PMT_CONFIG_CSV_IMPORT WHERE ROL_CODE = '".$rolUser."' AND ID_INBOX = '".$idInbox."' 
+                GROUP BY ID_INBOX";
+                $result = executeQuery($query);
+                $firstConfig = $result[1]['CSV_FIRST_LINE_HEADER'];
+
+                if($firstConfig == $firstLineHeader)
+                { */   
+                    
+                    switch ($sRadioOption) {
+            		case "add": 
+                        $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
+                        $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
+                        $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
+                        $typeAction = 'ADD';
+                        $totalCases = importCreateCase($matchFields,$uidTask,$tableName,$firstLineHeader,$typeAction);
+                        echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+                        break;
+                    case "deleteAdd": 
+                        $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
+                        $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
+                        $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
+                        $dataDelete  = isset($_REQUEST["dataEditDelete"])?$_REQUEST["dataEditDelete"]:'';
+                        $totalCases = importCreateCaseDelete($matchFields, $uidTask, $tableName, $firstLineHeader, $dataDelete);
+                        echo G::json_encode(array("success" => true, "message" => "OK" , "totalCases" => $totalCases));
+                        break;
+                   case "editAdd": 
+                        $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
+                        $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
+                        $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
+                        $dataEdit  = isset($_REQUEST["dataEditDelete"])?$_REQUEST["dataEditDelete"]:'';
+                        $totalCases = importCreateCaseEdit($matchFields,$uidTask,$tableName,$firstLineHeader, $dataEdit);
+                        echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+                        break;
+                  case "truncateAdd": 
+                        $matchFields = isset($_REQUEST["matchFields"])?$_REQUEST["matchFields"]:'';
+                        $uidTask     = isset($_REQUEST["uidTask"])?$_REQUEST["uidTask"]:'';
+                        $tableName   = isset($_REQUEST["tableName"])?$_REQUEST["tableName"]:'';
+                        $totalCases = importCreateCaseTruncate($matchFields,$uidTask,$tableName,$firstLineHeader);
+                        echo G::json_encode(array("success" => true, "message" => "OK", "totalCases" => $totalCases));
+                        break;
+                    }
+                /*}
+                else
+                {
+                    echo G::json_encode(array("success" => false,
+                                              "message" => "S'il vous plaît gardez cette CSV de configuration", 
+                                              "totalCases" => 0));
+                } */  
             }
-  	
+            else
+            {   
+                echo G::json_encode(array("success" => false,
+                                           "message" => "S'il vous plaît définir une colonne pour effectuer l'action du CSV", 
+                                           "totalCases" => 0));
+            } 
   }
 
 } catch (Exception $e) {

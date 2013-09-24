@@ -2506,7 +2506,7 @@ function importCSV (_uidTask){
                             }
                    
                             var storeMatchData = new Ext.data.JsonStore({
-                                url           : pathPluginActionsPhp + '?option=getDataMatch&' + '&tableName=' + table +'&idInbox=' +_dblIdInbox,
+                                url           : pathPluginActionsPhp + '?option=getDataMatch&' + '&tableName=' + table +'&idInbox=' +_dblIdInbox +'&firstLineHeader=' +_isCheckedFirstLineAs,
                                 root          : 'data',
                                 totalProperty : 'total', 
                                 remoteSort    : true,
@@ -2517,7 +2517,7 @@ function importCSV (_uidTask){
                             Ext.Ajax.request({
                               url: pathPluginActionsPhp,
                               method: "POST",
-                              params: {'option': 'getDataMatch', 'tableName': table, 'idInbox' : _dblIdInbox },           
+                              params: {'option': 'getDataMatch', 'tableName': table, 'idInbox' : _dblIdInbox ,'firstLineHeader' : _isCheckedFirstLineAs },
                               success:function (result, request) {
                                 var resp = Ext.util.JSON.decode(result.responseText);
                                 if(typeof(resp.success)!= 'undefined' && resp.success === true){
@@ -2730,7 +2730,8 @@ function importCSV (_uidTask){
                                                 option      : 'importCreateCase',
                                                 firstLineHeader : _isCheckedFirstLineAs,
                                                 radioOption : _isCheckedOption,
-                                                dataEditDelete : _jsonFieldsDeleteEdit
+                                                dataEditDelete : _jsonFieldsDeleteEdit,
+                                                idInbox     : _dblIdInbox,
                                             },
                                             url : pathPluginActionsPhp,
                                             success : function(result, request) {
