@@ -18,8 +18,6 @@ if($proUid != "")
     deleteCasesProcess($proUid); 
     // ***************** TRUNCATE Report Tables FRANCIA *************************
     truncateReportTables();
-    // ****************** truncate Pmtables ***********************
-    truncatePmtables();
 }
 else
 {
@@ -27,6 +25,10 @@ else
     cleanAllCases();
     // ***************** TRUNCATE PMTABLES FRANCIA **********************
     truncateReportTables();
+    // ****************** truncate Pmtables ***********************
+    truncatePmtables();
+    // ****************** NEW TABLES PROCESSMAKER *************************
+    newTables();
     // ***************** DELETE ALL FILES SITES EXCEPT input,output,logos *******************
     deleteFilesAll();
 }
@@ -85,6 +87,7 @@ function truncatePmtables()
 {
     $cnn = Propel::getConnection('workflow');
     $stmt = $cnn->createStatement();
+
     // pmtable PMT_HISTORY_LOG
     $query2 = "TRUNCATE TABLE wf_" . SYS_SYS . ".PMT_HISTORY_LOG";
     $apps2 = $stmt->executeQuery ( $query2, ResultSet::FETCHMODE_NUM );      
@@ -100,6 +103,22 @@ function truncatePmtables()
     echo "*********** Ils courent additional tables correctement ***************";
 }
 
+function newTables()
+{
+     $cnn = Propel::getConnection('workflow');
+    $stmt = $cnn->createStatement();
+
+    ################## NEW TABLES ######################
+
+    $query1 = "TRUNCATE TABLE wf_" . SYS_SYS . ".ER_REQUESTS ";
+    $apps1 = $stmt->executeQuery ( $query1, ResultSet::FETCHMODE_NUM );
+
+    $query2 = "UPDATE SEQUENCES SET SEQ_VALUE ='0' ";
+    $apps2 = executeQuery($query2);
+
+    #################### END TABLES FRANCIA ########################
+    
+}
 function deleteFilesProcess($proUid)
 {
     // Obtain the documents array
