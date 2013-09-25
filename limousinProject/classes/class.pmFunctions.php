@@ -145,50 +145,66 @@ function limousin_addTransactionPriv($codePartenaire, $porteurID, $montant, $lib
     executeQuery($queryInsertTransactionPriv);
 }
 
-function limousinProject_nouvelleTransaction($operation) {
-    
-    // INIT Ws
+function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $sens = 'N', $montant = 0) {
+
+    // INIT Ws 201
     $t = new Transaction();
 
 	// SET Params
+    $t->partenaire = wsPrestaId;
     $t->operation = $operation;
-    $t->partenaire = "00028";
+    $t->porteurId = $porteurId;
+    // C -> Chargement ou D -> Dechargement
+    $t->sens = $sens;
+    $t->montant = $montant;
+
+    /* Mode Test On */
     //$t->porteurId = "30280000023";
-    $t->porteurId = "30280055364";
+    $t->porteurId = "30280055283";
     //$t->porteurId = "0009";
     $t->sens = "C";
     $t->montant = "200";
-   /* $t->addSousMontant("_reseau1", "_montatnReseau1");
+    /* $t->addSousMontant("_reseau1", "_montatnReseau1");
       $t->addSousMontant("_reseau2", "_montatnReseau2"); */
+    /* Mode Test Off */
+
 
     // CALL Ws
     try
     {
+        // TODO
         $retour = $t->call();
-        $echo = $retour->idTransaction;        //die;
+        $echo = $retour->idTransaction;
         echo 'trans ok = ' . $echo;
     }
     catch (Exception $e)
     {
         // TODO
-        $echo = $t->errors->code;
-        echo 'err = ' . $echo . '---';
-        //die();
+        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        echo 'Code Erreur transaction = ' . $echo . '--- End Error ---';
     }
 
 }
 
-function limousinProject_nouvelleActionCRM() {
+function limousinProject_nouvelleActionCRM($porteurId = 0, $action = '00', $motif = '') {
 
-    // INIT Ws
+    // INIT Ws 210
     $a = new ActionCRM();
-	$action = "06";
-    $motif = "02";
 
     // SET Params
+    $a->partenaire = wsPrestaId;
+    $a->porteurId = $porteurId;
+    $a->action = $action;
+
+
+    /* Mode Test On */
+    $action = "06";
+    $motif = "02";
     $a->partenaire = "00028";
     $a->porteurId = "30280055364";
     $a->action = $action;
+    /* Mode Test Off */
+
     if (!empty($motif))
         $a->motif = $motif;
 
@@ -201,76 +217,134 @@ function limousinProject_nouvelleActionCRM() {
     catch (Exception $e)
     {
         // TODO
-        $echo = $a->errors;
-        var_dump($a);
-        echo 'err crm = ' . $echo . '---';
+        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        echo 'Code Erreur action = ' . $echo . '--- End Error ---';
     }
 }
 
-function limousinProject_getOperations() {
-    
-    // INIT Ws
+function limousinProject_getOperations($porteurId = 0, $op = '00', $nbJours = '100') {
+
+    // INIT Ws 303
     $o = new Operation();
 
     // SET Params
-    $o->operation = "3";
-    $o->partenaire = "00028";
-    $o->porteurId = 30280000023;
-    $o->dateDepart = date("Ymd");
-    $o->jours = "5";
+    $o->operation = $op;
+    $o->porteurId = $porteurId;
+    $o->partenaire = wsPrestaId;
+    $dateDep = date("Ymd", mktime(0, 0, 0, date("m") - 2, date("d"), date("Y"))); // a définir
+    $o->dateDepart = $dateDep;
+    $o->jours = $nbJours;
+    /*
+      00: Toutes les operations listé ci-dessous sauf les frais programmes,
+      01: Retraits (et annulations de retraits),
+      02: Versements (et annulations de versements),
+      03: Déversements (et annulations de déversements),
+      04: Achats (et annulations d’achats),
+      05: Frais Porteurs (de retraits ou autres),
+      06: Frais Programme
+     */
+
+    /* Mode Test On */
+    //$o->porteurId = 30280000023;
+    $o->porteurId = 30280055283;
+    $o->operation = '02';
+    /* Mode Test Off */
 
     // CALL Ws
     try
     {
+        // TODO
         $retour = $o->call();
         echo 'ok oper => ' . $retour . '--- end retour';
-        var_dump($retour);
     }
     catch (Exception $e)
     {
         // TODO
-        $echo = $o->errors->code;
-        echo 'err oper = ' . $echo . '---';
+        //$echo = $e->errors; //. ' : ' . $e->message;
+        echo 'Code Erreur operation = ' . $o->errors->code . '--- End Error ---';
+        //var_dump($e);
     }
 }
 
-function limousinProject_getSolde() {
-    
-    // INIT Ws
-    //$s = new Solde();
-    $s = new Activation();
+function limousinProject_getActivation($porteurId = 0) {
+
+    // INIT Ws 211    
+    $v = new Activation();
 
     // SET Params
-    $s->partenaire = "00028";
-    $s->porteurId = 30280055364;
+    $v->partenaire = wsPrestaId;
+    $v->porteurId = $porteurId;
+
+    /* Mode Test On */
+    $v->porteurId = 30280055364;
     //$s->porteurId = 30280000023;
+    /* Mode Test Off */
+
     // CALL Ws
     try
     {
-        $retour = $s->call();
+        // TODO
+        $retour = $v->call();
         echo 'ok act => ' . $retour . '--- end retour';
-        var_dump($retour);
     }
     catch (Exception $e)
     {
         // TODO
-        //var_dump($e);
-       $echo = $s->errors;
-        echo 'err act = ' . $echo . '---';
+        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        echo 'Code Erreur activation = ' . $echo . '--- End Error ---';
+    }
+}
+function limousinProject_getSolde($porteurId = 0) {
+
+    // INIT Ws 304
+    $s = new Solde();
+
+    // SET Params
+    $s->partenaire = wsPrestaId;
+    $s->porteurId = $porteurId;
+
+    /* Mode Test On */
+    //$s->porteurId = 30280055364;
+    $s->porteurId = 30280055283;
+    //$s->porteurId = '30280000023';
+    /* Mode Test Off */
+
+    // CALL Ws
+    try
+    {
+        // TODOs
+        $retour = $s->call();
+        echo 'ok solde => ' . $retour->solde . '--- end retour';
+        //var_export($retour);
+    }
+    catch (Exception $e)
+    {
+        // TODO
+        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        echo 'Code Erreur solde = ' . $echo . '--- End Error ---';
     }
 }
 
-function limousinProject_identification() {
-    
-    // INIT Ws
+function limousinProject_identification($porteurId = 0, $tel = '', $portable = '', $mail = '', $numCarte = '') {
+
+    // INIT Ws 307
     $i = new Identification();
 
     // SET Params
-    $i->porteurId = "30280055364";
-    $i->telephone = "_telephone";
-    $i->portable = "_portable";
-    $i->email = "_email";
-    $i->numcarte = "_numCarte";
+    $i->porteurId = $porteurId;
+    $i->telephone = $tel;
+    $i->portable = $portable;
+    $i->email = $mail;
+    $i->numcarte = $numCarte;
+
+    /* Mode Test On */
+    //$i->porteurId = 30280055364;
+    $i->porteurId = 30280055283;
+    $i->numcarte = '0007';
+    $i->portable = 'quentin@oblady.fr';
+    $i->email = '11-15-61-56-51';
+    //$i->porteurId = 30280000023;
+    /* Mode Test Off */
 
     // CALL Ws
     try
@@ -280,8 +354,8 @@ function limousinProject_identification() {
     catch (Exception $e)
     {
         // TODO
-        $echo = $i->errors->code;
-        echo 'err = ' . $echo . '---';
+        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        echo 'Code Erreur identification = ' . $echo . '--- End Error ---';
     }
 }
 
