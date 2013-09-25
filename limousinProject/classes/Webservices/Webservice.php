@@ -15,12 +15,15 @@ class Webservices {
 	public function _call() {
         $info = array();
         //BUILD StreamContent
-		$streamContent = $this->buildInputXML($this->inputParams);		
+		$streamContent = $this->buildInputXML($this->inputParams);
+         echo "**********STREAM input XML********";
+          echo $streamContent;
+          echo "******************"; 
         //var_dump($streamContent);
         $ch = curl_init($this->url);
 		curl_setopt($ch,CURLOPT_POST,1);
 		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));		
-		curl_setopt($ch,CURLOPT_HEADER, true);
+		//curl_setopt($ch,CURLOPT_HEADER, true);
         //curl_setopt($ch,CURLINFO_HEADER_OUT, true);
         curl_setopt($ch,CURLOPT_POSTFIELDS,"$streamContent");
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -32,21 +35,17 @@ class Webservices {
         // GET Response
 		$response = curl_exec($ch);
         
-        $info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $info;
-        echo 'info = ' . $info;
-        /*   var_dump($response);
-          die;
-         */
+//         $info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+//         echo 'info = ' . $info;
         try{
         // Check Response
 			$response = $this->checkReturn($response);
 
-		}catch(Exception $e){
-
-			throw $e;
-
 		}
+        catch (Exception $e)
+        {            
+            throw $e;
+        }        
         curl_close($ch);
         // GET Return value
         return $response;
@@ -143,17 +142,16 @@ class Webservices {
 
 		//LOAD
 		$dom->loadXML($retour);	
-		$reponse = new SimpleXMLElement($dom->saveXML());
-
-		//CHECK Return Code
+		$reponse = new SimpleXMLElement($dom->saveXML());        
+        //CHECK Return Code
 		if(empty($reponse->status)){
 
 			throw new Exception('Status introuvable dans la réponse XML', 1);
 
 		}elseif(empty($reponse->status->success)){
 			if(!empty($reponse->status->failure)){
-
-				/*foreach($reponse->status->failure->errors->field as $field)
+    
+                /*foreach($reponse->status->failure->errors->field as $field)
 					$this->errors[] = array("field" => $field['name'],"desc" => $field);*/
 
 				$this->errors = $reponse->status->failure;

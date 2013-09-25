@@ -241,7 +241,7 @@ function classerNPAI(annuleFlagg, callback) {
            }
          });
 }
-function exportInbox(){
+function exportInbox() {
 
     IdInbox = myApp.getIdInbox();    
     idField = myApp.addTab_inside();
@@ -984,13 +984,12 @@ function changeEtatStatut(statut) {
     });
 }
 
-function Voirlecourrier(){
+function Voirlecourrier(doc_uid_list) {
 
     /*Gary: I added this this was not working*/
-    
     idField = myApp.addTab_inside();                    
     urlData = "../convergenceList/actions/exportCourrier.php";    
-    post(urlData, {idFile : idField});
+    post(urlData, {idFile: idField, doc_uid_list: doc_uid_list});
     
     /*
     idField = myApp.addTab_inside();              
