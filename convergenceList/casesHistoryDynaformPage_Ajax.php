@@ -388,15 +388,15 @@ if($actionAjax== 'historyDynaformGridPreview')
 				}
 				else
 				{
-					var answer = confirm("Un nouveau dossier sera cr\u00E9\u00E9. Aimez-vous continuer?");
+					/*var answer = confirm("Un nouveau dossier sera cr\u00E9\u00E9. Aimez-vous continuer?");
 					
-					if (answer){
-            showModal();
-          }
+					if (answer){*/
+            			showModal();
+         /* }
 					else{
 						return false;
-					}
-			  }
+					}*/
+			    }
 			}
 
       navigator.sayswho= (function(){
