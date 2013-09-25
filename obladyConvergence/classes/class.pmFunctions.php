@@ -3310,12 +3310,12 @@ function getCSVHeader($dataCSV, $csv_sep) {
 ## function load parameters csv
 function loadParametersCSV($idInbox,$pathCSV,$actionType,$fileNameCSV)
 {
-	$directory = PATH_DOCUMENT.$pathCSV;
+    $directory = $pathCSV;
     chmodr($directory, 0777);
     chownr($directory, 'apache');
     chgrpr($directory, 'apache');
     
-    $directoryFile = PATH_DOCUMENT.$pathCSV."/".$fileNameCSV;
+    $directoryFile = $pathCSV."/".$fileNameCSV;
     chmodr($directoryFile, 0777);
     chownr($directoryFile, 'apache');
     chgrpr($directoryFile, 'apache');
@@ -3456,7 +3456,7 @@ function getDataCronCSV($firstLineCsvAs = 'on', $fileCSV, $totCasesCSV,$pathCSV)
 
     while ($data = fgetcsv($handle, 4096, ","))
     {
-            /*             By Nico 28/08/2013 fix Bug on the import Background by CRON with header csv files.
+            /*     By Nico 28/08/2013 fix Bug on the import Background by CRON with header csv files.
              * 
              * Add this part because when we import by cron a csv with header, all import are the header for value
              * So, after put the original header in the csv temp file in actionCSV.php,
