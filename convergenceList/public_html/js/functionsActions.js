@@ -190,7 +190,7 @@ function editFormsWithTag(appUid,tag){
 
 function classerNPAI(annuleFlagg, callback) {
 
-    if (!annuleFlag) { annuleFlag = 0; } 
+    if (!annuleFlagg) { annuleFlagg = 0; } 
     if (!callback) {
       callback = '';
     }
@@ -211,7 +211,7 @@ function classerNPAI(annuleFlagg, callback) {
            url : urlData,
            params : {
             array  : idField,
-            todo: annuleFlag,
+            todo: annuleFlagg,
             callback: callback
            },
            success: function (result, request) {
@@ -2730,7 +2730,7 @@ function importCSV (_uidTask){
                                                 firstLineHeader : _isCheckedFirstLineAs,
                                                 radioOption : _isCheckedOption,
                                                 dataEditDelete : _jsonFieldsDeleteEdit,
-                                                idInbox     : _dblIdInbox,
+                                                idInbox     : _dblIdInbox
                                             },
                                             url : pathPluginActionsPhp,
                                             success : function(result, request) {
