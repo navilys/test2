@@ -540,6 +540,18 @@ function limousinProject_explicationStatut_callback($app_data) {
         case 41 :
             $messageInfo = $app_data['msgRefus'];
             break;
+        case 42 :
+            $msgList = $app_data['msgRefus'];
+            if (count(explode('<br/>&nbsp;-&nbsp;', $app_data['msgRefus'] ? $app_data['msgRefus'] : '')) > 2)
+            {
+                $messageInfo = 'Le dossier est <b>' . strtolower($libelRes[1]['TITLE']) . '</b> pour les raisons suivantes :';
+            }
+            else
+            {
+                $messageInfo = 'Le dossier est <b>' . strtolower($libelRes[1]['TITLE']) . '</b> pour la raison suivante :';
+            }
+            $messageInfo .= isset($app_data['msgRefus']) ? $app_data['msgRefus'] : '';
+            break;
 
         default :
             $messageInfo = 'Le dossier est en statut : <b>' . strtolower($libelRes[1]['TITLE']) . '</b>';
