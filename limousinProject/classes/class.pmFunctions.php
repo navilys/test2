@@ -180,7 +180,7 @@ function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $se
     catch (Exception $e)
     {
         // TODO
-        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        $echo = $t->errors->code;
         echo 'Code Erreur transaction = ' . $echo . '--- End Error ---';
     }
 
@@ -217,7 +217,7 @@ function limousinProject_nouvelleActionCRM($porteurId = 0, $action = '00', $moti
     catch (Exception $e)
     {
         // TODO
-        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        $echo = $a->errors->code;
         echo 'Code Erreur action = ' . $echo . '--- End Error ---';
     }
 }
@@ -290,7 +290,7 @@ function limousinProject_getActivation($porteurId = 0) {
     catch (Exception $e)
     {
         // TODO
-        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        $echo = $v->errors->code;
         echo 'Code Erreur activation = ' . $echo . '--- End Error ---';
     }
 }
@@ -320,7 +320,7 @@ function limousinProject_getSolde($porteurId = 0) {
     catch (Exception $e)
     {
         // TODO
-        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        $echo = $s->errors->code;
         echo 'Code Erreur solde = ' . $echo . '--- End Error ---';
     }
 }
@@ -354,7 +354,7 @@ function limousinProject_identification($porteurId = 0, $tel = '', $portable = '
     catch (Exception $e)
     {
         // TODO
-        $echo = $e->errors->code . ' : ' . $e->errors->message;
+        $echo = $i->errors->code;
         echo 'Code Erreur identification = ' . $echo . '--- End Error ---';
     }
 }
