@@ -605,14 +605,14 @@ function convergence_annuleChequier($commandeID) {
 }
 
 //GLOBAL
-function convergence_concatFiles($files) {
-	
+function convergence_concatFiles($files, $where_exclude) {
+
     //si plusieurs fichiers on les concatenent
     if (is_array($files) && count($files) > 1)
     {
 
         $i = 0;
-        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "'.SYS_LANG.'" ';
+        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "' . SYS_LANG . '"' . $where_exclude;
 
         $result = executeQuery($query);
 
@@ -630,7 +630,7 @@ function convergence_concatFiles($files) {
     else
     {
         $i = 0;
-        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "'.SYS_LANG.'" ';
+        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "' . SYS_LANG . '"' . $where_exclude;
         $result = executeQuery($query);
 
         foreach ($result as $f)
