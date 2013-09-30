@@ -352,7 +352,7 @@ if($actionAjax== 'historyDynaformGridPreview')
       
 ?>      
     <link href="/plugin/convergenceList/modal.css" rel="stylesheet" type="text/css" media="screen" /> 
-    <script type='text/javascript' src='/plugin/convergenceList/jsModal.js'></script> 
+    <script type='text/javascript' src='/plugin/convergenceList/jsModal.js'></script>    
     <script language="javascript">
         var flag = false;
         var _dataForms = new Array();
@@ -374,7 +374,7 @@ if($actionAjax== 'historyDynaformGridPreview')
 ?>
 			function confirmCreationNewForm()
 			{
-
+				if (!validateForm(document.getElementById("DynaformRequiredFields").value)) return false;
 				var swcase = <?php echo $swCase ?>; 
 				if(swcase == 1)
 				{

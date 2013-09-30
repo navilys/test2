@@ -1,10 +1,10 @@
 <?php
-ini_set ( 'error_reporting', E_ALL );
-ini_set ( 'display_errors', True );
+
 G::LoadClass ( 'case' );
 G::LoadClass ( 'configuration' );
 G::loadClass ( 'pmFunctions' );
 $oHeadPublisher = & headPublisher::getSingleton ();
+
 
 ## new list forms tabs
 require_once ("classes/model/Dynaform.php");
@@ -48,6 +48,7 @@ $oCase = new Cases();
 $Fields = $oCase->loadCase($APP_UID);
 if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
 {     
+	$Fields = $oCase->loadCase($APP_UID);
 	$Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
 	$Fields['APP_DATA']['SW_CREATE_CASE'] = 1;
     if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
