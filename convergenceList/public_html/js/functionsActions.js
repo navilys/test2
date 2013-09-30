@@ -85,7 +85,7 @@ function redirect(idInbox){
 
 function windowTabs(idField,urlData,appNumber)
 {               
-        var adaptiveHeight = getDocHeight() - 50;
+    var adaptiveHeight = getDocHeight() - 50;
         window.swFrame= ''; 
         var win2 = new Ext.Window({
             id:'win2',

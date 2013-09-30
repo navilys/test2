@@ -393,7 +393,7 @@ function convergence_getCodeOperation($code) {
  *
  */
 
-function make_dedoublonage($process, $app_id, $debug = 0) {
+function make_dedoublonage($process, $app_id, $debug = 0, $lv = 1, $dm = 1) {
 
     //recuperation des variable du formulaire
     $fields = convergence_getAllAppData($app_id);
@@ -422,6 +422,8 @@ function make_dedoublonage($process, $app_id, $debug = 0) {
         {
 
             $select_debug .= ',"' . $fields[$data['CD_FIELDNAME']] . '" AS reference,' . strtoupper($data['CD_FIELDNAME']) . ',levenshtein_ratio("' . metaphone($fields[$data['CD_FIELDNAME']]) . '",dm(' . strtoupper($data['CD_FIELDNAME']) . ')),levenshtein_ratio("' . $fields[$data['CD_FIELDNAME']] . '",' . strtoupper($data['CD_FIELDNAME']) . ')';
+
+            $where .= ' AND (' . strtoupper($data['CD_FIELDNAME']) . ' = "' . $fields[$data['CD_FIELDNAME']] . '" OR levenshtein_ratio("' . metaphone($fields[$data['CD_FIELDNAME']]) . '",dm(' . strtoupper($data['CD_FIELDNAME']) . ')) >= ' . $data['CD_RATIO'] . ' OR levenshtein_ratio("' . $fields[$data['CD_FIELDNAME']] . '",' . strtoupper($data['CD_FIELDNAME']) . ') >= ' . $data['CD_RATIO'] . ')';
             $where .= ' AND (' . strtoupper($data['CD_FIELDNAME']) . ' = "' . $fields[$data['CD_FIELDNAME']] . '" OR levenshtein_ratio("' . metaphone($fields[$data['CD_FIELDNAME']]) . '",dm(' . strtoupper($data['CD_FIELDNAME']) . ')) >= ' . $data['CD_RATIO'] . ' OR levenshtein_ratio("' . $fields[$data['CD_FIELDNAME']] . '",' . strtoupper($data['CD_FIELDNAME']) . ') >= ' . $data['CD_RATIO'] . ')';
 
             // $whereLev .= ' AND levenshtein_ratio("'.metaphone($fields[$data['CD_FIELDNAME']]).'",dm('.strtoupper($data['CD_FIELDNAME']).')) >= '.$data['CD_RATIO'];
@@ -1860,6 +1862,7 @@ function convergence_countCaseToProduct($statut, $codeOper, $detailChequier = 1)
 function convergence_justeOneDemande($user) {
     $query = 'SELECT APP_UID FROM APPLICATION WHERE APP_INIT_USER ="' . $user . '"';
     $res = executeQuery($query);
+
     if (!empty($res))
     {
         foreach ($res as $key => $array)
