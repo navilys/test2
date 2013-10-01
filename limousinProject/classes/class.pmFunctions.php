@@ -145,7 +145,7 @@ function limousin_addTransactionPriv($codePartenaire, $porteurID, $montant, $lib
     executeQuery($queryInsertTransactionPriv);
 }
 
-function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $sens = 'N', $montant = 0) {
+function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $sens = 'N', $montant = 0, $sousMontants = array()) {
 
     // INIT Ws 201
     $t = new Transaction();
@@ -160,12 +160,14 @@ function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $se
 
     /* Mode Test On */
     //$t->porteurId = "30280000023";
-    $t->porteurId = "30280055283";
+    //$t->porteurId = "30280055283";
     //$t->porteurId = "0009";
-    $t->sens = "C";
-    $t->montant = "200";
-    /* $t->addSousMontant("_reseau1", "_montatnReseau1");
-      $t->addSousMontant("_reseau2", "_montatnReseau2"); */
+    //$t->sens = "C";
+    //$t->montant = "200";
+	
+	foreach($sousMontants as $sm){
+		$t->addSousMontant($sm['reseau'],$sm['montant']);
+    }
     /* Mode Test Off */
 
 
@@ -198,11 +200,7 @@ function limousinProject_nouvelleActionCRM($porteurId = 0, $action = '00', $moti
 
 
     /* Mode Test On */
-    $action = "06";
-    $motif = "02";
-    $a->partenaire = "00028";
-    $a->porteurId = "30280055364";
-    $a->action = $action;
+   
     /* Mode Test Off */
 
     if (!empty($motif))
@@ -276,7 +274,7 @@ function limousinProject_getActivation($porteurId = 0) {
     $v->porteurId = $porteurId;
 
     /* Mode Test On */
-    $v->porteurId = 30280055364;
+    //$v->porteurId = 30280055364;
     //$s->porteurId = 30280000023;
     /* Mode Test Off */
 
@@ -290,6 +288,7 @@ function limousinProject_getActivation($porteurId = 0) {
     catch (Exception $e)
     {
         // TODO
+		// var_dump($e);
         $echo = $v->errors->code;
         echo 'Code Erreur activation = ' . $echo . '--- End Error ---';
     }
@@ -305,7 +304,7 @@ function limousinProject_getSolde($porteurId = 0) {
 
     /* Mode Test On */
     //$s->porteurId = 30280055364;
-    $s->porteurId = 30280055283;
+    //$s->porteurId = 30280055283;
     //$s->porteurId = '30280000023';
     /* Mode Test Off */
 

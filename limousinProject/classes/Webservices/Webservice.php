@@ -23,8 +23,8 @@ class Webservices {
         $ch = curl_init($this->url);
 		curl_setopt($ch,CURLOPT_POST,1);
 		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));		
-		//curl_setopt($ch,CURLOPT_HEADER, true);
-        //curl_setopt($ch,CURLINFO_HEADER_OUT, true);
+		curl_setopt($ch,CURLOPT_HEADER, true);
+        curl_setopt($ch,CURLINFO_HEADER_OUT, true);
         curl_setopt($ch,CURLOPT_POSTFIELDS,"$streamContent");
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
 		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false); 
@@ -34,9 +34,9 @@ class Webservices {
         //curl_setopt($ch,CURLOPT_CERTINFO, true);
         // GET Response
 		$response = curl_exec($ch);
-        
-//         $info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-//         echo 'info = ' . $info;
+        var_dump($response);
+         $info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        echo 'info = ' . $info;
         try{
         // Check Response
 			$response = $this->checkReturn($response);

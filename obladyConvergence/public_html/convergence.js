@@ -73,4 +73,26 @@ function removeAllRequiredFields(){
         }
       }
       document.getElementById('DynaformRequiredFields').value='[]';
-    }
+}
+
+function removeAllAccents(s)
+{
+    var __r =
+            {
+                'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'E',
+        'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E',
+        'Ì': 'I', 'Í': 'I', 'Î': 'I', 'Ï': 'I',
+        'Ò': 'O', 'Ó': 'O', 'Ô': 'O', 'Õ': 'O', 'Ö': 'O',
+        'Ù': 'U', 'Ú': 'U', 'Û': 'U', 'Ü': 'U',
+                'Ñ': 'N'
+            };
+
+    return s.replace(/[ÀÁÂÃÄÅÆÈÉÊËÌÍÎÏÕÒÓÔÖÙÚÛÜÑ]/gi, function(m)
+    {
+        var ret = __r[m.toUpperCase()];
+        if (m === m.toLowerCase())
+            ret = ret.toLowerCase();
+        return ret;
+    });
+
+}

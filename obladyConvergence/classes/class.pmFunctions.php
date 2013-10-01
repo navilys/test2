@@ -925,6 +925,15 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
                             case 'Ignore':
                                 $line .= substr(str_pad('', $field['LENGTH'], $token), 0, $field['LENGTH']);
                                 break;
+                            case 'strSecure':
+                                $line .= removeAllAccents(substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], $token), 0, $field['LENGTH']));
+                                break;
+                            case 'strSecureL':
+                                $line .= strtolower(removeAllAccents(substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], $token), 0, $field['LENGTH'])));
+                                break;
+                            case 'strSecureU':
+                                $line .= strtoupper(removeAllAccents(substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], $token), 0, $field['LENGTH'])));
+                                break;
                             default:
                                 $line .= substr(str_pad($row[$field['FIELD_NAME']], $field['LENGTH'], $token), 0, $field['LENGTH']);
                                 break;
@@ -1007,6 +1016,22 @@ function convergence_exportToAS400($process_id, $file_base, $code, $liste = null
     {
         return $nb_result;
     }
+}
+function removeAllAccents($str, $encoding = 'utf-8') {
+
+    // transformer les caractères accentués en entités HTML
+    $str = htmlentities($str, ENT_NOQUOTES, $encoding);
+
+// remplacer les entités HTML pour avoir juste le premier caractères non accentués
+// Exemple : "&ecute;" => "e", "&Ecute;" => "E", "Ã " => "a" ...
+    $str = preg_replace('#&([A-za-z])(?:acute|grave|cedil|circ|orn|ring|slash|th|tilde|uml);#', '\1', $str);
+
+// Remplacer les ligatures tel que : Œ, Æ ...
+// Exemple "Å“" => "oe"
+    $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str);
+// Supprimer tout le reste
+    $str = preg_replace('#&[^;]+;#', '', $str);
+    return $str;
 }
 
 /* * **** //GLOBAL
