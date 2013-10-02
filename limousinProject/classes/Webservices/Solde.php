@@ -14,11 +14,11 @@ class Solde extends Webservices {
         $this->wsId = "304";
 		
 		// GET Bouchon
-		$bouchonFileName = dirname(__FILE__).'/bouchonSolde.txt';
-        $handle = fopen($bouchonFileName, "r");
-		while (!feof($handle)) { 
-			$this->bouchonWs .= fgets($handle, 4096); 
-		}
+		// $bouchonFileName = dirname(__FILE__).'/bouchonSolde.txt';
+        // $handle = fopen($bouchonFileName, "r");
+		// while (!feof($handle)) { 
+			// $this->bouchonWs .= fgets($handle, 4096); 
+		// }
 		
 	} 
     

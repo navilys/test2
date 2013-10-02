@@ -14,11 +14,11 @@ class Operation extends Webservices {
         $this->wsId = "303";
 		
 		// GET Bouchon
-		$bouchonFileName = dirname(__FILE__).'/bouchonOperations.txt';
-        $handle = fopen($bouchonFileName, "r");
-		while (!feof($handle)) { 
-			$this->bouchonWs .= fgets($handle, 4096); 
-		}
+		// $bouchonFileName = dirname(__FILE__).'/bouchonOperations.txt';
+        // $handle = fopen($bouchonFileName, "r");
+		// while (!feof($handle)) { 
+			// $this->bouchonWs .= fgets($handle, 4096); 
+		// }
 		
 	} 
     

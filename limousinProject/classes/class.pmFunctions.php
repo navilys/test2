@@ -8,6 +8,7 @@
  * *
  */
 require_once("plugins/limousinProject/classes/Webservices/Webservice.php");
+require_once("plugins/limousinProject/classes/Webservices/Autorisation.php");
 require_once("plugins/limousinProject/classes/Webservices/Transaction.php");
 require_once("plugins/limousinProject/classes/Webservices/ActionCRM.php");
 require_once("plugins/limousinProject/classes/Webservices/Activation.php");
@@ -260,6 +261,31 @@ function limousinProject_getOperations($porteurId = 0, $op = '00', $nbJours = '1
         // TODO
         //$echo = $e->errors; //. ' : ' . $e->message;
         echo 'Code Erreur operation = ' . $o->errors->code . '--- End Error ---';
+        //var_dump($e);
+    }
+}
+
+
+function limousinProject_getAutorisations() {
+
+    // INIT Ws 303
+    $a = new Autorisation();
+
+    // SET Params
+    $a->partenaire = wsPrestaId;
+    
+    // CALL Ws
+    try
+    {
+        // TODO
+        $retour = $a->call();
+        echo 'ok oper => ' . $retour . '--- end retour';
+    }
+    catch (Exception $e)
+    {
+        // TODO
+        //$echo = $e->errors; //. ' : ' . $e->message;
+        echo 'Code Erreur operation = ' . $a->errors->code . '--- End Error ---';
         //var_dump($e);
     }
 }
@@ -599,6 +625,7 @@ function limousinProject_readLineFromAQCARTE($datas) {
                 {
                     $set = array();
                     $escapeLine['CARTE_STATUT'] = 'Envoyée';
+                    $escapeLine['DATE_EXPE'] = date('Ymd');
                     foreach ($escapeLine as $key => $value)
                     {
                         $set[] = $key . '="' . $value . '"';
