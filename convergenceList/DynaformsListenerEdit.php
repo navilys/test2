@@ -94,6 +94,7 @@ if(sizeof($select))
 $oCase = new Cases ();
 $olfFields = $oCase->loadCase($APP_UID);
 unset($olfFields['APP_DATA']['FLAG_ACTION']);		
+unset($olfFields['APP_DATA']['FLAG_ACTIONTYPO3']);
 PMFSendVariables($APP_UID, $olfFields);
 $oCase->updateCase($APP_UID, $olfFields);
 # End Update the flag typo3      

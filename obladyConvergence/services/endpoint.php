@@ -6,7 +6,7 @@ function FupdateAPPDATATYPO3($APP_UID,$new = 0){
     $caseInstance = new Cases ();
     $newFields = $caseInstance->loadCase ($APP_UID);
     $newFields['APP_DATA']['FLAGTYPO3'] = 'On';
-    $newFields['APP_DATA']['FLAG_ACTION'] = 'actionCreateCase';
+    $newFields['APP_DATA']['FLAG_ACTIONTYPO3'] = 'actionCreateCase';
     
     $newFields['APP_DATA']['FLAG_REDIRECT_PAGE'] = urldecode($_REQUEST['redirect']);
     
