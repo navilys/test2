@@ -48,7 +48,7 @@ $oCase = new Cases();
 $Fields = $oCase->loadCase($APP_UID);
 if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) && $Fields['APP_DATA']['FLAGTYPO3'] == 'On' )
 {     
-	$Fields = $oCase->loadCase($APP_UID);
+	//$Fields = $oCase->loadCase($APP_UID);
 	$Fields['APP_DATA']['FLAGTYPO3'] = 'Off'; 
 	$Fields['APP_DATA']['SW_CREATE_CASE'] = 1;
     if(isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED'] )
@@ -57,27 +57,7 @@ if(!isset($_COOKIE['fe_typo_user']) && isset($Fields['APP_DATA']['FLAGTYPO3']) &
         $Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
     }
     $oCase->updateCase($APP_UID, $Fields);
-    # execute Triggers task Ini
-	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
-	$startTasks = executeQuery($query);
-	foreach($startTasks as $rowTask){
-		$taskId = $rowTask['TAS_UID'];
-		$stepsByTask = getStepsByTask($taskId);
-		foreach ($stepsByTask as $caseStep){
-			$caseStepRes[] = 	 $caseStep->getStepUidObj();
-		}
-		break;
-	}
-	        
-	$totStep = 0;
-	foreach($caseStepRes as $index)
-	{
-		$stepUid = $index;
-		executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'BEFORE', $taskId);	//execute trigger before form
-		executeTriggersMon($PRO_UID, $APP_UID, $stepUid, 'AFTER', $taskId);	//execute trigger after form	
-		$totStep++;
-	} 
-			# end execute Triggers task Ini
+   
 }
 else if((isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_LOGGED'] != $_SESSION['USER_LOGGED']) || (isset($Fields['APP_DATA']['FLAG_EDIT']) && $Fields['APP_DATA']['FLAG_EDIT'] == 1 ))
 {
@@ -85,7 +65,9 @@ else if((isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_
 	$Fields['APP_DATA']['USER_LOGGED'] = $_SESSION['USER_LOGGED'];
 	$Fields['APP_DATA']['SW_CREATE_CASE'] = 1;
     $oCase->updateCase($APP_UID, $Fields);
-    # execute Triggers task Ini
+    
+}
+# execute Triggers task Ini
 	$query = "SELECT TAS_UID FROM TASK WHERE TAS_START = 'TRUE' AND PRO_UID = '".$PRO_UID."'";	//query for select all start tasks
 	$startTasks = executeQuery($query);
 	foreach($startTasks as $rowTask){
@@ -106,7 +88,6 @@ else if((isset($Fields['APP_DATA']['USER_LOGGED']) && $Fields['APP_DATA']['USER_
 		$totStep++;
 	} 
 			# end execute Triggers task Ini 
-}
    
 # end execute Triggers task Ini   
 
