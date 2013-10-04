@@ -217,9 +217,14 @@ function FredirectTypo3($APP_UID) {
                 $PRO_UID = $DATA['PROCESS'];
                 $_SESSION['USER_LOGGED'] = $DATA['FLG_INITUSERUID'];
                 $_SESSION['USR_USERNAME'] = $DATA['FLG_INITUSERNAME'];
-                $url = '../convergenceList/casesHistoryDynaformPage_Ajax.php?ACTIONTYPE=edit&actionAjax=historyDynaformGridPreview&DYN_UID=' . $DYN_UID . '&APP_UID=' . $APP_UID . '&PRO_UID=' . $PRO_UID . '&CURRENTDATETIME=' . $CURRENTDATETIME . '&ACTIONSAVE=1';
+                /*$url = '../convergenceList/casesHistoryDynaformPage_Ajax.php?ACTIONTYPE=edit&actionAjax=historyDynaformGridPreview&DYN_UID=' . $DYN_UID . '&APP_UID=' . $APP_UID . '&PRO_UID=' . $PRO_UID . '&CURRENTDATETIME=' . $CURRENTDATETIME . '&ACTIONSAVE=1';
                 echo "<script language='javascript'> location.href = '" . $url . "';</script>";
-                die();
+                die();*/
+                 echo "<script language='javascript'>
+                    //parent.Ext.getCmp('gridNewTab').store.reload();
+                    parent.parent.Ext.getCmp('win2').hide();
+                    </script>";
+                    die();
             }
             if ($DATA['FLAG_ACTION'] == 'actionAjaxRestartCases')
             {
@@ -2050,7 +2055,7 @@ function getConfigCSV($data,$idInbox,$firstLineHeader=""){
 			{
 				foreach($aData As $key => $row)
 				{    
-                    G::pr($data[$i]['FIELD_NAME']." --- ".$row['CSV_FIELD_NAME']);
+                    //G::pr($data[$i]['FIELD_NAME']." --- ".$row['CSV_FIELD_NAME']);
 					if($data[$i]['FIELD_NAME'] == $row['CSV_FIELD_NAME'])
 					{
                         if($firstLineHeader == "")
