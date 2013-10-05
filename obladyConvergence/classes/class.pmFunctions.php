@@ -220,10 +220,10 @@ function FredirectTypo3($APP_UID) {
                 /*$url = '../convergenceList/casesHistoryDynaformPage_Ajax.php?ACTIONTYPE=edit&actionAjax=historyDynaformGridPreview&DYN_UID=' . $DYN_UID . '&APP_UID=' . $APP_UID . '&PRO_UID=' . $PRO_UID . '&CURRENTDATETIME=' . $CURRENTDATETIME . '&ACTIONSAVE=1';
                 echo "<script language='javascript'> location.href = '" . $url . "';</script>";
                 die();*/
-                echo "<script language=Javascript>alert('Vos changements ont \u00E9t\u00E9 enregistr\u00E9s avec succ\u00E9s');</script>";
-                 echo "<script language='javascript'>
+                echo "<script language=Javascript>parent.parent.message('Vos changements ont \u00E9t\u00E9 enregistr\u00E9s avec succ\u00E9s');</script>";
+                echo "<script language='javascript'>
                     //parent.Ext.getCmp('gridNewTab').store.reload();
-                    parent.parent.Ext.getCmp('win2').hide();
+                    //parent.parent.Ext.getCmp('win2').hide();
                     </script>";
                     die();
             }

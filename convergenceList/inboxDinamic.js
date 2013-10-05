@@ -430,7 +430,31 @@ Ext.onReady(function()
 	    items: contextMenuItems
 	});
 
-	 var searchForm = new Ext.Toolbar({
+	 /*var searchForm = new Ext.Toolbar({
+	    width: '100%',
+	    autoHeight: true,
+	    defaults:{
+	    	style:'padding-left:3px;',
+	    	labelStyle:'font-weight:blod;'
+	    },
+	    items: [	      
+	      actionsMenuI,		
+	      '->',	      
+	      '<b>'+_('ID_SEARCH')+':</b> &nbsp;',
+	      comboFilters,
+	      {xtype: 'tbspacer', width:15},
+	      textSearch,
+	      suggestFilters,
+	      {xtype: 'tbspacer', width:25},
+          btnSearch,
+          '-',
+          btnResetSearch
+	    ]
+	});*/
+	
+	if(filterSearch == '1'){
+
+			var searchForm = new Ext.Toolbar({
 	    width: '100%',
 	    autoHeight: true,
 	    defaults:{
@@ -451,7 +475,24 @@ Ext.onReady(function()
           btnResetSearch
 	    ]
 	});
-		
+	 	
+	}
+
+	if(filterSearch == '0'){
+
+			var searchForm = new Ext.Toolbar({
+	    width: '100%',
+	    autoHeight: true,
+	    defaults:{
+	    	style:'padding-left:3px;',
+	    	labelStyle:'font-weight:blod;'
+	    },
+	    items: [	      
+	      actionsMenuI
+	    ]
+	});
+	 	
+	}	
 		
 	var ToolForm = new Ext.FormPanel({
 			//labelAlign : 'top',
@@ -464,7 +505,8 @@ Ext.onReady(function()
 		   // anchorTo: 'center',
 		    border : false,
 		    items : [searchForm]
-		})
+		});
+
 	
 	var gridInboxDinamicStore = new Ext.data.JsonStore({
 	    id:'gridInboxDinamicStore',

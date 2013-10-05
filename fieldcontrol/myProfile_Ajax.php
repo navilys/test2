@@ -15,16 +15,30 @@ switch($_POST['action'])
       }
       else {
         $form['USR_UID'] = '';
-      }
+      } 
+
+      
       if (!isset($form['USR_NEW_PASS'])) {
         $form['USR_NEW_PASS'] = '';
       }
+      $sw = 0;
+      $passwordT = md5($form['USR_NEW_PASS']);
+      if(isset($form['USR_NEW_PASS']) && $form['USR_NEW_PASS'] == ''){
+       $query = "SELECT * FROM USERS WHERE USR_UID = '".$_SESSION['USER_LOGGED']."' ";
+       $resPassword = executeQuery($query,"rbac");
+       if(sizeof($resPassword)){
+        $passwordT = $resPassword[1]['USR_PASSWORD'];
+        }
+        $sw = 1;
+      }
+
       if ($form['USR_NEW_PASS'] != '') {
-        $form['USR_PASSWORD'] = md5($form['USR_NEW_PASS']);
+        //$form['USR_PASSWORD'] = md5($form['USR_NEW_PASS']);
+        $form['USR_PASSWORD'] = $passwordT;
       }
       
         $oUser                    = new Users();
-        $defaultDatas                  = $oUser->loadDetailed($form['USR_UID']);
+        $defaultDatas             = $oUser->loadDetailed($form['USR_UID']);
         
         $sUserUID=$aData['USR_UID'] = $form['USR_UID'];
         $aData['USR_USERNAME']      = ($form['USR_USERNAME']) ? $form['USR_USERNAME'] : $defaultDatas['USR_USERNAME'];
@@ -52,8 +66,9 @@ switch($_POST['action'])
               
             }
 
-            $aErrors = $oUserProperty->validatePassword($form['USR_NEW_PASS'], $aUserProperty['USR_LAST_UPDATE_DATE'], 0);
-
+            //$aErrors = $oUserProperty->validatePassword($form['USR_NEW_PASS'], $aUserProperty['USR_LAST_UPDATE_DATE'], 0);
+            if($sw == 0)
+              $aErrors = $oUserProperty->validatePassword($form['USR_NEW_PASS'], $aUserProperty['USR_LAST_UPDATE_DATE'], 0);
 
             if (count($aErrors) > 0) {
               $sDescription = G::LoadTranslation('ID_POLICY_ALERT').':,';
@@ -147,9 +162,20 @@ switch($_POST['action'])
     $pfServer = new SoapClient($hostTypo3);
     $key = rand();
     
+    /////////////////////////////
+
+    $passwordT = md5($_POST['USR_NEW_PASS']);
+    if(isset($_POST['USR_NEW_PASS']) && $_POST['USR_NEW_PASS'] == ''){
+       $query = "SELECT * FROM USERS WHERE USR_UID = '".$_SESSION['USER_LOGGED']."' ";
+       $resPassword = executeQuery($query,"rbac");
+       if(sizeof($resPassword)){
+        $passwordT = $resPassword[1]['USR_PASSWORD'];
+       }
+    }
+
     $ret = $pfServer->createAccount(array(
     'username' => $aData['USR_USERNAME'],
-    'password' => md5($_POST['USR_NEW_PASS']),
+    'password' => $passwordT,
     'email' => $aData['USR_EMAIL'],
     'lastname' => $aData['USR_LASTNAME'],
     'firstname' => $aData['USR_FIRSTNAME'],
@@ -157,7 +183,8 @@ switch($_POST['action'])
     'pmid' => $form['USR_UID'],
     'usergroup' => $groupId,
     'cHash' => md5($aData['USR_USERNAME'].'*'.$aData['USR_LASTNAME'].'*'.$aData['USR_FIRSTNAME'].'*'.$key)));
-     
+    ////////////////////////////
+
     // End Typo3
     
       $result->success = true;

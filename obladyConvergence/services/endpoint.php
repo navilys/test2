@@ -155,4 +155,5 @@ try {
     $result->message = $error->getMessage();
 }
 
-die(G::json_encode($result));
+$messageError = "<p style='margin-bottom: 0cm'>« ce compte n’existe pas , veuillez vous inscrire » ?</p>";
+die($messageError);

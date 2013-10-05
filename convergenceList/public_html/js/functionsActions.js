@@ -4887,3 +4887,13 @@ function listeCarteProduite(app_uid)
     //winTitre.maximize();
     winTitre.toFront();
 }
+
+function message(mess)
+{	
+	Ext.Msg.alert('Confirmed', mess, function(btn, text){
+	    if (btn == 'ok'){
+	    	Ext.getCmp('win2').hide();
+	    }
+	});
+	
+}
