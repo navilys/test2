@@ -16,7 +16,7 @@ if(isset($_POST['rne']) && $_POST['rne'] !=""){
     $POST['RNE']=$_POST['rne'];
 }*/
 if(isset($_POST['filtre']) && $_POST['filtre'] !=""){
-    $sWhere .= "AND (TYPE_ETAB IN (SELECT TYPE FROM PMT_TYPE_LYCEE WHERE FILTRE = ".$_POST['filtre'].") OR TYPE_ETAB IS NULL)";
+    $sWhere .= "AND (TYPE_ETAB IN (SELECT TYPE FROM PMT_TYPE_LYCEE WHERE FILTRE = ".$_POST['filtre'].") OR TYPE_ETAB = '0') ";
 }
 if(isset($_POST['nom']) && $_POST['nom'] !=""){
     $sWhere .= "AND NOM LIKE '%".mysql_escape_string($_POST['nom'])."%' ";

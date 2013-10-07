@@ -409,7 +409,7 @@ function make_dedoublonage($process, $app_id, $debug = 0, $lv = 1, $dm = 1) {
     if ($fields['FLAG_NON_DOUBLON'] == 1)
         return $doublon;
 
-    $where = $whereLev = $whereSound = 'STATUT !=0 AND STATUT !=999 AND NUM_DOSSIER !="' . $fields['NUM_DOSSIER'] . '"';
+    $where = 'STATUT !=0 AND STATUT !=999 AND NUM_DOSSIER !="' . $fields['NUM_DOSSIER'] . '"';
 
     $getTableName = 'SELECT * FROM PMT_CONFIG_DEDOUBLONAGE WHERE CD_PROCESS_UID="' . $process . '"';
     $table = executeQuery($getTableName);
@@ -426,12 +426,17 @@ function make_dedoublonage($process, $app_id, $debug = 0, $lv = 1, $dm = 1) {
 
         foreach ($config as $data)
         {
-
+            $whereOption = array();
             $select_debug .= ',"' . $fields[$data['CD_FIELDNAME']] . '" AS reference,' . strtoupper($data['CD_FIELDNAME']) . ',levenshtein_ratio("' . metaphone($fields[$data['CD_FIELDNAME']]) . '",dm(' . strtoupper($data['CD_FIELDNAME']) . ')),levenshtein_ratio("' . $fields[$data['CD_FIELDNAME']] . '",' . strtoupper($data['CD_FIELDNAME']) . ')';
 
-            $where .= ' AND (' . strtoupper($data['CD_FIELDNAME']) . ' = "' . $fields[$data['CD_FIELDNAME']] . '" OR levenshtein_ratio("' . metaphone($fields[$data['CD_FIELDNAME']]) . '",dm(' . strtoupper($data['CD_FIELDNAME']) . ')) >= ' . $data['CD_RATIO'] . ' OR levenshtein_ratio("' . $fields[$data['CD_FIELDNAME']] . '",' . strtoupper($data['CD_FIELDNAME']) . ') >= ' . $data['CD_RATIO'] . ')';
-            $where .= ' AND (' . strtoupper($data['CD_FIELDNAME']) . ' = "' . $fields[$data['CD_FIELDNAME']] . '" OR levenshtein_ratio("' . metaphone($fields[$data['CD_FIELDNAME']]) . '",dm(' . strtoupper($data['CD_FIELDNAME']) . ')) >= ' . $data['CD_RATIO'] . ' OR levenshtein_ratio("' . $fields[$data['CD_FIELDNAME']] . '",' . strtoupper($data['CD_FIELDNAME']) . ') >= ' . $data['CD_RATIO'] . ')';
+            $whereOption[] = strtoupper($data['CD_FIELDNAME']) . ' = "' . $fields[$data['CD_FIELDNAME']] . '"';
+            if ($dm == 1)
+                $whereOption[] = 'levenshtein_ratio("' . metaphone($fields[$data['CD_FIELDNAME']]) . '",dm(' . strtoupper($data['CD_FIELDNAME']) . ')) >= ' . $data['CD_RATIO'];
+            if ($lv == 1)
+                $whereOption[] = 'levenshtein_ratio("' . $fields[$data['CD_FIELDNAME']] . '",' . strtoupper($data['CD_FIELDNAME']) . ') >= ' . $data['CD_RATIO'];
 
+
+            $where .= ' AND (' . implode(' OR ', $whereOption) . ')';
             // $whereLev .= ' AND levenshtein_ratio("'.metaphone($fields[$data['CD_FIELDNAME']]).'",dm('.strtoupper($data['CD_FIELDNAME']).')) >= '.$data['CD_RATIO'];
             //SOUNDEX censé etre moi perfofmant que le metaphone du dessus.
             //$whereSound .= ' AND SOUNDEX("'.$fields[$data['CD_FIELDNAME']].'") = SOUNDEX('.strtoupper($data['CD_FIELDNAME']).')';
@@ -439,7 +444,7 @@ function make_dedoublonage($process, $app_id, $debug = 0, $lv = 1, $dm = 1) {
 
         $requete = 'SELECT count(*) as NB FROM ' . $table . ' WHERE ' . $where;
         $result = executeQuery($requete);
-
+        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $result mail ', var_export($result, true));
         //$requeteLev = 'SELECT count(*) as NB FROM '.$table.' WHERE '.$whereLev;
         //$resultLev = executeQuery($requeteLev);
         //$requeteSound = 'SELECT * FROM '.$table.' WHERE '.$whereSound;
@@ -461,9 +466,8 @@ function make_dedoublonage($process, $app_id, $debug = 0, $lv = 1, $dm = 1) {
             /* G::pr('AVEC LEVENSHTEIN');
               G::pr($requeteLevDebug);
               G::pr($resultLevDebug); */
-        }
-
-        if (isset($result) && $result[1]['NB'] > 0 || isset($resultLev) && $resultLev[1]['NB'] > 0)
+        }        
+        if (isset($result) && $result[1]['NB'] > 0)      // || isset($resultLev) && $resultLev[1]['NB'] > 0)
         {
             $doublon = 1;
         }
@@ -472,7 +476,7 @@ function make_dedoublonage($process, $app_id, $debug = 0, $lv = 1, $dm = 1) {
     if ($debug != 0)
     {
         G::pr('Doublon : ' . $doublon);
-    }
+    }    
     return $doublon;
 }
 
