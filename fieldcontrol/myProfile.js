@@ -375,7 +375,7 @@ Ext.onReady(function () {
     ],
     buttons : [
       {
-        text   : _('ID_SAVE'),
+        text   : 'Enregister',
         id     : 'saveB',
         handler: saveUser
       },
@@ -577,7 +577,7 @@ function saveUser()
       params : {
         action   : 'saveUser',
         USR_UID  : USR_UID,
-        USR_CITY : global.IS_UID,
+        USR_CITY : global.IS_UID
 
       },
       waitMsg : _('ID_SAVING'),

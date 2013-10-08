@@ -996,20 +996,20 @@ Ext.onReady(function()
 										
 										if( j==0 )
 										{
-											parametersAux  = "'" + parameterValue + "'" + condition + "'" + fn.trim() ;
+											parametersAux  = '"' + parameterValue + '"' + condition + '"' + fn.trim() ;
 										}
 										else
 										{
-											parametersAux =  "'" + parameterValue + "'" +condition + "'" + fn.trim() +  "' || " + parametersAux ;
+											parametersAux =  '"' + parameterValue + '"' +condition + '"' + fn.trim() +  '" || ' + parametersAux ;
 										}
 									}
 									
-									var evaluation = "if( " + parametersAux + "') swCondition = 1; else swCondition = 0;" ;
+									var evaluation = 'if( ' + parametersAux + '") swCondition = 1; else swCondition = 0;' ;
 									//console.log(evaluation);
 								}
 								else
 								{
-									var evaluation = "if( '" + parameterValue + "'" +condition + "'" + parameters + "') swCondition = 1; else swCondition = 0;" ;
+									var evaluation = 'if( "' + parameterValue + '"' +condition + '"' + parameters + '") swCondition = 1; else swCondition = 0;' ;
 									//console.log(evaluation);
 								}
                                                                 

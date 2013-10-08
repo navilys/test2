@@ -1960,7 +1960,18 @@ function getProUid($tableName){
     $sSQL ="SELECT * FROM ADDITIONAL_TABLES WHERE ADD_TAB_NAME ='$tableName'";
     $aResult= executeQuery($sSQL);
     $proUid = '0';
-    if(is_array($aResult) && count($aResult)>0){$proUid =$aResult[1]['PRO_UID'];} 
+    if(is_array($aResult) && count($aResult)>0)
+    {
+    	$proUid =$aResult[1]['PRO_UID'];
+    } 
+    else 
+    {
+		$sSQL = "SELECT PRO_UID FROM APPLICATION WHERE APP_UID='$tableName'";
+    	$aResult = executeQuery($sSQL);
+    	$proUid = '';
+    	if (isset($aResult[1]['PRO_UID']))
+    		$proUid =$aResult[1]['PRO_UID'];    
+    }
     return $proUid;
 }
 

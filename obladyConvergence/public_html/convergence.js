@@ -75,8 +75,33 @@ function removeAllRequiredFields(){
         }
       }
       document.getElementById('DynaformRequiredFields').value='[]';
-    }
+}
 
+function removeAllAccents(s)
+{
+	var __r = 
+	{
+		'ю':'A','а':'A','б':'A','ц':'A','д':'A','е':'A','ф':'E',
+
+		'х':'E','и':'E','й':'E','к':'E',
+
+		'л':'I','м':'I','н':'I',
+
+		'р':'O','с':'O','т':'O','ж':'O',
+
+		'ы':'U','з':'U','ш':'U','э':'U',
+
+		'я':'N'
+	};
+    return s.replace(/[юабцдефхийклмноурстжызшэя]/gi, function(m)
+    {
+        var ret = __r[m.toUpperCase()];
+        if (m === m.toLowerCase())
+            ret = ret.toLowerCase();
+        return ret;
+    });
+
+}
 
 function ValidateFields(variable, message)
 {  

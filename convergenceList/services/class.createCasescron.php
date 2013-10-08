@@ -23,6 +23,7 @@ class archivedCasesClassCron
 	    require_once(PATH_PLUGINS.'NordPDC/classes/class.pmFunctions.php');
 	    require_once(PATH_PLUGINS.'idfTranSport/classes/class.pmFunctions.php');
 	    require_once(PATH_PLUGINS.'pmBusinessRules/classes/class.pmFunctions.php');
+	    require_once(PATH_PLUGINS.'limousinProject/classes/class.pmFunctions.php');
 	    set_include_path(PATH_PLUGINS . 'pmBusinessRules' . PATH_SEPARATOR . get_include_path());		
 	    define( 'PATH_WORKSPACE', PATH_DB . SYS_SYS . PATH_SEP );
 	    set_include_path( get_include_path() . PATH_SEPARATOR . PATH_WORKSPACE );	     
