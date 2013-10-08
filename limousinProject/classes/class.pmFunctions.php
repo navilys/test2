@@ -403,17 +403,18 @@ function limousinProject_createUser($app_id, $role) {
         if (!empty($rGpId[1]['CON_ID']))
         {
 
-            $IP = $_SERVER['HTTP_HOST'];
-            $port = port_extranet;
-            if(empty($port))
-                $port = '8084';
+            //$IP = $_SERVER['HTTP_HOST'];
+            //$port = port_extranet;
+            //if(empty($port))
+            //    $port = '8084';
             $groupId = $rGpId[1]['CON_ID'];
             $var = PMFAssignUserToGroup($usr_uid, $groupId);
 
             // creation du fe_user dans typo3
             //$res = userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8084/');
             ini_set("soap.wsdl_cache_enabled", "0");
-            $hostTypo3 = 'http://' . $IP . ':' . $port . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
+            //$hostTypo3 = 'http://' . $IP . ':' . $port . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
+            $hostTypo3 = 'http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
             $pfServer = new SoapClient($hostTypo3);
             $key = rand();
             $ret = $pfServer->createAccount(array(

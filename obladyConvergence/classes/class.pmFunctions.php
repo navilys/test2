@@ -444,7 +444,6 @@ function make_dedoublonage($process, $app_id, $debug = 0, $lv = 1, $dm = 1) {
 
         $requete = 'SELECT count(*) as NB FROM ' . $table . ' WHERE ' . $where;
         $result = executeQuery($requete);
-        mail('nicolas@oblady.fr', date('H:i:s') . ' debug $result mail ', var_export($result, true));
         //$requeteLev = 'SELECT count(*) as NB FROM '.$table.' WHERE '.$whereLev;
         //$resultLev = executeQuery($requeteLev);
         //$requeteSound = 'SELECT * FROM '.$table.' WHERE '.$whereSound;
@@ -624,17 +623,21 @@ function convergence_concatFiles($files, $where_exclude) {
     {
 
         $i = 0;
-        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "' . SYS_LANG . '"' . $where_exclude;
-
+        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "fr"' . $where_exclude;
         $result = executeQuery($query);
+        if(sizeof($result) == 0)
+        {
+         $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "en"' . $where_exclude;
+         $result = executeQuery($query);
+        }
 
         foreach ($result as $f)
         {
             $app_uid = $f['APP_UID'];
-	    	if(method_exists('G','getPathFromUID')){
-				$app_uid = G::getPathFromUID($f['APP_UID']);
-	    	}
-			$path = PATH_DOCUMENT .$app_uid. PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
+      if(method_exists('G','getPathFromUID')){
+    $app_uid = G::getPathFromUID($f['APP_UID']);
+      }
+   $path = PATH_DOCUMENT .$app_uid. PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
             $concatFile[$i++] = $path . '.pdf';
         }
     }
@@ -642,16 +645,21 @@ function convergence_concatFiles($files, $where_exclude) {
     else
     {
         $i = 0;
-        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "' . SYS_LANG . '"' . $where_exclude;
+        $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "fr"' . $where_exclude;
         $result = executeQuery($query);
-
+      if(sizeof($result) == 0)
+        {
+         $query = 'SELECT * FROM APP_DOCUMENT, CONTENT WHERE APP_UID IN (' . implode(',', $files) . ') AND APP_DOC_TYPE="OUTPUT" AND APP_DOC_STATUS="ACTIVE" AND APP_DOC_UID = CON_ID AND CON_CATEGORY = "APP_DOC_FILENAME" AND CON_LANG = "en"' . $where_exclude;
+         $result = executeQuery($query);
+        }
+        
         foreach ($result as $f)
         {
             $app_uid = $f['APP_UID'];
-	    	if(method_exists('G','getPathFromUID')){
-				$app_uid = G::getPathFromUID($f['APP_UID']);
-	    	}
-			$path = PATH_DOCUMENT .$app_uid. PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
+      if(method_exists('G','getPathFromUID')){
+    $app_uid = G::getPathFromUID($f['APP_UID']);
+      }
+   $path = PATH_DOCUMENT .$app_uid. PATH_SEP . 'outdocs' . PATH_SEP . $f['APP_DOC_UID'] . '_' . $f['DOC_VERSION'];
             $concatFile[$i++] = $path . '.pdf';
         }
     } 

@@ -28,12 +28,7 @@ class archivedCasesClassCron
 	    define( 'PATH_WORKSPACE', PATH_DB . SYS_SYS . PATH_SEP );
 	    set_include_path( get_include_path() . PATH_SEPARATOR . PATH_WORKSPACE );	     
 	    $this->createCasesCSV();
-	    #permissions		
-		$directory = PATH_DOCUMENT;
-    	chmodr($directory, 0777);
-    	chownr($directory, 'apache');
-    	chgrpr($directory, 'apache');
-		# End Permissions
+	    
 		echo "* ARCHIVED CASES EXECUTED *"; 
 			
 	}
@@ -61,6 +56,8 @@ class archivedCasesClassCron
 		        }
 		        $USR_UID = '00000000000000000000000000000001';
 		        $_SESSION['USER_LOGGED'] = $USR_UID;
+		        $user = userInfo($USR_UID);
+		        $_SESSION['USR_USERNAME'] = $user['username']; 
 		        $actionType = $row['IMPCSV_TYPE_ACTION'];
 		        $matchFields = $dataImportCSV;
 		        $uidTask     = isset($row["IMPCSV_TAS_UID"])? $row["IMPCSV_TAS_UID"]:'';
@@ -101,6 +98,12 @@ class archivedCasesClassCron
 		    		break;
 		    	}   
 		    }
+		    #permissions		
+			$directory = PATH_DOCUMENT;
+    		chmodr($directory, 0777);
+    		chownr($directory, 'apache');
+    		chgrpr($directory, 'apache');
+			# End Permissions
 		}
 	}
 	
@@ -387,10 +390,22 @@ class archivedCasesClassCron
 			    $FieldsCase = $oCase->loadCase ( $caseUID );
 			    $FieldsCase['APP_DATA']['NUM_DOSSIER'] = $FieldsCase['APP_NUMBER'];  
 			    $FieldsCase['APP_DATA']['SW_CREATE_CASE'] = 1; # control trigger create new cases csv
+			   
 			    $oCase->updateCase($caseUID,$FieldsCase);
             	$controlCron = false;
                 autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
-                
+                #permissions		
+				$app_uidFile = $caseUID;
+            	if(method_exists('G','getPathFromUID')){
+            		$app_uidFile = G::getPathFromUID($caseUID);
+            		$app_uidFile = explode('/',$app_uidFile);
+            		$app_uidFile = $app_uidFile[0];
+        		}
+        		$directory = PATH_DOCUMENT.$app_uidFile.PATH_SEP;
+    			chmodr($directory, 0777);
+    			chownr($directory, 'apache');
+    			chgrpr($directory, 'apache');
+				# End Permissions
             }
 		    $totalCases++;
 		    $update = "UPDATE wf_".$this->workspace.".PMT_IMPORT_CSV_DATA SET IMPCSV_TOTCASES = '$totalCases' WHERE IMPCSV_IDENTIFY = '$csvIdentify' AND IMPCSV_TABLE_NAME = '$tableName' ";
@@ -658,6 +673,18 @@ class archivedCasesClassCron
 				    $oCase->updateCase($caseUID,$FieldsCase);
 			    	$controlCron = false;
 				    autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
+				     #permissions		
+					$app_uidFile = $caseUID;
+            		if(method_exists('G','getPathFromUID')){
+            			$app_uidFile = G::getPathFromUID($caseUID);
+            			$app_uidFile = explode('/',$app_uidFile);
+            			$app_uidFile = $app_uidFile[0];
+        			}
+        			$directory = PATH_DOCUMENT.$app_uidFile.PATH_SEP;
+    				chmodr($directory, 0777);
+    				chownr($directory, 'apache');
+    				chgrpr($directory, 'apache');
+					# End Permissions
 				    
 			    }
 			}   
@@ -880,11 +907,10 @@ class archivedCasesClassCron
 					}
 			    } 
 					
-			}
-		  
+			}		  
 		    // end labels //
-		    // delete cases 
-		      
+		    
+		    // delete cases 		      
 			if($whereDelete != '')
 			{
 			    $this->genDataReport($tableName);
@@ -901,9 +927,9 @@ class archivedCasesClassCron
 					}
 					
 				}
-			}
-			
+			}			
 			// end delete cases
+			
 		    $appData['VALIDATION'] = '0'; //needed for the process, if not you will have an error.
 		    $appData['FLAG_ACTION'] = 'multipleDerivation';
 		    $appData['EXEC_AUTO_DERIVATE'] = 'NO';
@@ -924,7 +950,18 @@ class archivedCasesClassCron
 			    $oCase->updateCase($caseUID,$FieldsCase);
 			    $controlCron = false;
                 autoDerivate($proUid,$caseUID,$USR_UID,$controlCron);
-			    
+			     #permissions		
+				$app_uidFile = $caseUID;
+            	if(method_exists('G','getPathFromUID')){
+            		$app_uidFile = G::getPathFromUID($caseUID);
+            		$app_uidFile = explode('/',$app_uidFile);
+            		$app_uidFile = $app_uidFile[0];
+        		}
+        		$directory = PATH_DOCUMENT.$app_uidFile.PATH_SEP;
+    			chmodr($directory, 0777);
+    			chownr($directory, 'apache');
+    			chgrpr($directory, 'apache');
+				# End Permissions
 		    }
 		    
 		    $totalCases++;
