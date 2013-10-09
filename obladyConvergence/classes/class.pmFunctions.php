@@ -2276,7 +2276,7 @@ function dataDynaforms($resultDynaform,$proUid)
 			
 		foreach ($dynaform->fields as $fieldName => $field) 
 		{
-			if( $field->type == 'dropdown')
+			if( $field->type == 'dropdown' || $field->type == 'radiogroup' )
 			{
 				$aData = array();
 				$dataSQL = array();
