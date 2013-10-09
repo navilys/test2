@@ -709,4 +709,10 @@ function limousinProject_showPdf($app_uid) {
       } */
 }
 
+function limousinProject_getSituationLabel($situation) {
+    $query = 'select LABEL from PMT_FI_SITUATION where VALEUR = "' . intval($situation) . '"';
+    $result = executeQuery($query);
+    return $label = (!empty($result[1]['LABEL']) ? $result[1]['LABEL'] : '');
+}
+
 ?>
