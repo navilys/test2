@@ -17,7 +17,7 @@ if($proUid != "")
     // ***************** DELETE ALL CASES OF SPECIFIC PROCESS ****************     
     deleteCasesProcess($proUid); 
     // ***************** TRUNCATE Report Tables FRANCIA *************************
-    truncateReportTables();
+    deleteReportTables($proUid);
 }
 else
 {
@@ -122,6 +122,7 @@ function newTables()
 function deleteFilesProcess($proUid)
 {
     // Obtain the documents array
+
     if($directory = opendir(PATH_DOCUMENT)) 
     { 
          while (($file =readdir($directory))!==false) 
@@ -134,44 +135,163 @@ function deleteFilesProcess($proUid)
          } 
          closedir($directory); 
     }    
+        // Task for process 
+    // Delete all data from PMT_IMPORT_CSV_DATA related to process for task
+    $pathTmp = PATH_DOCUMENT.'csvTmp/';
+    
+    if(is_dir($pathTmp))
+    {    
+        $queryT = "SELECT 
+                    PID.IMPCSV_TAS_UID AS TASK,
+                    CONCAT(PID.IMPCSV_TABLE_NAME,'_',PID.IMPCSV_IDENTIFY) AS NAME_FILE 
+                    FROM TASK AS T 
+                    INNER JOIN PMT_IMPORT_CSV_DATA AS PID ON T.TAS_UID = PID.IMPCSV_TAS_UID 
+                    WHERE T.PRO_UID = '".$proUid."'
+                    GROUP BY T.TAS_UID, PID.IMPCSV_IDENTIFY ";
+        $appTask = executeQuery($queryT);
+
+        // Delete physic file from csvTmp
+        if (sizeof($appTask)) {
+            foreach ($appTask as $key => $value) {
+                    $pathCSV = PATH_DOCUMENT.'csvTmp/'.$value['NAME_FILE'].'.csv';
+                         if(file_exists($pathCSV))
+                            unlink($pathCSV);
+
+            }
+        }
+    }
+    // -- End Task process 
 
     //Verify if document array exist  
     if(isset($arrayDirectories)){
         // Verifiy if the Process exist
-        $selectProc = "SELECT PRO_UID FROM wf_" . SYS_SYS . ".PROCESS WHERE PRO_UID= '". $proUid ."'";
+        $selectProc = "SELECT PRO_UID FROM wf_" . SYS_SYS . ".PROCESS WHERE PRO_UID= '". $proUid ."' ";
         $appproc = executeQuery($selectProc);
         // If exists the process then delete documents by process
         if(count($appproc)>0){
-            // Select al APP_UID from the process
+
+            // Select all APP_UID -  from the process inner join APP_DOCUMENT
             $masterSelect = "SELECT APP_UID FROM wf_" . SYS_SYS . ".APPLICATION WHERE PRO_UID= '". $proUid ."'";
             $appglobal = executeQuery($masterSelect);
 
             // Delete all APP_DOCUMENT related with APP_UID
             foreach($appglobal as $valuea){
+
                 // Select APP_DOC_UID from APP_DOCUMENT
                 $selectDoc = "SELECT APP_DOC_UID FROM wf_" . SYS_SYS . ".APP_DOCUMENT WHERE APP_UID= '". $valuea["APP_UID"] ."'";
                 $appdoc = executeQuery($selectDoc);
 
                 // Delete all Data selected from APP_DOCUMENT
                 if (isset($appdoc)) {
-                    foreach ($appdoc as $key => $value) {
-                        $sDelContent = "DELETE FROM wf_" . SYS_SYS . ".CONTENT WHERE CON_ID = '" . $value['APP_DOC_UID'] . "'";
-                        $eDelContent = executeQuery($sDelContent);
+                    foreach ($appdoc as $key => $value2) {
+                        $sDelContent = "DELETE FROM wf_" . SYS_SYS . ".CONTENT WHERE CON_ID = '" . $value2['APP_DOC_UID'] . "'";
+                        $eDelContent = executeQuery($sDelContent);        
                     }
                 }
 
+                // Delete all data from APP_DOCUMENT
+                $sDelAppDocument = "DELETE FROM wf_" . SYS_SYS . ".APP_DOCUMENT WHERE APP_UID = '" . $valuea["APP_UID"] . "'";
+                $eDelAppDocument = executeQuery($sDelAppDocument);
+
+                $valDir1 = substr($valuea["APP_UID"], 0, 3);
+                $valDir2 = substr($valuea["APP_UID"], 3, 3);
+                $valDir3 = substr($valuea["APP_UID"], 6, 3);
+                $valEnd =  substr($valuea["APP_UID"], 9);
+
                 // Delete the physic file from server with APP_UID
+                
                 foreach ($arrayDirectories as $key => $value) {
-                    if($valuea["APP_UID"]==$value){
-                        $directory = PATH_DOCUMENT.$value;
-                        chmod($directory, 0777);
-                        rrmdir($directory);
+                    if($value == $valDir1)
+                    {
+                        $arraySubdirectories = array();
+                        $path1 = PATH_DOCUMENT.$valDir1;
+                        
+                        $arraySubdirectories = searchDirectory($path1);
+                        $cantSubdirectory1 = count($arraySubdirectories);
+                        $sw1 = 0;
+
+                        if($cantSubdirectory1 > 0)
+                        {
+                            foreach ($arraySubdirectories as $key2 => $value2)
+                            {
+                                  if($value2 == $valDir2)
+                                  {
+                                    $arraySubdirectories2 = array();
+                                    $path2 = PATH_DOCUMENT.$valDir1.'/'.$valDir2;
+                                    $arraySubdirectories2 = searchDirectory($path2);
+                                    $cantSubdirectory2 = count($arraySubdirectories2);
+                                    $sw2 = 0;
+                                    if($cantSubdirectory2 > 0)
+                                    { 
+                                        foreach ($arraySubdirectories2 as $key3 => $value3) {
+                                            if($value3 == $valDir3)
+                                            {
+                                                $arraySubdirectories3 = array();
+                                                $path3 = PATH_DOCUMENT.$valDir1.'/'.$valDir2.'/'.$valDir3;
+                                                $arraySubdirectories3 = searchDirectory($path3);
+                                                $cantSubdirectory3 = count($arraySubdirectories3);
+                                                $sw3 = 0;
+                                                if($cantSubdirectory3 > 0)
+                                                {    
+                                                    foreach ($arraySubdirectories3 as $key4 => $value4) {
+                                                        if($value4 == $valEnd)
+                                                        {    
+                                                            $arraySubdirectories4 = array();
+                                                            $path4 = PATH_DOCUMENT.$valDir1.'/'.$valDir2.'/'.$valDir3.'/'.$valEnd;
+                                                            //chmod($path4, 0777);
+                                                            rrmdir($path4);
+                                                            $sw3 ++;
+                                                        }
+                                                    }
+                                                    if($cantSubdirectory3 == $sw3)
+                                                    {
+                                                        //chmod($path3, 0777);
+                                                        rrmdir($path3);
+                                                    }    
+                                                }
+                                                else
+                                                {
+                                                    //chmod($path3, 0777);
+                                                    rrmdir($path3);
+                                                }
+                                                $sw2 ++;
+
+                                            }
+                                        }
+                                        if($cantSubdirectory2 == $sw2)
+                                            rrmdir($path2);
+                                    }
+                                    else
+                                     rrmdir($path2);   
+
+                                    $sw1++;
+                                }
+                            } 
+                            if($cantSubdirectory1 == $sw1)
+                                rrmdir($path1);
+                        }
+                        else
+                            rrmdir($path1);      
                     }
+                    
                 }
             }
         }
     }
-    echo "*********** Ils courent files correctement ***************";
+    G::pr( "*********** Ils enlèvent tous les fichiers correctement traiter ***************");
+}
+function searchDirectory($path)
+{
+    if($directory = opendir($path)) 
+    { 
+         while (($file =readdir($directory))!==false) 
+         { 
+          if ((!is_file($file)) and($file != '.') and ($file != '..'))
+               $arraySubdirectories[$file]=$file;
+         } 
+         closedir($directory); 
+    }
+    return $arraySubdirectories;
 }
 
 function deleteFilesAll()
@@ -193,12 +313,13 @@ function deleteFilesAll()
 
     // Delete all files from the directory array
     if(count($arrayDirectories)){
-        foreach ($arrayDirectories as $key => $value):
+        foreach ($arrayDirectories as $key => $value)
+        {    
              $directory = PATH_DOCUMENT.$value;
              //chmod($directory, 0777);
              rrmdir($directory);                
-        endforeach;     
-    echo "*********** Ils courent files correctement ***************";
+        }
+    echo "*********** Ils courent files all correctement ***************";
     }
     else
         echo "*********** Les répertoires sont pas à supprimer ***************";   
@@ -249,6 +370,7 @@ function deleteCasesProcess($proUid)
         $app6 = executeQuery($query7);
 
         ############### PMTABLES #######################################
+
         // Delete all data from PMT_HISTORY_LOG related to process
         $querya = " DELETE FROM wf_" . SYS_SYS . ".PMT_HISTORY_LOG
                     WHERE wf_" . SYS_SYS . ".PMT_HISTORY_LOG.HLOG_APP_UID='".$value["APP_UID"]."'";
@@ -258,9 +380,21 @@ function deleteCasesProcess($proUid)
         $queryb = " DELETE FROM wf_" . SYS_SYS . ".PMT_USER_CONTROL_CASES
                     WHERE wf_" . SYS_SYS . ".PMT_USER_CONTROL_CASES.APP_UID='".$value["APP_UID"]."'";
         $appb = executeQuery($queryb);
-        ############### END PMTABLES ###################################
-    
+
     }
+
+    // Delete all data from PMT_IMPORT_CSV_DATA related to process for task
+        $queryT = "SELECT TAS_UID FROM TASK WHERE PRO_UID = '".$proUid."' ";
+        $appTask = executeQuery($queryT);
+        
+        foreach ($appTask as $key => $value) {
+         
+            $queryDel = "DELETE FROM wf_" . SYS_SYS . ".PMT_IMPORT_CSV_DATA WHERE wf_" . SYS_SYS . ".PMT_IMPORT_CSV_DATA.IMPCSV_TAS_UID = '".$value["TAS_UID"]."' ";
+            $appDel = executeQuery($queryDel);
+        }
+    // end Delete all data from PMT_IMPORT_CSV_DATA related to process for task
+
+        ############### END PMTABLES ###################################
 
     // Delete all data from APP_DELAY related to process
     $query8 = " DELETE FROM wf_" . SYS_SYS . ".APP_DELAY WHERE PRO_UID= '".$proUid."' ";        
@@ -282,7 +416,7 @@ function deleteCasesProcess($proUid)
 	$query12 = "DELETE FROM wf_" . SYS_SYS . ".APPLICATION  WHERE PRO_UID= '".$proUid."' ";
     $app12 = executeQuery($query12);
 
-	echo "******** WARNING : Processus visant à éliminer mate ***************";
+	G::pr( "******** WARNING : Processus visant à éliminer mate ***************");
 }
 
 function rrmdir($dir)
@@ -293,7 +427,7 @@ function rrmdir($dir)
          
           foreach ($objects as $object) {
              if ($object != "." && $object != "..") {
-              G::pr("type => ".$dir . "/" . $object);
+              //G::pr("type => ".$dir . "/" . $object);
               //G::pr(filetype($dir . "/" . $object));
                  if (filetype($dir . "/" . $object) == "dir") {
                      rrmdir($dir . "/" . $object);
@@ -311,7 +445,25 @@ function rrmdir($dir)
     }
 }
 
+function deleteReportTables($proUid)
+{
+    $cnn = Propel::getConnection('workflow');
+    $stmt = $cnn->createStatement();
 
+    $query = "SELECT ADD_TAB_NAME FROM ADDITIONAL_TABLES WHERE PRO_UID = '".$proUid."' ";
+    $app = executeQuery($query);
+
+    if(count($app))
+    {
+        foreach ($app as $key => $value) {
+            
+            $query1 = "TRUNCATE TABLE wf_" . SYS_SYS . ".".$value["ADD_TAB_NAME"]." ";
+            $apps1 = $stmt->executeQuery ( $query1, ResultSet::FETCHMODE_NUM );     
+        }    
+    }
+    G::pr(" **************** Delete Report Tables *************");
+    
+}
 function truncateReportTables()
 {
     $cnn = Propel::getConnection('workflow');
