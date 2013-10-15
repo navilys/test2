@@ -1930,7 +1930,14 @@ function convergence_justeOneDemande($user) {
 // Récupère le champs UID généré par l'auto-incrémentation pour le conserver lors d'une édition
 function convergence_keepAutoIncrement($app_uid, $table, $field = 'UID') {
     $q = 'select ' . strtoupper($field) . ' as uid from ' . strtoupper($table) . ' where APP_UID = "' . $app_uid . '"';
-    $r = executeQuery($q);
+    $r = executeQuery($q);    
+    //TODO voir avec Gary pour avoir des champs auto incrémenté
+    if (empty($r[1]['uid']))
+    {
+        $qUid = 'select max(PARTENAIRE_UID)+1 as uid from PMT_PRESTATAIRE';
+        $rUid = executeQuery($qUid);
+        $r[1]['uid'] = $rUid[1]['uid'];
+    }
     return $r[1]['uid'];
 }
 
@@ -1939,9 +1946,9 @@ function convergence_keepAutoIncrement($app_uid, $table, $field = 'UID') {
 function pmDisableUser($userName)
 { 
     $ret = 1;
-    $IP = $_SERVER['HTTP_HOST'];
-    $pfServer = new SoapClient('http://'.$IP.':8084/typo3conf/ext/pm_webservices/serveur.php?wsdl');
-	$ret = $pfServer->disableAccount(array('username' => $userName));
+    //$IP = $_SERVER['HTTP_HOST'];
+    $pfServer = new SoapClient('http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl');
+    $ret = $pfServer->disableAccount(array('username' => $userName));
 	
 
 	return $ret;
@@ -2136,15 +2143,16 @@ function _convert($content) {
  * ** */
 function createLog($dataCSV, $items, $tableName, $firstLineHeader, $dataEdit = '') {
     $logField = array();
-    $sPath = 'SELECT PATH_FILE FROM PMT_LISTE_OPER GROUP BY PATH_FILE';
-    $rPath = executeQuery($sPath);
+    //$sPath = 'SELECT PATH_FILE FROM PMT_LISTE_OPER GROUP BY PATH_FILE';
+    //$rPath = executeQuery($sPath);
     $file = $_SESSION['CSV_FILE_NAME'];
     
     (array) $ftemp = explode('.', $file);
-    if (!empty($rPath))
-        $path = $rPath[1]['PATH_FILE'] . '/LOG/' . $ftemp[0] . '_' . date("YmdHis") . '_log.txt';
-    else
-        $path = '/var/tmp/' . $ftemp[0] . '_' . date("YmdHis") . '_log.txt';
+    //if (!empty($rPath))
+    //    $path = $rPath[1]['PATH_FILE'] . '/LOG/' . $ftemp[0] . '_' . date("YmdHis") . '_log.txt';
+    //else
+    // TODO voir pour le chemin en define
+    $path = '/var/tmp/import_' . $ftemp[0] . '_' . date("YmdHis") . '_log.txt';
     $Log = 'Le fichier ' . $file . ' a été intégré le ' . date("d/m/Y à H:i:s") . ".\r\n\n\n";
     
     $nbcurrentLine = $nbAnomalie = $nbCreate = $nbModif = 0;

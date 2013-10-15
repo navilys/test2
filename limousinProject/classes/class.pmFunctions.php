@@ -150,8 +150,14 @@ function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $se
 
     // INIT Ws 201
     $t = new Transaction();
+    $retour = array();
+    /*
+     * Liste non exhaustive d’opérations disponible:
+     * 01:Versement,03:Déversement,10: Chargement par coupon recharge,15: Chargement par Transfert de carte à carte,
+     * 17: Chargement depuis carte bancaire,20: Virement entrant,21: Virement sortant
+     */
 
-	// SET Params
+    // SET Params
     $t->partenaire = wsPrestaId;
     $t->operation = $operation;
     $t->porteurId = $porteurId;
@@ -165,9 +171,9 @@ function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $se
     //$t->porteurId = "0009";
     //$t->sens = "C";
     //$t->montant = "200";
-	
-	foreach($sousMontants as $sm){
-		$t->addSousMontant($sm['reseau'],$sm['montant']);
+    foreach ($sousMontants as $rsx => $sm)
+    {
+        $t->addSousMontant($rsx, $sm);
     }
     /* Mode Test Off */
 
@@ -175,18 +181,13 @@ function limousinProject_nouvelleTransaction($operation = 0, $porteurId = 0, $se
     // CALL Ws
     try
     {
-        // TODO
-        $retour = $t->call();
-        $echo = $retour->idTransaction;
-        echo 'trans ok = ' . $echo;
+        $retour['success'] = $t->call();
     }
     catch (Exception $e)
     {
-        // TODO
-        $echo = $t->errors->code;
-        echo 'Code Erreur transaction = ' . $echo . '--- End Error ---';
+        $retour['errors'] = $t->errors->code;
     }
-
+    return $retour;
 }
 
 function limousinProject_nouvelleActionCRM($porteurId = 0, $action = '00', $motif = '') {
@@ -306,17 +307,12 @@ function limousinProject_getActivation($porteurId = 0) {
 
     // CALL Ws
     try
-    {
-        // TODO
-        $retour = $v->call();
-        echo 'ok act => ' . $retour . '--- end retour';
+    {       
+        return $v->call(); // 200 if success
     }
     catch (Exception $e)
     {
-        // TODO
-		// var_dump($e);
-        $echo = $v->errors->code;
-        echo 'Code Erreur activation = ' . $echo . '--- End Error ---';
+        return $v->errors->code;
     }
 }
 function limousinProject_getSolde($porteurId = 0) {
@@ -540,7 +536,7 @@ function limousinProject_updateFromAQPORTREJ($file){
             {
                 convergence_changeStatut($r[1]['APP_UID'], 41, 'Erreur dans le fichier AQ_PORT_R code :' . $code_erreurs);
                 $code_err = '"' . strtr(trim($code_erreurs), array(' ' => '","')) . '"';
-                $qError = 'select LABEL_E_AQ from PMT_CODE_ERREUR_AQOBA where CODE_E_AQ IN('.$code_err.')';
+                $qError = 'select LABEL_E_AQ from PMT_CODE_ERREUR_AQOBA where CODE_E_AQ IN(' . $code_err . ') AND SERVICE_E_AQ = "AQ_PORT"';
                 $rError = executeQuery($qError);
                 foreach ($rError as $value)
                 {
@@ -714,5 +710,17 @@ function limousinProject_getSituationLabel($situation) {
     $result = executeQuery($query);
     return $label = (!empty($result[1]['LABEL']) ? $result[1]['LABEL'] : '');
 }
+
+function limousinProject_getCartePorteurId($porteur_id) {
+
+    $qExist = 'select count(UID) as nb from PMT_CHEQUES where CARTE_PORTEUR_ID = "' . mysql_escape_string($porteur_id) . '" AND CODE_EVENT = 14';
+    $rExist = executeQuery($qExist);
+    $nbID = $rExist[1]['nb'];
+    if (!empty($nbID) && $nbID > 0)
+        return TRUE;
+    else
+        return FALSE;
+}
+
 
 ?>

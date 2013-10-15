@@ -946,6 +946,20 @@ function Forcerlademande(){
            }
          });
 }
+
+function changeEtatStatutConfirm(message, statut) {
+    Ext.MessageBox.show({
+        title:'Confirmation',
+        msg: message,
+        width:300,
+        buttons:Ext.MessageBox.YESNO,
+        fn:function(btn) {
+            if(btn == 'yes')
+                changeEtatStatut(statut);
+        }
+    });
+}
+
 function changeEtatStatut(statut) {
 
     idField = myApp.addTab_inside();
@@ -4889,11 +4903,11 @@ function listeCarteProduite(app_uid)
 }
 
 function message(mess)
-{	
-	Ext.Msg.alert('Confirmed', mess, function(btn, text){
-	    if (btn == 'ok'){
-	    	Ext.getCmp('win2').hide();
-	    }
-	});
-	
+{   
+    Ext.Msg.alert('Confirmed', mess, function(btn, text){
+        if (btn == 'ok'){
+            Ext.getCmp('win2').hide();
+        }
+    });
+    
 }
