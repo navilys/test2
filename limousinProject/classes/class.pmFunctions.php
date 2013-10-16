@@ -722,5 +722,14 @@ function limousinProject_getCartePorteurId($porteur_id) {
         return FALSE;
 }
 
+function limousinProject_getErrorAqoba($code, $service) {
+
+    $qError = "select LABEL_E_AQ from PMT_CODE_ERREUR_AQOBA where CODE_E_AQ = '" . $code . "'  AND SERVICE_E_AQ = '" . $service . "'";
+    $rError = executeQuery($qError);
+    foreach ($rError as $value)
+    {
+        $data[$r[1]['APP_UID']][] = $value['LABEL_E_AQ'];
+    }
+}
 
 ?>
