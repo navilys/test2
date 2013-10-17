@@ -141,6 +141,18 @@ function limousinProject_getDemandeFromUserID($userId) {
     return $arrayDemandeInfos;
 }
 
+function limousinProject_getDemandeFromPorteurID($porterId) {
+    $arrayDemandeInfos = array();
+    $queryDemande = 'select APP_UID from PMT_DEMANDES where PORTEUR_ID = "' . $porterId . '" and STATUT <> 0 and STATUT <> 999';
+    $resultAppUid = executeQuery($queryDemande);
+    if(sizeof($resultAppUid) == 1)
+    {
+        $appUid = $resultAppUid[1]['APP_UID'];
+        $arrayDemandeInfos = convergence_getAllAppData($appUid);
+    }
+    return $arrayDemandeInfos;
+}
+
 function limousin_addTransactionPriv($codePartenaire, $porteurID, $montant, $libelle, $thematique) {
     $queryInsertTransactionPriv = "INSERT INTO PMT_TRANSACTIONS_PRIV(CODE_PARTENAIRE, PORTEUR_ID, MONTANT, LIBELLE, THEMATIQUE) VALUES('".$codePartenaire."','".$porteurID."','".$montant."','".$libelle."','".$thematique."')";
     executeQuery($queryInsertTransactionPriv);
@@ -308,7 +320,18 @@ function limousinProject_getActivation($porteurId = 0) {
     // CALL Ws
     try
     {       
-        return $v->call(); // 200 if success
+        $return = $v->call(); // 200 if success
+        if('200' == $return)
+        {
+            // Si la carte est bien activée, on met à jour la table des cartes PMT_CHEQUES
+            $query = 'update PMT_CHEQUES SET CARTE_STATUT = "Active", DATE_ACTIVE = "'.date('Ymd').'" where CARTE_PORTEUR_ID= "' . mysql_escape_string($porteurId) . '"';
+            $result = executeQuery($query);
+            $data = limousinProject_getDemandeFromPorteurID($porteurId);
+            $arrayUser = userInfo($data['USER_ID']);
+            //TODO utiliser les info nom prenom etc pour appeller le ws pour modifier le usergroup.
+
+        }
+        return $return;
     }
     catch (Exception $e)
     {
@@ -398,18 +421,12 @@ function limousinProject_createUser($app_id, $role) {
 
         if (!empty($rGpId[1]['CON_ID']))
         {
-
-            //$IP = $_SERVER['HTTP_HOST'];
-            //$port = port_extranet;
-            //if(empty($port))
-            //    $port = '8084';
+          
             $groupId = $rGpId[1]['CON_ID'];
             $var = PMFAssignUserToGroup($usr_uid, $groupId);
 
             // creation du fe_user dans typo3
-            //$res = userSettingsPlugin($groupId, $urlTypo3 = 'http://172.17.20.29:8084/');
             ini_set("soap.wsdl_cache_enabled", "0");
-            //$hostTypo3 = 'http://' . $IP . ':' . $port . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
             $hostTypo3 = 'http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
             $pfServer = new SoapClient($hostTypo3);
             $key = rand();
@@ -726,10 +743,9 @@ function limousinProject_getErrorAqoba($code, $service) {
 
     $qError = "select LABEL_E_AQ from PMT_CODE_ERREUR_AQOBA where CODE_E_AQ = '" . $code . "'  AND SERVICE_E_AQ = '" . $service . "'";
     $rError = executeQuery($qError);
-    foreach ($rError as $value)
-    {
-        $data[$r[1]['APP_UID']][] = $value['LABEL_E_AQ'];
-    }
+    if(!empty($rError[1]['LABEL_E_AQ']))
+        return $rError[1]['LABEL_E_AQ'];
+    else
+        return "Une erreur c'est produite !!!";    
 }
-
 ?>
