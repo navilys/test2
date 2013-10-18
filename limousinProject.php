@@ -2,7 +2,8 @@
 
 //extranet
 define('LimousinPort', '8084');
-define('HostName', 'belim.adequation.com');
+//define('HostName', 'belim.adequation.com');
+define('HostName', '172.17.20.29:8084');
 define('gpIdPartenaire', '89c7034503fb5da547bd3f684d50fa82');
 //sftp
 define('port_ftp', '22');

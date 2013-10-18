@@ -452,6 +452,10 @@ Ext.onReady(function()
 	    ]
 	});*/
 	
+	var messagePager = 'No Accounts to show';
+	var messageConfig = '<div align="center"><b> ** Aucun résultat trouvé ** </b></div>';
+	var displayMsg = 'Accounts {0} - {1} Of {2}';
+	
 	if(filterSearch == '1'){
 
 			var searchForm = new Ext.Toolbar({
@@ -479,8 +483,10 @@ Ext.onReady(function()
 	}
 
 	if(filterSearch == '0'){
-
-			var searchForm = new Ext.Toolbar({
+		messagePager = '';
+		messageConfig = '';
+		displayMsg = '';
+		var searchForm = new Ext.Toolbar({
 	    width: '100%',
 	    autoHeight: true,
 	    defaults:{
@@ -535,8 +541,8 @@ Ext.onReady(function()
         store       : gridInboxDinamicStore, 
         displayInfo : true,
         autoHeight  : true,
-        displayMsg  : 'Accounts {0} - {1} Of {2}',
-        emptyMsg    : 'No Accounts to show',
+        displayMsg  : displayMsg,
+        emptyMsg    : messagePager,
         pageSize: 100
        });
 	
@@ -577,7 +583,7 @@ Ext.onReady(function()
 		viewConfig : {
 			forceFit : true,
 		    scrollOffset : 0,
-		    emptyText: '<div align="center"><b> ** Aucun résultat trouvé ** </b></div>'
+		    emptyText: messageConfig
 		}
 	});
 	

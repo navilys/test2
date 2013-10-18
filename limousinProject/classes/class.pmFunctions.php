@@ -328,8 +328,19 @@ function limousinProject_getActivation($porteurId = 0) {
             $result = executeQuery($query);
             $data = limousinProject_getDemandeFromPorteurID($porteurId);
             $arrayUser = userInfo($data['USER_ID']);
-            //TODO utiliser les info nom prenom etc pour appeller le ws pour modifier le usergroup.
-
+            //appel du ws pour modifier le usergroup dans typo3
+            ini_set("soap.wsdl_cache_enabled", "0");
+            $hostTypo3 = 'http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
+            $pfServer = new SoapClient($hostTypo3);
+            $key = rand();
+            $groupId = '222';
+            $ret = $pfServer->updateUsergroup(array(
+                'username' => $arrayUser['username'],
+                'lastname' => $arrayUser['firstname'],
+                'firstname' => $arrayUser['lastname'],
+                'key' => $key,
+                'usergroup' => $groupId,
+                'cHash' => md5($arrayUser['username'] . '*' . utf8_encode($arrayUser['lastname']) . '*' . utf8_encode($arrayUser['firstname']) . '*' . $key)));
         }
         return $return;
     }
@@ -748,4 +759,27 @@ function limousinProject_getErrorAqoba($code, $service) {
     else
         return "Une erreur c'est produite !!!";    
 }
+
+function limousinProject_test($porteurId) {
+    $data = limousinProject_getDemandeFromPorteurID($porteurId);
+    $arrayUser = userInfo($data['USER_ID']);
+    //appel du ws pour modifier le usergroup dans typo3
+    ini_set("soap.wsdl_cache_enabled", "0");
+    $hostTypo3 = 'http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
+    mail('nicolas@oblady.fr', date('H:i:s') . ' $host 2 debug mail ', var_export($hostTypo3, true));
+    $pfServer = new SoapClient($hostTypo3);
+    mail('nicolas@oblady.fr', date('H:i:s') . ' $pf debug mail ', var_export($hostTypo3, true));
+    $key = rand();
+    $groupId = '222';
+    $ret = $pfServer->updateUsergroup(array(
+        'username' => $arrayUser['username'],
+        'lastname' => $arrayUser['firstname'],
+        'firstname' => $arrayUser['lastname'],
+        'key' => $key,
+        'usergroup' => $groupId,
+        'cHash' => md5($arrayUser['username'] . '*' . utf8_encode($arrayUser['lastname']) . '*' . utf8_encode($arrayUser['firstname']) . '*' . $key)));
+    mail('nicolas@oblady.fr', date('H:i:s') . ' debug $ret ws mail ', var_export($ret, true));
+    return $ret;
+}
+
 ?>
