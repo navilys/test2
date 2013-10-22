@@ -31,6 +31,24 @@ function limousinProject_getMyCurrentDate(){
 function limousinProject_getMyCurrentTime(){
     return G::CurDate('H:i:s');
 }
+function test_pdf($appUid, $iddoc) {
+    $selAppDocument = "SELECT
+                        DOC_VERSION AS VERSION
+	                     ,APP_DOC_UID
+	                   FROM APP_DOCUMENT
+					   WHERE APP_UID = '" . $appUid . "' AND DOC_UID='" . $iddoc . "'
+					        ORDER BY DOC_VERSION DESC";
+    $datAppDocument = executeQuery($selAppDocument);
+    if (count($datAppDocument) > 0)
+    {
+        $appDocUid = $datAppDocument[1]['APP_DOC_UID'];
+        $version = $datAppDocument[1]['VERSION'];
+    }
+    $sys = @@SYS_SYS;
+    $lang = @@SYS_LANG;
+    $skin = @@SYS_SKIN;
+    $sAddress = 'http://' . $_SERVER['HTTP_HOST'] . '/sys' . $sys . '/' . $lang . '/' . $skin . '/cases/cases_ShowOutputDocument?a=' . $appDocUid . '&v=' . $version . '&ext=pdf&random=' . rand();
+}
 
 //LOCAL : a transforme dans le moteur de regle
 function convergence_getIncompletErreur($app_id){
@@ -707,19 +725,16 @@ function limousinProject_showPdf($app_uid) {
     {
         $app_uid = G::getPathFromUID($app_uid);
     }
-
     $path = PATH_DOCUMENT . $app_uid . PATH_SEP . 'outdocs' . PATH_SEP . $result[1]['APP_DOC_UID'] . '_' . $result[1]['DOC_VERSION'];
     $file = $path . '.pdf';
 
-   /* mail('nicolas@oblady.fr', date('H:i:s') . ' debug $filemail ', var_export($file, true));
-
-      if (file_exists($file))
+    if (file_exists($file))
       {
       //OUPUT HEADERS
       header("Pragma: public");
       header("Expires: 0");
-      //header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-      //header("Cache-Control: private",false);
+      header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+      header("Cache-Control: private",false);
       header("Content-Type: application/pdf");
       header('Content-Disposition: attachment; filename="' . $result[1]['CON_VALUE'] . '.pdf";');
       header('Content-Length: ' . sizeof($file));
@@ -728,9 +743,9 @@ function limousinProject_showPdf($app_uid) {
       header('Cache-Control: must-revalidate');
       //ob_clean();
       //flush();
-      mail('nicolas@oblady.fr', date('H:i:s') . ' flush debug mail ', var_export($file, true));
       readfile($file);
-      } */
+    }
+    return;
 }
 
 function limousinProject_getSituationLabel($situation) {
