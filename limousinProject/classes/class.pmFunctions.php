@@ -31,25 +31,6 @@ function limousinProject_getMyCurrentDate(){
 function limousinProject_getMyCurrentTime(){
     return G::CurDate('H:i:s');
 }
-function test_pdf($appUid, $iddoc) {
-    $selAppDocument = "SELECT
-                        DOC_VERSION AS VERSION
-	                     ,APP_DOC_UID
-	                   FROM APP_DOCUMENT
-					   WHERE APP_UID = '" . $appUid . "' AND DOC_UID='" . $iddoc . "'
-					        ORDER BY DOC_VERSION DESC";
-    $datAppDocument = executeQuery($selAppDocument);
-    if (count($datAppDocument) > 0)
-    {
-        $appDocUid = $datAppDocument[1]['APP_DOC_UID'];
-        $version = $datAppDocument[1]['VERSION'];
-    }
-    $sys = @@SYS_SYS;
-    $lang = @@SYS_LANG;
-    $skin = @@SYS_SKIN;
-    $sAddress = 'http://' . $_SERVER['HTTP_HOST'] . '/sys' . $sys . '/' . $lang . '/' . $skin . '/cases/cases_ShowOutputDocument?a=' . $appDocUid . '&v=' . $version . '&ext=pdf&random=' . rand();
-}
-
 //LOCAL : a transforme dans le moteur de regle
 function convergence_getIncompletErreur($app_id){
     $fields = convergence_getAllAppData($app_id);   
@@ -339,31 +320,24 @@ function limousinProject_getActivation($porteurId = 0) {
     try
     {       
         $return = $v->call(); // 200 if success
+        mail('belimob@yopmail.com', date('H:i:s') . ' debug $return ok mail ', var_export($return, true));
         if('200' == $return)
         {
             // Si la carte est bien activée, on met à jour la table des cartes PMT_CHEQUES
             $query = 'update PMT_CHEQUES SET CARTE_STATUT = "Active", DATE_ACTIVE = "'.date('Ymd').'" where CARTE_PORTEUR_ID= "' . mysql_escape_string($porteurId) . '"';
             $result = executeQuery($query);
+            // Puis on change le usergroup dans Typo3 en Carte activé
             $data = limousinProject_getDemandeFromPorteurID($porteurId);
-            $arrayUser = userInfo($data['USER_ID']);
-            //appel du ws pour modifier le usergroup dans typo3
-            ini_set("soap.wsdl_cache_enabled", "0");
-            $hostTypo3 = 'http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
-            $pfServer = new SoapClient($hostTypo3);
-            $key = rand();
-            $groupId = '222';
-            $ret = $pfServer->updateUsergroup(array(
-                'username' => $arrayUser['username'],
-                'lastname' => $arrayUser['firstname'],
-                'firstname' => $arrayUser['lastname'],
-                'key' => $key,
-                'usergroup' => $groupId,
-                'cHash' => md5($arrayUser['username'] . '*' . utf8_encode($arrayUser['lastname']) . '*' . utf8_encode($arrayUser['firstname']) . '*' . $key)));
+            $userInfo = userInfo($data['USER_ID']);
+            $ret = limousinProject_updateUsergroupTypo($userInfo);
+            if ('ERROR' == $ret['CODE'])
+                return $ret;
         }
         return $return;
     }
     catch (Exception $e)
     {
+        mail('belimob@yopmail.com', date('H:i:s') . ' debug $return paf v2 mail ', var_export($v->errors, true));
         return $v->errors->code;
     }
 }
@@ -728,22 +702,25 @@ function limousinProject_showPdf($app_uid) {
     $path = PATH_DOCUMENT . $app_uid . PATH_SEP . 'outdocs' . PATH_SEP . $result[1]['APP_DOC_UID'] . '_' . $result[1]['DOC_VERSION'];
     $file = $path . '.pdf';
 
+        
     if (file_exists($file))
-      {
-      //OUPUT HEADERS
+      {//TODO
+        //OUPUT HEADERS
+      
+        $fileContent = file_get_contents($file);
+        
       header("Pragma: public");
       header("Expires: 0");
       header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
       header("Cache-Control: private",false);
       header("Content-Type: application/pdf");
       header('Content-Disposition: attachment; filename="' . $result[1]['CON_VALUE'] . '.pdf";');
-      header('Content-Length: ' . sizeof($file));
+      header('Content-Length: ' . strlen($fileContent));
       header("Content-Transfer-Encoding: binary");
-      header('Content-Description: File Transfer');
-      header('Cache-Control: must-revalidate');
-      //ob_clean();
-      //flush();
-      readfile($file);
+
+      
+      echo $fileContent;
+      
     }
     return;
 }
@@ -756,9 +733,9 @@ function limousinProject_getSituationLabel($situation) {
 
 function limousinProject_getCartePorteurId($porteur_id) {
 
-    $qExist = 'select count(UID) as nb from PMT_CHEQUES where CARTE_PORTEUR_ID = "' . mysql_escape_string($porteur_id) . '" AND CODE_EVENT = 14';
+    $qExist = 'select count(UID) as nb from PMT_CHEQUES where CARTE_PORTEUR_ID = "' . mysql_escape_string($porteur_id) . '" AND CODE_EVENT = 14';    
     $rExist = executeQuery($qExist);
-    $nbID = $rExist[1]['nb'];
+    $nbID = intval($rExist[1]['nb']);
     if (!empty($nbID) && $nbID > 0)
         return TRUE;
     else
@@ -772,28 +749,23 @@ function limousinProject_getErrorAqoba($code, $service) {
     if(!empty($rError[1]['LABEL_E_AQ']))
         return $rError[1]['LABEL_E_AQ'];
     else
-        return "Une erreur c'est produite !!!";    
+        return "Une erreur inconnue c'est produite !!! code : $code, service : $service";
 }
 
-function limousinProject_test($porteurId) {
-    $data = limousinProject_getDemandeFromPorteurID($porteurId);
-    $arrayUser = userInfo($data['USER_ID']);
+function limousinProject_updateUsergroupTypo($userInfo) {
     //appel du ws pour modifier le usergroup dans typo3
     ini_set("soap.wsdl_cache_enabled", "0");
     $hostTypo3 = 'http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
-    mail('nicolas@oblady.fr', date('H:i:s') . ' $host 2 debug mail ', var_export($hostTypo3, true));
     $pfServer = new SoapClient($hostTypo3);
-    mail('nicolas@oblady.fr', date('H:i:s') . ' $pf debug mail ', var_export($hostTypo3, true));
     $key = rand();
-    $groupId = '222';
+    $groupId = gpIdCarteActive;
     $ret = $pfServer->updateUsergroup(array(
-        'username' => $arrayUser['username'],
-        'lastname' => $arrayUser['firstname'],
-        'firstname' => $arrayUser['lastname'],
+        'username' => $userInfo['username'],
+        'firstname' => $userInfo['firstname'],
+        'lastname' => $userInfo['lastname'],
         'key' => $key,
         'usergroup' => $groupId,
-        'cHash' => md5($arrayUser['username'] . '*' . utf8_encode($arrayUser['lastname']) . '*' . utf8_encode($arrayUser['firstname']) . '*' . $key)));
-    mail('nicolas@oblady.fr', date('H:i:s') . ' debug $ret ws mail ', var_export($ret, true));
+        'cHash' => md5($userInfo['username'] . '*' . $userInfo['lastname'] . '*' . $userInfo['firstname'] . '*' . $key)));
     return $ret;
 }
 

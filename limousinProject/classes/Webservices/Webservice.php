@@ -16,9 +16,9 @@ class Webservices {
         $info = array();
         //BUILD StreamContent
 		$streamContent = $this->buildInputXML($this->inputParams);
-         echo "**********STREAM input XML********";
-          echo $streamContent;
-          echo "******************"; 
+//         echo "**********STREAM input XML********";
+//          echo $streamContent;
+//          echo "******************";
         //var_dump($streamContent);
         $ch = curl_init($this->url);
 		curl_setopt($ch,CURLOPT_POST,1);
@@ -34,9 +34,9 @@ class Webservices {
         //curl_setopt($ch,CURLOPT_CERTINFO, true);
         // GET Response
 		$response = curl_exec($ch);
-        var_dump($response);
-         $info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        echo 'info = ' . $info;
+       // var_dump($response);
+        $info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+ //        echo 'info = ' . $info;
         try{
         // Check Response
 			$response = $this->checkReturn($response);
