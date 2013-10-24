@@ -166,12 +166,14 @@ function FredirectTypo3($APP_UID) {
     if (isset($DATA['FLAGTYPO3']) && $DATA['FLAGTYPO3'] == 'On' && !$DATA['FLAG_ACTION'])
     {
         if (!$DATA['FLAG_REDIRECT_PAGE']){
-            $IPTYPO3 = 'http://'.$_SERVER['HTTP_HOST'].':8084/';
+            //$IPTYPO3 = 'http://'.$_SERVER['HTTP_HOST'].':8084/';
+            $IPTYPO3 = 'http://'.HostName.'/';
             $page = $IPTYPO3.'index.php?id=76';
         }
         else
             $page = $DATA['FLAG_REDIRECT_PAGE'];
-         $hostPort = 'http://' . $_SERVER['HTTP_HOST'] . ':8084/';
+         //$hostPort = 'http://' . $_SERVER['HTTP_HOST'] . ':8084/';
+         $hostPort = 'http://' . HostName.'/';
         echo "<script language='javascript'> parent.parent.location.href = '" . $page . "';</script>";
         die();
     }

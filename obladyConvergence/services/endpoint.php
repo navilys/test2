@@ -7,8 +7,9 @@ function FupdateAPPDATATYPO3($APP_UID,$new = 0){
     $newFields = $caseInstance->loadCase ($APP_UID);
     $newFields['APP_DATA']['FLAGTYPO3'] = 'On';
     $newFields['APP_DATA']['FLAG_ACTIONTYPO3'] = 'actionCreateCase';
-    
-    $newFields['APP_DATA']['FLAG_REDIRECT_PAGE'] = urldecode($_REQUEST['redirect']);
+
+    if ($_REQUEST['redirect'])
+        $newFields['APP_DATA']['FLAG_REDIRECT_PAGE'] = urldecode($_REQUEST['redirect']);
     
     if ($new == 1) {
         
@@ -58,7 +59,11 @@ try {
         case 'mesdemandes':        
             // Redirect to inbox
             //G::header('Location: ../../convergenceList/inboxDinamic.php?table=95654345151237be9ca3ab2040266744&filter=demande');
-            G::header('Location: ../../convergenceList/inboxDinamic.php?idInbox=DEMANDES');        
+            if (!isset($_REQUEST['task'])) {
+                G::header('Location: ../../convergenceList/inboxDinamic.php?idInbox=DEMANDES');
+            }
+            else
+                G::header('Location: ../../convergenceList/inboxDinamic.php?idInbox='.$_REQUEST['task']);
             die();
             break;
         case 'inbox':

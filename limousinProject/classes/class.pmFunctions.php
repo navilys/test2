@@ -305,6 +305,7 @@ function limousinProject_getAutorisations() {
 function limousinProject_getActivation($porteurId = 0) {
 
     // INIT Ws 211    
+	$result = null;
     $v = new Activation();
 
     // SET Params
@@ -315,31 +316,25 @@ function limousinProject_getActivation($porteurId = 0) {
     //$v->porteurId = 30280055364;
     //$s->porteurId = 30280000023;
     /* Mode Test Off */
-
     // CALL Ws
     try
-    {       
-        $return = $v->call(); // 200 if success
-        mail('belimob@yopmail.com', date('H:i:s') . ' debug $return ok mail ', var_export($return, true));
-        if('200' == $return)
-        {
-            // Si la carte est bien activée, on met à jour la table des cartes PMT_CHEQUES
-            $query = 'update PMT_CHEQUES SET CARTE_STATUT = "Active", DATE_ACTIVE = "'.date('Ymd').'" where CARTE_PORTEUR_ID= "' . mysql_escape_string($porteurId) . '"';
-            $result = executeQuery($query);
-            // Puis on change le usergroup dans Typo3 en Carte activé
-            $data = limousinProject_getDemandeFromPorteurID($porteurId);
-            $userInfo = userInfo($data['USER_ID']);
-            $ret = limousinProject_updateUsergroupTypo($userInfo);
-            if ('ERROR' == $ret['CODE'])
-                return $ret;
-        }
-        return $return;
+    {
+        $v->call();
+        // Si la carte est bien activée, on met à jour la table des cartes PMT_CHEQUES
+        $query = 'update PMT_CHEQUES SET CARTE_STATUT = "Active", DATE_ACTIVE = "'.date('Ymd').'" where CARTE_PORTEUR_ID= "' . mysql_escape_string($porteurId) . '"';
+        $resQuery = executeQuery($query);
+        // Puis on change le usergroup dans Typo3 en Carte activé
+        $data = limousinProject_getDemandeFromPorteurID($porteurId);
+        $userInfo = userInfo($data['USER_ID']);
+        $result = limousinProject_updateUsergroupTypo($userInfo, $porteurId, '222');
     }
     catch (Exception $e)
     {
-        mail('belimob@yopmail.com', date('H:i:s') . ' debug $return paf v2 mail ', var_export($v->errors, true));
-        return $v->errors->code;
+        $result = $v->errors;
     }
+	
+	// RETURN
+	return $result;
 }
 function limousinProject_getSolde($porteurId = 0) {
 
@@ -737,7 +732,10 @@ function limousinProject_getCartePorteurId($porteur_id) {
     $rExist = executeQuery($qExist);
     $nbID = intval($rExist[1]['nb']);
     if (!empty($nbID) && $nbID > 0)
-        return TRUE;
+    {
+        $datas = limousinProject_getDemandeFromPorteurID(intval($porteur_id));
+        return $datas;
+    }
     else
         return FALSE;
 }
@@ -752,17 +750,17 @@ function limousinProject_getErrorAqoba($code, $service) {
         return "Une erreur inconnue c'est produite !!! code : $code, service : $service";
 }
 
-function limousinProject_updateUsergroupTypo($userInfo) {
+function limousinProject_updateUsergroupTypo($userInfo, $porteurid, $groupId) {
     //appel du ws pour modifier le usergroup dans typo3
     ini_set("soap.wsdl_cache_enabled", "0");
     $hostTypo3 = 'http://' . HostName . '/typo3conf/ext/pm_webservices/serveur.php?wsdl';
     $pfServer = new SoapClient($hostTypo3);
     $key = rand();
-    $groupId = gpIdCarteActive;
     $ret = $pfServer->updateUsergroup(array(
         'username' => $userInfo['username'],
         'firstname' => $userInfo['firstname'],
         'lastname' => $userInfo['lastname'],
+        'porteurid' => $porteurid,
         'key' => $key,
         'usergroup' => $groupId,
         'cHash' => md5($userInfo['username'] . '*' . $userInfo['lastname'] . '*' . $userInfo['firstname'] . '*' . $key)));

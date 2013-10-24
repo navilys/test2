@@ -22,9 +22,10 @@ class Webservices {
         //var_dump($streamContent);
         $ch = curl_init($this->url);
 		curl_setopt($ch,CURLOPT_POST,1);
-		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));		
-		curl_setopt($ch,CURLOPT_HEADER, true);
-        curl_setopt($ch,CURLINFO_HEADER_OUT, true);
+		curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: text/xml'));	
+		// A decommenter pour debugger l'entete HTTP
+		// curl_setopt($ch,CURLOPT_HEADER, true);
+        // curl_setopt($ch,CURLINFO_HEADER_OUT, true);
         curl_setopt($ch,CURLOPT_POSTFIELDS,"$streamContent");
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
 		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false); 
