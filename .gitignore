@@ -1,4 +1,5 @@
 ._*
+.DS_Store
 actionsByEmail/
 actionsByEmail.php
 advancedDashboards/
@@ -33,7 +34,7 @@ pmReports/
 pmReports.php
 pmSLA/
 pmSLA.php
-pmWorkspaceManagement/
+pmWorkspcaeManagement/
 pmWorkspaceManagement.php
 processTemplate/
 processTemplate.php
